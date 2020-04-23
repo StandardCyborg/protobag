@@ -1,0 +1,9 @@
+[submodule "c++/external/protobuf"]
+	path = c++/external/protobuf
+	url = https://github.com/protocolbuffers/protobuf.git
+[submodule "c++/external/libarchive"]
+	path = c++/external/libarchive
+	url = https://github.com/libarchive/libarchive.git
+[submodule "c++/external/fmt_lib"]
+	path = c++/external/fmt_lib
+	url = https://github.com/fmtlib/fmt.git

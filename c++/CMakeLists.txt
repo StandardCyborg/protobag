@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(Protobag C CXX)
 
+enable_testing()
+
 set(CMAKE_CXX_STANDARD 17)
 link_libraries(m atomic stdc++fs)
 
@@ -107,7 +109,7 @@ install(
   ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
   LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
 
-install(FILES ${pb_headers} DESTINATION "${INSTALL_INCLUDE_DIR}/protobag_msg")
+install(FILES ${PB_PROTO_HDRS} DESTINATION "${INSTALL_INCLUDE_DIR}/protobag_msg")
 file(GLOB_RECURSE pb_protos protobag/protobag_msg/*.proto)
 install(FILES ${pb_protos} DESTINATION "${INSTALL_INCLUDE_DIR}/protobag_msg")
 
@@ -170,3 +172,8 @@ target_link_libraries(
 #   # IMPORTANT: Add the protobag_test executable to the "export-set"
 #   EXPORT ProtobagTargets
 #   RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
+
+add_test(
+    NAME test 
+    COMMAND bash -c "$<TARGET_FILE:protobag_test>")
+set_tests_properties(test PROPERTIES DEPENDS protobag_test)

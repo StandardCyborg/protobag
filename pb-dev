@@ -17,6 +17,7 @@ import sys
 
 
 
+
 ###############################################################################
 ## Setup Hints
 
@@ -134,7 +135,25 @@ def create_arg_parser():
     '--root', default=os.path.dirname(os.path.abspath(__file__)),
     help='Use source at this root directory [default %(default)s]')
   
+  # Actions
+  parser.add_argument(
+    '--build-env', default=False, action='store_true',
+    help='Build the Dockerized dev env')
+  
   return parser
+
+
+def build_env(args):
+  raise_if_no_docker()
+
+  # TODO(tag with version etc)
+  CMD = """
+    docker build -t protobag-dev -f {dockerfile} {docker_root}
+  """.format(
+    dockerfile=os.path.join(args.root, 'docker/Dockerfile'),
+    docker_root=args.root)
+  
+  run_cmd(CMD)
 
 
 def main(args=None):
@@ -142,7 +161,8 @@ def main(args=None):
     parser = create_arg_parser()
     args = parser.parse_args()
 
-  raise_if_no_docker()
+  if args.build_env:
+    build_env(args)
 
 if __name__ == '__main__':
   main()

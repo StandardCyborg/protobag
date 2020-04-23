@@ -50,13 +50,12 @@ RUN \
     cmake -DCMAKE_CXX_FLAGS="-fPIC -std=c++17 -stdlib=libc++ -O3 -g" . && \
     make -j `nproc`
 
+
 # Protobuf
+ARG PROTOBUF_ROOT=c++/external/protobuf
+RUN apt-get update && apt-get install -y autoconf libtool zlib1g-dev
+COPY ${PROTOBUF_ROOT} /opt/protobuf
 RUN \
-    apt-get install -y autoconf libtool zlib1g-dev && \
-    cd /tmp && \
-    wget https://github.com/protocolbuffers/protobuf/archive/v3.11.4.tar.gz && \
-    tar xfz v3.11.4.tar.gz && \
-    mv protobuf-3.11.4 /opt/protobuf && \
     cd /opt/protobuf && \
     rm -rf /opt/protobuf/third_party/googletest && \
     ln -s /opt/gtest /opt/protobuf/third_party/googletest && \
@@ -68,12 +67,11 @@ RUN \
     cd /opt/protobuf/python && \
     python3 setup.py install
 
+
 # Libarchive
+ARG LIBARCHIVE_ROOT=c++/external/libarchive
+COPY ${LIBARCHIVE_ROOT} /opt/libarchive
 RUN \
-    cd /tmp && \
-    wget https://github.com/libarchive/libarchive/archive/v3.4.2.tar.gz && \
-    tar xfz v3.4.2.tar.gz && \
-    mv libarchive-3.4.2 /opt/libarchive && \
     cd /opt/libarchive && \
     mkdir -p build && cd build && \
     cmake .. && \
@@ -81,13 +79,25 @@ RUN \
     make test && \
     make install
 
+
 # fmt (To avoid requiring c++20 for now)
+ARG FMT_ROOT=c++/external/fmt_lib
+COPY ${FMT_ROOT} /opt/fmt
 RUN \
-    cd /tmp && \
-    wget https://github.com/fmtlib/fmt/archive/6.2.0.tar.gz && \
-    tar xfz 6.2.0.tar.gz && \
-    mv fmt-6.2.0 /opt/fmt && \
     cd /opt/fmt && \
+    mkdir -p build && cd build && \
+    cmake .. && \
+    make -j `nproc` && \
+    make test && \
+    make install
+
+
+# Include a build of protobag
+COPY ./c++/CMakeLists.txt /opt/protobag/CMakeLists.txt
+COPY ./c++/protobag /opt/protobag/protobag
+COPY ./c++/protobag_test /opt/protobag/protobag_test
+WORKDIR /opt/protobag
+RUN \
     mkdir -p build && cd build && \
     cmake .. && \
     make -j `nproc` && \
