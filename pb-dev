@@ -139,7 +139,11 @@ def create_arg_parser():
   parser.add_argument(
     '--build-env', default=False, action='store_true',
     help='Build the Dockerized dev env')
-  
+  parser.add_argument(
+    '--post-release', default=False, action='store_true',
+    help='Run the post-release workflow; run this on master after merging '
+         'your feature branch')
+
   return parser
 
 
@@ -156,6 +160,18 @@ def build_env(args):
   run_cmd(CMD)
 
 
+def post_release(args):
+  print('todo get_version')
+  version = 'v0.0.1'
+  
+  # Tag for cocoapods release
+  print('todo: podspec version matches version')
+  CMD = """
+    git tag {version} && git push origin {version}
+  """.format(version=version)
+  run_cmd(CMD)
+
+
 def main(args=None):
   if args is None:
     parser = create_arg_parser()
@@ -163,6 +179,8 @@ def main(args=None):
 
   if args.build_env:
     build_env(args)
+  elif args.post_release:
+    post_release(args)
 
 if __name__ == '__main__':
   main()
