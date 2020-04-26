@@ -20,14 +20,17 @@
   ],
   "header_mappings_dir": "c++/protobag",
   "platforms": {
-    "ios": "7.0",
-    "osx": "10.9",
-    "tvos": "9.0",
-    "watchos": "2.0"
+    "ios": "13.0",
+    "osx": "10.15"
   },
   "dependencies": {
     "Protobuf-C++": "~> 3.11",
     "FMTCocoa": "~> 6.2.0",
     "LibArchiveCocoa": "~> 3.4.2"
-  }
+  },
+  "pod_target_xcconfig": {
+    "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
+    "CLANG_CXX_LIBRARY": "libc++"
+  },
+  "libraries": "c++"
 }
