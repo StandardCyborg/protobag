@@ -13,12 +13,10 @@
     "tag": "v0.0.1"
   },
   "public_header_files": [
-    "c++/protobag/*.hpp",
-    "c++/protobag/**/*.hpp"
+    "c++/protobag/**/*.{hpp,h}"
   ],
   "source_files": [
-    "c++/protobag/*.{hpp,cpp}",
-    "c++/protobag/**/*.{hpp,cpp}"
+    "c++/protobag/**/*.{hpp,h,cpp,cc}"
   ],
   "header_mappings_dir": "c++/protobag",
   "platforms": {
