@@ -1,6 +1,6 @@
 {
   "name": "ProtobagCocoa",
-  "version": "v0.0.1",
+  "version": "0.0.1",
   "summary": "Protobag: an archive of string-serialized Protobufs",
   "homepage": "https://github.com/StandardCyborg/protobag",
   "license": "Apache 2",
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "Protobuf-C++": "~> 3.11",
-	"FMTCocoa": ":podspec => /Users/paul/Documents/FMTCocoa/FMTCocoa.podspec.json",
-	"LibArchiveCocoa": ":podspec => /Users/paul/Documents/LibArchiveCocoa/libarchive-cocoa.podspec.json"
+    "FMTCocoa": "~> 6.2.0",
+    "LibArchiveCocoa": "~> 3.4.2"
   }
 }

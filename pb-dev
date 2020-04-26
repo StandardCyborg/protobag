@@ -167,7 +167,7 @@ def post_release(args):
   # Tag for cocoapods release
   print('todo: podspec version matches version')
   CMD = """
-    git tag {version} && git push origin {version}
+    git tag -f {version} && git push -f origin {version}
   """.format(version=version)
   run_cmd(CMD)
 
