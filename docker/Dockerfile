@@ -52,10 +52,12 @@ RUN \
 
 
 # Protobuf
-ARG PROTOBUF_ROOT=c++/external/protobuf
-RUN apt-get update && apt-get install -y autoconf libtool zlib1g-dev
-COPY ${PROTOBUF_ROOT} /opt/protobuf
 RUN \
+    apt-get update && apt-get install -y autoconf libtool zlib1g-dev && \
+    cd /tmp && \
+    wget https://github.com/protocolbuffers/protobuf/archive/v3.11.4.tar.gz && \
+    tar xfz v3.11.4.tar.gz && \
+    mv protobuf-3.11.4 /opt/protobuf && \
     cd /opt/protobuf && \
     rm -rf /opt/protobuf/third_party/googletest && \
     ln -s /opt/gtest /opt/protobuf/third_party/googletest && \
@@ -69,9 +71,11 @@ RUN \
 
 
 # Libarchive
-ARG LIBARCHIVE_ROOT=c++/external/libarchive
-COPY ${LIBARCHIVE_ROOT} /opt/libarchive
 RUN \
+    cd /tmp && \
+    wget https://github.com/libarchive/libarchive/archive/v3.4.2.tar.gz && \
+    tar xfz v3.4.2.tar.gz && \
+    mv libarchive-3.4.2 /opt/libarchive && \
     cd /opt/libarchive && \
     mkdir -p build && cd build && \
     cmake .. && \
@@ -81,9 +85,11 @@ RUN \
 
 
 # fmt (To avoid requiring c++20 for now)
-ARG FMT_ROOT=c++/external/fmt_lib
-COPY ${FMT_ROOT} /opt/fmt
 RUN \
+    cd /tmp && \
+    wget https://github.com/fmtlib/fmt/archive/6.2.0.tar.gz && \
+    tar xfz 6.2.0.tar.gz && \
+    mv fmt-6.2.0 /opt/fmt && \
     cd /opt/fmt && \
     mkdir -p build && cd build && \
     cmake .. && \
