@@ -4,7 +4,7 @@
 
 #include "protobag/Utils/Result.hpp"
 
-#include "ProtobagMsg.pb.h"
+#include "protobag_msg/ProtobagMsg.pb.h"
 
 // TODO maybe move with TopicTime operator< below
 #include <tuple> 

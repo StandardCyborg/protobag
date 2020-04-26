@@ -3,7 +3,7 @@
 #include <archive.h>
 #include <archive_entry.h>
 
-#include "ProtobagMsg.pb.h"
+#include "protobag_msg/ProtobagMsg.pb.h"
 
 namespace protobag {
 

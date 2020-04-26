@@ -85,6 +85,7 @@ protobuf_generate_cpp(
   protobag/protobag_msg/ProtobagMsg.proto)
 message ("PB_PROTO_SRCS = ${PB_PROTO_SRCS}") # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
 message ("PB_PROTO_HDRS = ${PB_PROTO_HDRS}")
+error("fixme proto location")
 set(protobag_srcs ${protobag_srcs} ${PB_PROTO_SRCS})
 set(protobag_headers ${protobag_headers} ${PB_PROTO_HDRS})
 

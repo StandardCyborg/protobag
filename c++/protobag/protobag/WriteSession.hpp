@@ -6,7 +6,7 @@
 #include "protobag/Entry.hpp"
 #include "protobag/archive/Archive.hpp"
 
-#include "ProtobagMsg.pb.h"
+#include "protobag_msg/ProtobagMsg.pb.h"
 
 namespace protobag {
 

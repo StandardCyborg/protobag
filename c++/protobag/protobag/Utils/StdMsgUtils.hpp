@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "ProtobagMsg.pb.h"
+#include "protobag_msg/ProtobagMsg.pb.h"
 
 namespace protobag {
 

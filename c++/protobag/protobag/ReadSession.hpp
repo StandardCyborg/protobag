@@ -8,7 +8,7 @@
 #include "protobag/archive/Archive.hpp"
 #include "protobag/Utils/Result.hpp"
 
-#include "ProtobagMsg.pb.h"
+#include "protobag_msg/ProtobagMsg.pb.h"
 
 namespace protobag {
 
