@@ -1,0 +1,44 @@
+PODS:
+  - FMTCocoa (6.2.0)
+  - GTestCpp (1.10.0)
+  - LibArchiveCocoa (3.4.2)
+  - ProtobagCocoa (0.0.1):
+    - FMTCocoa (~> 6.2.0)
+    - LibArchiveCocoa (~> 3.4.2)
+    - "Protobuf-C++ (~> 3.11)"
+  - ProtobagCocoaTest (0.0.1):
+    - GTestCpp (~> 1.10.0)
+    - ProtobagCocoa (~> 0.0.1)
+  - "Protobuf-C++ (3.11.4)"
+
+DEPENDENCIES:
+  - GTestCpp (from `GTestCpp.podspec.json`)
+  - ProtobagCocoa (from `../../ProtobagCocoa.podspec.json`)
+  - ProtobagCocoaTest (from `ProtobagCocoaTest.podspec.json`)
+
+SPEC REPOS:
+  "git@github.com:StandardCyborg/SCCocoaPods.git":
+    - FMTCocoa
+    - LibArchiveCocoa
+  https://github.com/CocoaPods/Specs.git:
+    - "Protobuf-C++"
+
+EXTERNAL SOURCES:
+  GTestCpp:
+    :podspec: GTestCpp.podspec.json
+  ProtobagCocoa:
+    :podspec: "../../ProtobagCocoa.podspec.json"
+  ProtobagCocoaTest:
+    :podspec: ProtobagCocoaTest.podspec.json
+
+SPEC CHECKSUMS:
+  FMTCocoa: 2c88bc1bc81b8dd1c92d62622bd5bf4d1c55170e
+  GTestCpp: 05d050f33128e68917f0797b8d328f3ea459ca58
+  LibArchiveCocoa: 72d4390ba6fe9bcc22251fd16757b03b93233226
+  ProtobagCocoa: 5deb183a917f7d460b6d2e55b72c12e7de5fcb95
+  ProtobagCocoaTest: 13f4e5fbaf721a2ebc1d46a10b6cf76f56b0b531
+  "Protobuf-C++": 3c3d18b67e73e92b94d72768a449f3cee3439450
+
+PODFILE CHECKSUM: 1f643ff6a7eedbd274540de299c68b69fcd06081
+
+COCOAPODS: 1.9.1
