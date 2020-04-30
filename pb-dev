@@ -15,8 +15,8 @@ import sys
 ###############################################################################
 ## Env Configuration
 
-
-
+CONTAINER_NAME = 'protobag-dev-' + os.environ.get('USER', '')
+CONTAINER_IMAGE = 'protobag' # need version  ---------------------------------------------------------------
 
 ###############################################################################
 ## Setup Hints
@@ -141,24 +141,23 @@ def raise_if_no_docker():
 
 def create_arg_parser():
   import argparse
-  
+
   parser = argparse.ArgumentParser(
                       description=__doc__,
                       formatter_class=argparse.RawDescriptionHelpFormatter)
-  
+
   # Configuration
   parser.add_argument(
     '--root', default=os.path.dirname(os.path.abspath(__file__)),
     help='Use source at this root directory [default %(default)s]')
-  
+
   # Actions
   parser.add_argument(
     '--build-env', default=False, action='store_true',
     help='Build the Dockerized dev env')
   parser.add_argument(
-    '--setup-osx', default=False, action='store_true',
-    help='Install dependencies on your Mac (Running OSX >=10.15) so that '
-         'you can build and run Protobag locally')
+    '--shell', default=False, action='store_true',
+    help='Drop into a dockerized dev environment')
   parser.add_argument(
     '--post-release', default=False, action='store_true',
     help='Run the post-release workflow; run this on master after merging '
@@ -172,8 +171,9 @@ def build_env(args):
 
   # TODO(tag with version etc)
   CMD = """
-    docker build -t protobag-dev -f {dockerfile} {docker_root}
+    docker build -t {image} -f {dockerfile} {docker_root}
   """.format(
+    image=CONTAINER_IMAGE,
     dockerfile=os.path.join(args.root, 'docker/Dockerfile'),
     docker_root=args.root)
   
@@ -192,6 +192,30 @@ def post_release(args):
   run_cmd(CMD)
 
 
+def start_container(src_root, container_name=CONTAINER_NAME, mnt_local_root=True):
+  local_mount = ''
+  if mnt_local_root:
+    local_mount = '-v %s:/opt/protobag:z' % src_root
+
+  CMD = """
+      docker run
+        --name {container_name}
+        -d -it -P --net=host
+        {local_mount}
+        -w /opt/protobag
+          {docker_image} sleep infinity || docker start {container_name} || true
+    """.format(
+          container_name=container_name,
+          local_mount=local_mount,
+          docker_image=CONTAINER_IMAGE)
+  run_cmd(CMD)
+
+
+def enter_container(container_name=CONTAINER_NAME):
+  EXEC_CMD = 'docker exec -it %s bash' % container_name
+  os.execvp("docker", EXEC_CMD.split(' '))
+
+
 def main(args=None):
   if args is None:
     parser = create_arg_parser()
@@ -201,6 +225,9 @@ def main(args=None):
     build_env(args)
   elif args.post_release:
     post_release(args)
+  elif args.shell:
+    start_container(args.root)
+    enter_container()
 
 if __name__ == '__main__':
   main()

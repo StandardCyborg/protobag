@@ -80,14 +80,16 @@ set(protobag_srcs ${protobag_srcs} ${pb_srcs})
 set(protobag_dep_libs ${protobag_dep_libs} ${LibArchive_LIBRARIES})
 
 set(protobag_dep_libs ${protobag_dep_libs} ${PROTOBUF_LIBRARIES})
-protobuf_generate_cpp(
-  PB_PROTO_SRCS PB_PROTO_HDRS
-  protobag/protobag_msg/ProtobagMsg.proto)
-message ("PB_PROTO_SRCS = ${PB_PROTO_SRCS}") # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-message ("PB_PROTO_HDRS = ${PB_PROTO_HDRS}")
-error("fixme proto location")
-set(protobag_srcs ${protobag_srcs} ${PB_PROTO_SRCS})
-set(protobag_headers ${protobag_headers} ${PB_PROTO_HDRS})
+
+# FIXME --------------------------------------------------------------------------------------------
+#protobuf_generate_cpp(
+#  PB_PROTO_SRCS PB_PROTO_HDRS
+#  protobag/protobag_msg/ProtobagMsg.proto)
+#message ("PB_PROTO_SRCS = ${PB_PROTO_SRCS}") # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+#message ("PB_PROTO_HDRS = ${PB_PROTO_HDRS}")
+#error("fixme proto location")
+#set(protobag_srcs ${protobag_srcs} ${PB_PROTO_SRCS})
+#set(protobag_headers ${protobag_headers} ${PB_PROTO_HDRS})
 
 
 set(protobag_dep_libs ${protobag_dep_libs} fmt::fmt-header-only)
@@ -121,6 +123,24 @@ install(
   DESTINATION "${INSTALL_INCLUDE_DIR}"
   FILES_MATCHING PATTERN "*.hpp")
 
+
+###
+### Python Module (via pybind11) protobag_native
+###
+
+find_package(pybind11 REQUIRED)
+pybind11_add_module(
+  protobag_native
+  SHARED
+  protobag_native/protobag_native.cpp)
+target_link_libraries(
+  protobag_native
+  PRIVATE
+  protobag
+  ${protobag_dep_libs})
+add_test(
+  NAME test_protobag_native
+  COMMAND bash -c "python3 -c 'import protobag_native; print(protobag_native.foo())'") # TODO make this a selftest!!
 
 
 ###

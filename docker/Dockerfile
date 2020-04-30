@@ -35,6 +35,7 @@ RUN \
 RUN \
     apt-get update && \
     apt-get install -y \
+        git \
         less \
         unzip \
         wget \
@@ -96,6 +97,24 @@ RUN \
     make -j `nproc` && \
     make test && \
     make install
+
+
+# pybind11
+RUN \
+    cd /tmp && \
+    wget https://github.com/pybind/pybind11/archive/v2.5.0.tar.gz && \
+    tar xfz v2.5.0.tar.gz && \
+    mv pybind11-2.5.0 /opt/pybind11 && \
+    cd /opt/pybind11 && \
+    mkdir -p build && \
+    cd build && \
+        cmake -DCMAKE_BUILD_TYPE=Debug -DPYBIND11_WERROR=ON -DDOWNLOAD_CATCH=ON  .. && \
+        make pytest -j `nproc` && \
+        make cpptest -j `nproc` && \
+    rm -rf ./* && \
+        cmake .. && \
+        make -j `nproc` && \
+        make install
 
 
 # Include a build of protobag
