@@ -13,10 +13,10 @@
     "tag": "v0.0.1"
   },
   "public_header_files": [
-	"c++/protobag_test/**/*.{hpp,h,cpp,cc}"
+	  "c++/protobag_test/**/*.{hpp,h,cpp,cc}"
   ],
   "source_files": [
-	"c++/protobag_test/**/*.{hpp,h,cpp,cc}"
+    "c++/protobag_test/**/*.{hpp,h,cpp,cc}"
   ],
   "header_mappings_dir": "c++/protobag_test",
   "platforms": {
@@ -25,17 +25,15 @@
   },
   "dependencies": {
     "ProtobagCocoa": "~> 0.0.1",
-	"GTestCpp": "~> 1.10.0"
+	  "GTestCpp": "~> 1.10.0"
   },
   "pod_target_xcconfig": {
     "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
-    "CLANG_CXX_LIBRARY": "libc++",
-    "OTHER_CPLUSPLUSFLAGS": "-DFMT_HEADER_ONLY=1"
+    "CLANG_CXX_LIBRARY": "libc++"
   },
   "user_target_xcconfig": {
     "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
-    "CLANG_CXX_LIBRARY": "libc++",
-    "OTHER_CPLUSPLUSFLAGS": "-DFMT_HEADER_ONLY=1"
+    "CLANG_CXX_LIBRARY": "libc++"
   },
   "libraries": ["c++", "iconv"]
 }
