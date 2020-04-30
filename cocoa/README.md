@@ -1,1 +1,1 @@
-todo describe cocoa pod
+todo describe xcode project and stuff

@@ -110,14 +110,30 @@ def is_cmd_missing(cmd):
 
 
 def raise_if_no_docker():
+  p = platform.system()
   if is_cmd_missing('docker -v'):
-    p = platform.system()
     if p == 'Linux':
       raise ValueError("\n\nMissing Docker \n\n %s" % INSTALL_DOCKER_LINUX)
     elif p == 'Darwin':
       raise ValueError("\n\nMissing Docker \n\n %s" % INSTALL_DOCKER_MAC)
     else:
       raise ValueError("Unsupported platform: %s" % p)
+
+  # Check for docker-machine on a Mac
+  if p == 'Darwin':
+    try:
+      run_cmd("docker ps", quiet=True)
+    except Exception as e:
+      print(e)
+      raise ValueError("""
+        Docker client could not connect to daemon; is your docker-machine VM
+        running?  Try 
+          $ eval $(docker-machine env) 
+        or, if your machine is down, run this first:
+          $ docker-machine start default
+        Error: %s
+        """ % (e,))
+    
 
 
 ###############################################################################
@@ -139,6 +155,10 @@ def create_arg_parser():
   parser.add_argument(
     '--build-env', default=False, action='store_true',
     help='Build the Dockerized dev env')
+  parser.add_argument(
+    '--setup-osx', default=False, action='store_true',
+    help='Install dependencies on your Mac (Running OSX >=10.15) so that '
+         'you can build and run Protobag locally')
   parser.add_argument(
     '--post-release', default=False, action='store_true',
     help='Run the post-release workflow; run this on master after merging '
