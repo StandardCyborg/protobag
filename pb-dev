@@ -159,6 +159,9 @@ def create_arg_parser():
     '--shell', default=False, action='store_true',
     help='Drop into a dockerized dev environment')
   parser.add_argument(
+    '--shell-rm', default=False, action='store_true',
+    help='Delete the dockerized dev environment')
+  parser.add_argument(
     '--post-release', default=False, action='store_true',
     help='Run the post-release workflow; run this on master after merging '
          'your feature branch')
@@ -228,6 +231,10 @@ def main(args=None):
   elif args.shell:
     start_container(args.root)
     enter_container()
+  elif args.shell_rm:
+    CMD = "docker rm -f %s || true" % CONTAINER_NAME
+    run_cmd(CMD)
+
 
 if __name__ == '__main__':
   main()

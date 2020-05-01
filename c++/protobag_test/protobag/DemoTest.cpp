@@ -156,9 +156,13 @@ TEST(DemoTest, TestDemo) {
 
     LOG("");
     LOG("");
+    auto maybe_index = ReadSession::GetIndex(protobag_path);
+    if (!maybe_index.IsOk()) {
+      throw new std::runtime_error(maybe_index.error);
+    }
     LOG(
       "Protobag Index:" << std::endl <<
-      ToPBTxt(reader.GetIndex()));
+      ToPBTxt(*maybe_index.value));
   }
 }
 

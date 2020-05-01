@@ -41,11 +41,11 @@ public:
 
   // TODO TypeResolver halper ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+  // Utilities
   
-  // TODO for demo only need refactor ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  BagMeta GetIndex() {
-    return *ReadLatestIndex(_archive).value;
-  }
+  // Read just the index from `path`
+  static Result<BagMeta> GetIndex(const std::string &path);
 
 protected:
   Spec _spec;

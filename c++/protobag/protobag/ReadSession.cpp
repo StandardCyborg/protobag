@@ -69,6 +69,19 @@ std::cout << "entryname " << entryname << std::endl;
 }
 
 
+Result<BagMeta> ReadSession::GetIndex(const std::string &path) {
+  auto maybe_r = ReadSession::Create(ReadSession::Spec::ReadAllFromPath(path));
+  if (!maybe_r.IsOk()) {
+    return {.error = maybe_r.error};
+  }
+
+  auto rp = *maybe_r.value;
+  if (!rp) {
+    return {.error = fmt::format("Failed to read {}", path)};
+  }
+
+  return ReadLatestIndex(rp->_archive);
+}
 
 
 std::string ReadSession::GetTopicFromEntryname(const std::string &entryname) {
