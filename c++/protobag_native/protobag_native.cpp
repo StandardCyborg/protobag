@@ -5,7 +5,10 @@
 
 #include <fmt/format.h>
 
-#include <protobag/Protobag.hpp>
+#include <protobag/Protobag.hpp> // fixme ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#include <protobag/ReadSession.hpp>
+#include <protobag/WriteSession.hpp>
 #include <protobag/Utils/PBUtils.hpp>
 #include <protobag_msg/ProtobagMsg.pb.h>
 
@@ -14,12 +17,12 @@ namespace py = pybind11;
 using namespace protobag;
 
 // A convenience SERDES to avoid pybind boxing of StampedMessage
-struct entry {
+struct native_entry final {
   std::string topic;
   int64_t sec = 0;
   int32_t nanos = 0;
   std::string type_url;
-  std::string msg_bytes;
+  py::bytes msg_bytes;
 
   Entry AsEntry() {
     StampedMessage stamped_msg;
@@ -30,7 +33,7 @@ struct entry {
     return Entry{.topic = topic, .stamped_msg = stamped_msg};
   }
 
-  static entry FromEntry(const Entry &entry) {
+  static native_entry FromEntry(const Entry &entry) {
     return {
       .topic = entry.topic,
       .sec = entry.stamped_msg.timestamp().seconds(),
@@ -41,33 +44,118 @@ struct entry {
   }
 };
 
-struct read_sess_generator final {
-  ReadSession::Ptr r;
 
-  entry next() {
-    if (!r) {
+class Reader final {
+  void Start(const std::string &path, cons std::string &sel_pb_bytes) {
+    auto maybe_sel = PBFactory::LoadFromContainer<Selection>(sel_pb_bytes);
+    if (!maybe_sel.IsOk()) {
+      throw std::invalid_argument(
+        fmt::format(
+          "Failed to decode a Selection; expected a protobuf Selection "
+          "message in either binary or text_format form. Error {}",
+          maybe_sel.error));
+    }
+
+    const Selection &sel = *maybe_sel.value;
+    auto maybe_rp = ReadSession::Create({
+      .archive_spec = {
+        .path = path,
+        .mode = "read",
+      },
+      .selection = sel,
+    });
+    if (!maybe_rp.IsOk()) {
+      throw std::runtime_error(maybe_rp.error);
+    }
+
+    _read_sess = *maybe_rp.value;
+  }
+
+  void Next() {
+    if (!_read_sess) {
       throw std::runtime_error("Invalid read session");
     }
-    auto &reader = *r;
+    auto &reader = *r._read_sess;
 
     auto maybe_entry = reader.GetNext();
     if (maybe_entry.IsEndOfSequence()) {
       throw pybind11::stop_iteration();
-    }
-
-    if (!maybe_entry.IsOk()) {
+    } else if (!maybe_entry.IsOk()) {
       throw std::runtime_error(maybe_entry.error);
     }
 
-    return entry::FromEntry(*maybe_entry.value);
+    return native_entry::FromEntry(*maybe_entry.value);
   }
+
+protected:
+  ReadSession::Ptr _read_sess;
 };
+
+
+class Writer final {
+
+  void Start(WriteSession::Spec s) {
+    s.mode = "write";
+    auto maybe_w = WriteSession::Create(s);
+    if (!maybe_w.IsOk()) {
+      throw std::invalid_argument(
+        fmt::format("Failed to create write session. Error {}", maybe_w.error));
+    }
+    _write_sess = *maybe_w.value;
+  }
+
+  void WriteEntry(const native_entry &nentry) {
+    if (!_write_sess) {
+      throw std::runtime_error("Invalid write session");
+    }
+
+    auto &writer = *_write_sess;
+    auto maybe_ok = writer.WriteEntry(nentry.AsEntry);
+    if (!maybe_ok.IsOk()) {
+      throw std::runtime_error(maybe_ok.error);
+    }
+  }
+
+protected:
+  WriteSession::Ptr _write_sess;
+};
+
 
 PYBIND11_MODULE(protobag_native, m) {
   m.doc() = 
     "protobag_native: a pybind11-based interface to the Protobag C++ back-end";
 
   m.def("foo", &protobag::foo, "yo momma"); // fixme ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+
+  py::class_<native_entry>(m, "native_entry", "Handle to a native entry")
+    .def(py::init<>())
+    .def_readwrite("topic", &native_entry::topic)
+    .def_readwrite("sec", &native_entry::sec)
+    .def_readwrite("nanos", &native_entry::nanos)
+    .def_readwrite("type_url", &native_entry::type_url)
+    .def_readwrite("msg_bytes", &native_entry::msg_bytes)
+
+  py::class_<Reader>(m, "Reader", "Handle to a Protobag ReadSession")
+    .def(py::init<>(), "Create a null session")
+    .def("start", &Reader::Start, "Begin reading the given Selection")
+    .def("__iter__", [](Reader &r) -> Reader& { return r; })
+    .def("next", &Reader::Next, "Generator interface: emit the next entry")
+    .def("__next__", &Reader::Next, "Generator interface: emit the next entry")
+
+  py::class_<WriteSession::Spec>(m, "WriterSpec", "Spec for a WriteSession")
+    .def(py::init<>())
+    .def_readwrite("save_meta_index", &WriteSession::Spec::save_meta_index)
+    .def_readwrite("path", &WriteSession::Spec::archive_spec::path)
+    .def_readwrite("format", &WriteSession::Spec::archive_spec::format)
+
+  py::class_<Writer>(m, "Writer", "Handle to a Protobag WriteSession")
+    .def(py::init<>(), "Create a null session")
+    .def("start", &Writer::Start, "Begin writing given a WriteSession::Spec")
+    .def("__iter__", [](Reader &r) -> Reader& { return r; })
+    .def("write_entry", &Writer::WriteEntry, "Write the given `native_entry`")
+    
+
+
 
   py::class_<Protobag>(m, "Protobag", "Handle to a single Protobag archive")
     .def(py::init<>(),
@@ -77,20 +165,7 @@ PYBIND11_MODULE(protobag_native, m) {
           py::arg("path"))
     .def("read_entries", 
       [](const Protobag &bag, const std::string &sel_pb_bytes) {
-          auto maybe_sel = 
-            PBFactory::LoadFromContainer<Selection>(sel_pb_bytes);
-          if (!maybe_sel.IsOk()) {
-            throw std::invalid_argument(
-              fmt::format(
-                "Failed to decode a Selection; expected a protobuf Selection "
-                "message in either binary or text_format form. Error {}",
-                maybe_sel.error));
-          }
-
-          auto maybe_rp = bag.ReadEntries(*maybe_sel.value);
-          if (!maybe_rp.IsOk()) {
-            throw std::runtime_error(maybe_rp.error);
-          }
+          
 
           return read_sess_generator{.r = *maybe_rp.value};
       },
