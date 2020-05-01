@@ -100,6 +100,7 @@ RUN \
 
 
 # pybind11
+RUN pip3 install numpy
 RUN \
     cd /tmp && \
     wget https://github.com/pybind/pybind11/archive/v2.5.0.tar.gz && \
@@ -108,23 +109,25 @@ RUN \
     cd /opt/pybind11 && \
     mkdir -p build && \
     cd build && \
-        cmake -DCMAKE_BUILD_TYPE=Debug -DPYBIND11_WERROR=ON -DDOWNLOAD_CATCH=ON  .. && \
+	    echo "Building for test" && \
+        cmake -DCMAKE_BUILD_TYPE=Debug -DPYBIND11_WERROR=ON -DDOWNLOAD_CATCH=ON -DCMAKE_CXX_FLAGS="-fPIC -std=c++17 -stdlib=libc++" .. && \
         make pytest -j `nproc` && \
         make cpptest -j `nproc` && \
     rm -rf ./* && \
+	    echo "Building for install" && \
         cmake .. && \
         make -j `nproc` && \
         make install
 
 
 # Include a build of protobag
-COPY ./c++/CMakeLists.txt /opt/protobag/CMakeLists.txt
-COPY ./c++/protobag /opt/protobag/protobag
-COPY ./c++/protobag_test /opt/protobag/protobag_test
+COPY . /opt/protobag
 WORKDIR /opt/protobag
 RUN \
+    cd c++ && \
     mkdir -p build && cd build && \
     cmake .. && \
     make -j `nproc` && \
     make test && \
     make install
+
