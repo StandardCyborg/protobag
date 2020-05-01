@@ -53,7 +53,7 @@ inline
 void ExpectWriteOk(WriteSession &w, const Entry &entry) {
   OkOrErr result = w.WriteEntry(entry);
   if (!result.IsOk()) {
-    throw new std::runtime_error(result.error);
+    throw std::runtime_error(result.error);
   }
 }
 
@@ -61,7 +61,7 @@ template <typename MT>
 std::string ToPBTxt(const MT &msg) {
   auto maybe_pb_txt = PBFactory::ToTextFormatString(msg);
   if (!maybe_pb_txt.IsOk()) {
-    throw new std::runtime_error(maybe_pb_txt.error);
+    throw std::runtime_error(maybe_pb_txt.error);
   }
   return *maybe_pb_txt.value;
 }
@@ -70,7 +70,7 @@ template <typename MT>
 std::string UnpackedToPBTxt(const StampedMessage &s) {
   auto maybe_msg = PBFactory::UnpackFromAny<MT>(s.msg());
   if (!maybe_msg.IsOk()) {
-    throw new std::runtime_error(maybe_msg.error);
+    throw std::runtime_error(maybe_msg.error);
   }
   return ToPBTxt(*maybe_msg.value);
 }
@@ -158,7 +158,7 @@ TEST(DemoTest, TestDemo) {
     LOG("");
     auto maybe_index = ReadSession::GetIndex(protobag_path);
     if (!maybe_index.IsOk()) {
-      throw new std::runtime_error(maybe_index.error);
+      throw std::runtime_error(maybe_index.error);
     }
     LOG(
       "Protobag Index:" << std::endl <<

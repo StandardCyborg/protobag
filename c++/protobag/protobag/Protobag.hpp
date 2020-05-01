@@ -12,6 +12,8 @@ int foo();
 
 class Protobag final {
 public:
+  Protobag() = default;
+  explicit Protobag(const std::string &p) : path(p) { }
   
   std::string path;
 
@@ -20,9 +22,14 @@ public:
     return WriteSession::Create(s);
   }
 
-  Result<ReadSession::Ptr> ReadEntries(ReadSession::Spec s={}) const {
-    s.archive_spec.path = path;
-    return ReadSession::Create(s);
+  Result<ReadSession::Ptr> ReadEntries(const Selection &sel) const {
+    return ReadSession::Create({
+      .archive_spec = {
+        .path = path,
+        .mode = "read",
+      },
+      .selection = sel
+    });
   }
 
   BagMeta GetIndex() const;
