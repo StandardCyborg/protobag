@@ -16,6 +16,6 @@ target 'protobag_native' do
   pod 'ProtobagCocoa', :podspec => '../../ProtobagCocoa.podspec.json'
   pod 'ProtobagCocoaTest', :podspec => 'ProtobagCocoaTest.podspec.json'
   pod 'GTestCpp', :podspec => 'GTestCpp.podspec.json'
-  # pod 'PyBind11C++', :podspec => 'PyBind11C++.podspec'
+  pod 'PyBind11C++', :podspec => 'PyBind11C++.podspec'
   pod 'ProtobagPyNative', :podspec => 'ProtobagPyNative.podspec'
 end

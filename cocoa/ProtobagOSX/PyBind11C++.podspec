@@ -21,21 +21,21 @@ Pod::Spec.new do |spec|
   spec.public_header_files = 'include/**/*.{h,hpp}'
   spec.header_mappings_dir = 'include'
 
-  python_includes = `python3-config --includes`
-  puts('python_includes')
-  puts(python_includes)
+  # python_includes = `python3-config --includes`
+  # puts('python_includes')
+  # puts(python_includes)
 
-  cpp_flags = '"$(inherited)" -undefined dynamic_lookup ' + python_includes
-  spec.pod_target_xcconfig = {
-    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
-    'CLANG_CXX_LIBRARY' => 'libc++',
-    'OTHER_CPLUSPLUSFLAGS' => cpp_flags,
-  }
+  # cpp_flags = '"$(inherited)" -undefined dynamic_lookup ' + python_includes
+  # spec.pod_target_xcconfig = {
+  #   'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
+  #   'CLANG_CXX_LIBRARY' => 'libc++',
+  #   'OTHER_CPLUSPLUSFLAGS' => cpp_flags,
+  # }
 
-  spec.user_target_xcconfig = {
-    'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
-    'CLANG_CXX_LIBRARY' => 'libc++',
-    'OTHER_CPLUSPLUSFLAGS' => cpp_flags,
-  }
+  # spec.user_target_xcconfig = {
+  #   'CLANG_CXX_LANGUAGE_STANDARD' => 'c++17',
+  #   'CLANG_CXX_LIBRARY' => 'libc++',
+  #   'OTHER_CPLUSPLUSFLAGS' => cpp_flags,
+  # }
 
 end

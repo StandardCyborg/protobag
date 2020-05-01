@@ -21,8 +21,8 @@ Pod::Spec.new do |spec|
   spec.public_header_files = ''
   spec.header_mappings_dir = ''
 
-  # python_includes = `python3-config --includes`
-  python_includes = `python3 -m pybind11 --includes`
+  python_includes = `python3-config --includes`
+  # python_includes = `python3 -m pybind11 --includes`
   puts('python_includes')
   puts(python_includes)
 
@@ -39,7 +39,9 @@ Pod::Spec.new do |spec|
     'OTHER_CPLUSPLUSFLAGS' => cpp_flags,
   }
 
-  spec.dependencies = {'ProtobagCocoa' => '~> 0.0.1'}
+  spec.dependencies = {
+    'ProtobagCocoa' => '~> 0.0.1',
+    "PyBind11C++" => "~> 2.5.0"
+  }
 
-  # , "PyBind11C++": "~> 2.5.0"
 end
