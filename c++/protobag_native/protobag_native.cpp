@@ -24,7 +24,7 @@ struct native_entry final {
   std::string type_url;
   py::bytes msg_bytes;
 
-  Entry AsEntry() {
+  Entry AsEntry() const {
     StampedMessage stamped_msg;
     *stamped_msg.mutable_msg()->mutable_type_url() = type_url;
     *stamped_msg.mutable_msg()->mutable_value() = msg_bytes;
@@ -46,7 +46,8 @@ struct native_entry final {
 
 
 class Reader final {
-  void Start(const std::string &path, cons std::string &sel_pb_bytes) {
+public:
+  void Start(const std::string &path, const std::string &sel_pb_bytes) {
     auto maybe_sel = PBFactory::LoadFromContainer<Selection>(sel_pb_bytes);
     if (!maybe_sel.IsOk()) {
       throw std::invalid_argument(
@@ -71,11 +72,11 @@ class Reader final {
     _read_sess = *maybe_rp.value;
   }
 
-  void Next() {
+  native_entry Next() {
     if (!_read_sess) {
       throw std::runtime_error("Invalid read session");
     }
-    auto &reader = *r._read_sess;
+    auto &reader = *_read_sess;
 
     auto maybe_entry = reader.GetNext();
     if (maybe_entry.IsEndOfSequence()) {
@@ -93,9 +94,9 @@ protected:
 
 
 class Writer final {
-
+public:
   void Start(WriteSession::Spec s) {
-    s.mode = "write";
+    s.archive_spec.mode = "write";
     auto maybe_w = WriteSession::Create(s);
     if (!maybe_w.IsOk()) {
       throw std::invalid_argument(
@@ -110,7 +111,7 @@ class Writer final {
     }
 
     auto &writer = *_write_sess;
-    auto maybe_ok = writer.WriteEntry(nentry.AsEntry);
+    auto maybe_ok = writer.WriteEntry(nentry.AsEntry());
     if (!maybe_ok.IsOk()) {
       throw std::runtime_error(maybe_ok.error);
     }
@@ -133,49 +134,59 @@ PYBIND11_MODULE(protobag_native, m) {
     .def_readwrite("sec", &native_entry::sec)
     .def_readwrite("nanos", &native_entry::nanos)
     .def_readwrite("type_url", &native_entry::type_url)
-    .def_readwrite("msg_bytes", &native_entry::msg_bytes)
+    .def_readwrite("msg_bytes", &native_entry::msg_bytes);
 
   py::class_<Reader>(m, "Reader", "Handle to a Protobag ReadSession")
     .def(py::init<>(), "Create a null session")
     .def("start", &Reader::Start, "Begin reading the given Selection")
     .def("__iter__", [](Reader &r) -> Reader& { return r; })
     .def("next", &Reader::Next, "Generator interface: emit the next entry")
-    .def("__next__", &Reader::Next, "Generator interface: emit the next entry")
+    .def("__next__", &Reader::Next, "Generator interface: emit the next entry");
 
   py::class_<WriteSession::Spec>(m, "WriterSpec", "Spec for a WriteSession")
     .def(py::init<>())
     .def_readwrite("save_meta_index", &WriteSession::Spec::save_meta_index)
-    .def_readwrite("path", &WriteSession::Spec::archive_spec::path)
-    .def_readwrite("format", &WriteSession::Spec::archive_spec::format)
+    .def_property("path", 
+      [](WriteSession::Spec &s) { return s.archive_spec.path; },
+      [](WriteSession::Spec &s, const std::string &v) {
+        s.archive_spec.path = v;
+      },
+      "Write to this path")
+    .def_property("format", 
+      [](WriteSession::Spec &s) { return s.archive_spec.format; },
+      [](WriteSession::Spec &s, const std::string &v) {
+        s.archive_spec.format = v;
+      },
+      "Write in this format");
 
   py::class_<Writer>(m, "Writer", "Handle to a Protobag WriteSession")
     .def(py::init<>(), "Create a null session")
     .def("start", &Writer::Start, "Begin writing given a WriteSession::Spec")
     .def("__iter__", [](Reader &r) -> Reader& { return r; })
-    .def("write_entry", &Writer::WriteEntry, "Write the given `native_entry`")
+    .def("write_entry", &Writer::WriteEntry, "Write the given `native_entry`");
     
 
 
 
-  py::class_<Protobag>(m, "Protobag", "Handle to a single Protobag archive")
-    .def(py::init<>(),
-          "Create a null protobag")
-    .def(py::init<const std::string &>(),
-          "Read or write a Protobag to the given path",
-          py::arg("path"))
-    .def("read_entries", 
-      [](const Protobag &bag, const std::string &sel_pb_bytes) {
+  // py::class_<Protobag>(m, "Protobag", "Handle to a single Protobag archive")
+  //   .def(py::init<>(),
+  //         "Create a null protobag")
+  //   .def(py::init<const std::string &>(),
+  //         "Read or write a Protobag to the given path",
+  //         py::arg("path"))
+  //   .def("read_entries", 
+  //     [](const Protobag &bag, const std::string &sel_pb_bytes) {
           
 
-          return read_sess_generator{.r = *maybe_rp.value};
-      },
-      "Create & return a generator that emits entries for the given Selection",
-      py::arg("selection"));
+  //         return read_sess_generator{.r = *maybe_rp.value};
+  //     },
+  //     "Create & return a generator that emits entries for the given Selection",
+  //     py::arg("selection"));
 
-  py::class_<read_sess_generator>(
-    m, "read_sess_generator", "A generator emitting entries in a Protobag")
+  // py::class_<read_sess_generator>(
+  //   m, "read_sess_generator", "A generator emitting entries in a Protobag")
     
-    .def(py::init<>())
-    .def("next", &read_sess_generator::next);
+  //   .def(py::init<>())
+  //   .def("next", &read_sess_generator::next);
 
 }
