@@ -56,9 +56,9 @@ RUN \
 RUN \
     apt-get update && apt-get install -y autoconf libtool zlib1g-dev && \
     cd /tmp && \
-    wget https://github.com/protocolbuffers/protobuf/archive/v3.11.4.tar.gz && \
-    tar xfz v3.11.4.tar.gz && \
-    mv protobuf-3.11.4 /opt/protobuf && \
+    wget https://github.com/protocolbuffers/protobuf/archive/v3.11.3.tar.gz && \
+    tar xfz v3.11.3.tar.gz && \
+    mv protobuf-3.11.3 /opt/protobuf && \
     cd /opt/protobuf && \
     rm -rf /opt/protobuf/third_party/googletest && \
     ln -s /opt/gtest /opt/protobuf/third_party/googletest && \

@@ -132,11 +132,11 @@ find_package(pybind11 REQUIRED)
 pybind11_add_module(
   protobag_native
   SHARED
+  ${protobag_srcs}
   protobag_native/protobag_native.cpp)
 target_link_libraries(
   protobag_native
   PRIVATE
-  protobag
   ${protobag_dep_libs})
 add_test(
   NAME test_protobag_native

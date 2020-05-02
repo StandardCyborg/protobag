@@ -4,9 +4,10 @@ import sys
 import platform
 import subprocess
 
-from setuptools import setup, Extension
+from setuptools import setup, Extension, Distribution
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
+
 
 ## Based upon https://github.com/pybind/cmake_example/blob/11a644072b12ad78352b6e6649db9dfe7f406676/setup.py#L1
 
@@ -27,6 +28,10 @@ PROTOBAG_CXX_SRC_ROOT = os.environ.get(
 assert os.path.exists(PROTOBAG_CXX_SRC_ROOT), \
   "Couldn't find source root at %s" % PROTOBAG_CXX_SRC_ROOT
 
+class BinaryDistribution(Distribution):
+  def has_ext_modules(foo):
+    return True
+
 class CMakeExtension(Extension):
   def __init__(self, name, sourcedir=''):
     Extension.__init__(self, name, sources=[])
@@ -34,10 +39,11 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
   def run(self):
-    try:
-      run_cmd("cmake --version")
-    except OSError:
-      raise RuntimeError("CMake must be installed to build the following extensions: " +
+    if platform.system() != "Darwin":
+      try:
+        run_cmd("cmake --version")
+      except OSError:
+        raise RuntimeError("CMake must be installed to build the following extensions: " +
                  ", ".join(e.name for e in self.extensions))
 
     for ext in self.extensions:
@@ -63,9 +69,11 @@ class CMakeBuild(build_ext):
       if sys.maxsize > 2**32:
         cmake_args += ['-A', 'x64']
       build_args += ['--', '/m']
+    elif platform.system() == "Darwin":
+      assert False, "TODO run xcode"
     else:
       cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
-      build_args += ['--', '-j%s' % os.cpu_count()]
+      build_args += ['--', '-j%s' % os.cpu_count(), 'protobag_native']
 
     env = os.environ.copy()
     env['CXXFLAGS'] = '{} -DVERSION_INFO=\\"{}\\"'.format(env.get('CXXFLAGS', ''),
@@ -84,11 +92,22 @@ setup(
   author_email='paul@standardcyborg.com',
   description='Protobag for python',
   long_description='',
-  ext_modules=[CMakeExtension('protobag_native')],
+  license='Apache License 2.0',
+  python_requires=">=3.6",
+  
+  packages=['protobag'],
+  ext_modules=[CMakeExtension('protobag.protobag_native')],
+  # include_package_data=True,
+  # package_dir={"": "protobag_native"},
+  # package_data={
+  #   'protobag': ['libprotobag.so'],
+  # },
   cmdclass=dict(build_ext=CMakeBuild),
+  zip_safe=False,
+  distclass=BinaryDistribution,
+
   install_requires=INSTALL_REQUIRES,
   test_suite='protobag_test',
   setup_requires=SETUP_REQUIRES,
   tests_require=TESTS_REQUIRE,
-  zip_safe=False,
 )
