@@ -18,7 +18,7 @@
 namespace protobag {
 
 // Based upon OarphKit https://github.com/pwais/oarphkit/blob/e799e7904d5b374cb6b58cd06a42d05506e83d94/oarphkit/ok/SerializationUtils/PBUtils-inl.hpp#L1
-// TODO support protobuf arena allocation https://developers.google.com/protocol-buffers/docs/reference/arenas
+// TODO support protobuf arena allocation https://developers.google.com/protocol-buffers/docs/reference/arenas ?
 class PBFactory {
 public:
 
@@ -171,6 +171,7 @@ public:
   }
 
 
+
 protected:
 
   template <typename MT>
@@ -231,5 +232,17 @@ protected:
   }
 
 };
+
+
+// Syntactic sugar for testing and other applications.  Return a text format
+// string, or throw on error.
+template <typename MT>
+std::string PBToString(const MT &pb_msg) {
+  auto maybe_pb_txt = PBFactory::ToTextFormatString(pb_msg);
+  if (!maybe_pb_txt.IsOk()) {
+    throw std::runtime_error(maybe_pb_txt.error);
+  }
+  return *maybe_pb_txt.value;
+}
 
 } /* namespace protobag */

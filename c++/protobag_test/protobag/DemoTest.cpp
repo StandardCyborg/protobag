@@ -58,21 +58,12 @@ void ExpectWriteOk(WriteSession &w, const Entry &entry) {
 }
 
 template <typename MT>
-std::string ToPBTxt(const MT &msg) {
-  auto maybe_pb_txt = PBFactory::ToTextFormatString(msg);
-  if (!maybe_pb_txt.IsOk()) {
-    throw std::runtime_error(maybe_pb_txt.error);
-  }
-  return *maybe_pb_txt.value;
-}
-
-template <typename MT>
 std::string UnpackedToPBTxt(const StampedMessage &s) {
   auto maybe_msg = PBFactory::UnpackFromAny<MT>(s.msg());
   if (!maybe_msg.IsOk()) {
     throw std::runtime_error(maybe_msg.error);
   }
-  return ToPBTxt(*maybe_msg.value);
+  return PBToString(*maybe_msg.value);
 }
 
 TEST(DemoTest, TestDemo) {
@@ -103,7 +94,7 @@ TEST(DemoTest, TestDemo) {
     for (const Entry &entry : entries_to_write) {
       ExpectWriteOk(writer, entry);
 
-      LOG("Wrote: " << ToPBTxt(entry.stamped_msg));
+      LOG("Wrote: " << PBToString(entry.stamped_msg));
     }
 
     // writer auto-closes and writes meta
@@ -147,7 +138,7 @@ TEST(DemoTest, TestDemo) {
       } else if (current.topic == "/topic2") {
         LOG("Read an int msg: " << UnpackedToPBTxt<StdMsg_Int>(current.stamped_msg));
       } else {
-        LOG("Got ??? " << ToPBTxt(current.stamped_msg));
+        LOG("Got ??? " << PBToString(current.stamped_msg));
       }
 
       LOG("");
@@ -162,7 +153,7 @@ TEST(DemoTest, TestDemo) {
     }
     LOG(
       "Protobag Index:" << std::endl <<
-      ToPBTxt(*maybe_index.value));
+      PBToString(*maybe_index.value));
   }
 }
 
