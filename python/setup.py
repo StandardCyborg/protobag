@@ -3,6 +3,7 @@ import re
 import sys
 import platform
 import subprocess
+import sysconfig
 
 from setuptools import setup, Extension, Distribution
 from setuptools.command.build_ext import build_ext
@@ -28,6 +29,12 @@ PROTOBAG_CXX_SRC_ROOT = os.environ.get(
 assert os.path.exists(PROTOBAG_CXX_SRC_ROOT), \
   "Couldn't find source root at %s" % PROTOBAG_CXX_SRC_ROOT
 
+
+PROTOBAG_OSX_ROOT = os.environ.get(
+  'PROTOBAG_OSX_ROOT',
+  os.path.join(PROTOBAG_CXX_SRC_ROOT, '../cocoa/ProtobagOSX'))
+
+
 class BinaryDistribution(Distribution):
   def has_ext_modules(foo):
     return True
@@ -39,7 +46,13 @@ class CMakeExtension(Extension):
 
 class CMakeBuild(build_ext):
   def run(self):
-    if platform.system() != "Darwin":
+    if platform.system() == "Darwin":
+      try:
+        run_cmd("xcodebuild -help")
+      except OSError:
+        raise RuntimeError("XCode must be installed to build the following extensions: " +
+                 ", ".join(e.name for e in self.extensions))
+    else:
       try:
         run_cmd("cmake --version")
       except OSError:
@@ -50,6 +63,34 @@ class CMakeBuild(build_ext):
       self.build_extension(ext)
 
   def build_extension(self, ext):
+    if platform.system() == "Darwin":
+      self._build_extension_xcode(ext)
+    else:
+      self._build_extension_cmake(ext)
+
+  def _build_extension_xcode(self, ext):
+    extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
+    # required for auto-detection of auxiliary "native" libs
+    if not extdir.endswith(os.path.sep):
+      extdir += os.path.sep
+    
+    CMD = """
+      cd {osx_root} &&
+      pod install --verbose &&
+      xcodebuild -sdk macosx -configuration Release -workspace ./ProtobagOSX.xcworkspace -scheme protobag_native
+    """.format(
+      osx_root=PROTOBAG_OSX_ROOT,
+    )
+
+    mod_name = ext.name.split('.')[-1]
+    expected_so_name = mod_name + sysconfig.get_config_var('EXT_SUFFIX')
+    expected_so_path = os.path.join(PROTOBAG_OSX_ROOT, expected_so_name)
+    assert os.path.exists(expected_so_path), "XCode failed to generate %s" % expected_so_path
+
+    CMD = "cp -v %s %s" % (expected_so_path, extdir)
+    run_cmd(CMD)
+
+  def _build_extension_cmake(self, ext):
     extdir = os.path.abspath(os.path.dirname(self.get_ext_fullpath(ext.name)))
     # required for auto-detection of auxiliary "native" libs
     if not extdir.endswith(os.path.sep):
@@ -69,8 +110,6 @@ class CMakeBuild(build_ext):
       if sys.maxsize > 2**32:
         cmake_args += ['-A', 'x64']
       build_args += ['--', '/m']
-    elif platform.system() == "Darwin":
-      assert False, "TODO run xcode"
     else:
       cmake_args += ['-DCMAKE_BUILD_TYPE=' + cfg]
       build_args += ['--', '-j%s' % os.cpu_count(), 'protobag_native']
@@ -80,7 +119,10 @@ class CMakeBuild(build_ext):
                                 self.distribution.get_version())
     if not os.path.exists(self.build_temp):
       os.makedirs(self.build_temp)
-    subprocess.check_call(['cmake', ext.sourcedir] + cmake_args, cwd=self.build_temp, env=env)
+    subprocess.check_call(
+      ['cmake', ext.sourcedir] + cmake_args,
+      cwd=self.build_temp,
+      env=env)
     subprocess.check_call([
       'cmake', '--build', '.'] + build_args,
       cwd=self.build_temp)

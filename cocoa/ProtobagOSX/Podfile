@@ -8,7 +8,8 @@ target 'ProtobagOSX' do
   pod 'ProtobagCocoa', :podspec => '../../ProtobagCocoa.podspec.json'
   pod 'ProtobagCocoaTest', :podspec => 'ProtobagCocoaTest.podspec.json'
   pod 'GTestCpp', :podspec => 'GTestCpp.podspec.json'
-  # pod 'PyBind11C++', :podspec => 'PyBind11C++.podspec'
+  pod 'LibArchiveCocoa', :podspec => '/Users/pwais/Documents/LibArchiveCocoa/LibArchiveCocoa.podspec.json'
+# pod 'PyBind11C++', :podspec => 'PyBind11C++.podspec'
   # pod 'ProtobagPyNative', :podspec => 'ProtobagPyNative.podspec'
 end
 
@@ -18,4 +19,5 @@ target 'protobag_native' do
   pod 'GTestCpp', :podspec => 'GTestCpp.podspec.json'
   pod 'PyBind11C++', :podspec => 'PyBind11C++.podspec'
   pod 'ProtobagPyNative', :podspec => 'ProtobagPyNative.podspec'
+  pod 'LibArchiveCocoa', :podspec => '/Users/pwais/Documents/LibArchiveCocoa/LibArchiveCocoa.podspec.json'
 end

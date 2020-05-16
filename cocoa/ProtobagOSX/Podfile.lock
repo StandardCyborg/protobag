@@ -17,6 +17,7 @@ PODS:
 
 DEPENDENCIES:
   - GTestCpp (from `GTestCpp.podspec.json`)
+  - LibArchiveCocoa (from `/Users/pwais/Documents/LibArchiveCocoa/LibArchiveCocoa.podspec.json`)
   - ProtobagCocoa (from `../../ProtobagCocoa.podspec.json`)
   - ProtobagCocoaTest (from `ProtobagCocoaTest.podspec.json`)
   - ProtobagPyNative (from `ProtobagPyNative.podspec`)
@@ -25,13 +26,14 @@ DEPENDENCIES:
 SPEC REPOS:
   "git@github.com:StandardCyborg/SCCocoaPods.git":
     - FMTCocoa
-    - LibArchiveCocoa
   https://github.com/CocoaPods/Specs.git:
     - "Protobuf-C++"
 
 EXTERNAL SOURCES:
   GTestCpp:
     :podspec: GTestCpp.podspec.json
+  LibArchiveCocoa:
+    :podspec: "/Users/pwais/Documents/LibArchiveCocoa/LibArchiveCocoa.podspec.json"
   ProtobagCocoa:
     :podspec: "../../ProtobagCocoa.podspec.json"
   ProtobagCocoaTest:
@@ -44,13 +46,13 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   FMTCocoa: 2c88bc1bc81b8dd1c92d62622bd5bf4d1c55170e
   GTestCpp: 05d050f33128e68917f0797b8d328f3ea459ca58
-  LibArchiveCocoa: 72d4390ba6fe9bcc22251fd16757b03b93233226
+  LibArchiveCocoa: d703f7274b56a181f23918c9d0d357f16efaa836
   ProtobagCocoa: 5deb183a917f7d460b6d2e55b72c12e7de5fcb95
   ProtobagCocoaTest: c5c983ab047b03061c4b3d2fc121355a339eec5e
   ProtobagPyNative: 0ed969edeb0d8622c64cd7ba8b70876753cace81
   "Protobuf-C++": 3c3d18b67e73e92b94d72768a449f3cee3439450
   "PyBind11C++": 8fdab4a4b1b23ac4a954dbbdb96cc867b807c18c
 
-PODFILE CHECKSUM: 877c5e5fe54ed684245bdd2966989fec8eb2d664
+PODFILE CHECKSUM: 96b3437f339b8711c98dc1cdc42c7ac590a40dfc
 
 COCOAPODS: 1.9.1

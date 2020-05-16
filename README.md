@@ -10,3 +10,10 @@ indocker % make -j `nproc` && ./protobag_test --gtest_filter=DemoTest*
 ```
  pod repo push  SCCocoaPods ProtobagCocoa.podspec.json  --use-libraries --verbose --allow-warnings
 ```
+
+
+in python subdir:
+```
+python3 setup.py bdist_wheel
+```
+for both linux and xcode

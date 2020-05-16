@@ -234,7 +234,18 @@ def main(args=None):
   elif args.shell_rm:
     CMD = "docker rm -f %s || true" % CONTAINER_NAME
     run_cmd(CMD)
-
+  elif args.run_protoc:
+    container_name = 'protobag-dev-protoc'
+    start_container(args.root, container_name=container_name)
+    CMD = """
+      docker exec -it {container_name} bash -c "
+        cd /opt/protobag/c++/protobag/protobag_msg &&
+        protoc ProtobagMsg.proto --python_out=../../../python/protobag/ &&
+        protoc ProtobagMsg.proto --cpp_out=../../../c++/protobag/protobag_msg/ &&
+        "
+    """.format(container_name=container_name)
+    run_cmd(CMD)
+    run_cmd("docker rm -f %s || true" % container_name)
 
 if __name__ == '__main__':
   main()

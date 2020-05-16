@@ -4,6 +4,7 @@ package protobag;
 
 import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
+import "google/protobuf/descriptor.proto";
 
 // TODO
 // option cc_enable_arenas = true;
@@ -55,6 +56,10 @@ message Selection {
     }
 }
 
+message DescriptorMap {
+    map<string, google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
+}
+
 message BagMeta {
     string bag_namespace = 1;
     
@@ -70,6 +75,5 @@ message BagMeta {
 
     repeated TopicTime time_ordered_entries = 30;
 
-
-    // TODO: add topic message types and message defs
+    DescriptorMap descriptor_map = 40;
 }
