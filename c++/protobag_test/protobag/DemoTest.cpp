@@ -157,6 +157,136 @@ TEST(DemoTest, TestDemo) {
   }
 }
 
+
+
+
+#include <google/protobuf/descriptor.h>
+#include <google/protobuf/descriptor.pb.h>
+#include <google/protobuf/descriptor_database.h>
+#include <google/protobuf/dynamic_message.h>
+#include <google/protobuf/util/type_resolver.h>
+#include <google/protobuf/util/type_resolver_util.h>
+
+// // https://github.com/protocolbuffers/protobuf/blob/7bff8393cab939bfbb9b5c69b3fe76b4d83c41ee/src/google/protobuf/util/json_util.cc#L217
+// namespace detail {
+//   using namespace google::protobuf;
+// const char* kTypeUrlPrefix = "type.googleapis.com";
+// util::TypeResolver* generated_type_resolver_ = NULL;
+// ::google::protobuf::internal::once_flag generated_type_resolver_init_;
+
+// std::string GetTypeUrl(const Message& message) {
+//   return std::string(kTypeUrlPrefix) + "/" +
+//          message.GetDescriptor()->full_name();
+// }
+
+// void DeleteGeneratedTypeResolver() { delete generated_type_resolver_; }
+
+// void InitGeneratedTypeResolver() {
+//   generated_type_resolver_ = util::NewTypeResolverForDescriptorPool(
+//       kTypeUrlPrefix, DescriptorPool::generated_pool());
+//   ::google::protobuf::internal::OnShutdown(&DeleteGeneratedTypeResolver);
+// }
+
+// util::TypeResolver* GetGeneratedTypeResolver() {
+//   ::google::protobuf::internal::call_once(generated_type_resolver_init_,
+//                                              InitGeneratedTypeResolver);
+//   return generated_type_resolver_;
+// }
+// }  // namespace detail
+
+TEST(DemoTest, TestMonkey) {
+
+  TopicTime tt;
+
+  tt.set_topic("my-topic");
+  tt.mutable_timestamp()->set_seconds(123);
+
+  LOG(
+    "tt:" << std::endl <<
+    PBToString(tt));
+
+  ::google::protobuf::DescriptorProto p;
+  tt.GetDescriptor()->CopyTo(&p);
+  // LOG(
+  //   "tt descriptor:" <<
+  //   PBToString(p));
+
+  ::google::protobuf::FileDescriptorSet fds;
+  ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+  tt.GetDescriptor()->file()->CopyTo(fd);
+  
+
+
+  {
+    google::protobuf::Any any;
+    ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+    any.GetDescriptor()->file()->CopyTo(fd);
+  }
+  {
+    google::protobuf::Timestamp any;
+    ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+    any.GetDescriptor()->file()->CopyTo(fd);
+  }
+  {
+    google::protobuf::DescriptorProto any;
+    ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+    any.GetDescriptor()->file()->CopyTo(fd);
+  }
+
+  LOG(
+    "tt fds:" <<
+    PBToString(fds));
+
+
+  {
+    using namespace ::google::protobuf;
+    const std::string msg_str = PBToString(tt);
+
+    SimpleDescriptorDatabase db;
+    DescriptorPool pool(&db);
+    for (int i = 0; i < fds.file_size(); ++i) {
+      db.Add(fds.file(i));
+    }
+
+
+    LOG("full name " << tt.GetDescriptor()->full_name());
+    DynamicMessageFactory factory;
+    std::unique_ptr<Message> mp(
+      factory.GetPrototype(
+        pool.FindMessageTypeByName(tt.GetDescriptor()->full_name()))->New());
+    LOG("value of message ptr " << mp.get());
+
+    if (mp) {
+      auto &msg = *mp;
+      ::google::protobuf::TextFormat::ParseFromString(msg_str, &msg);
+      LOG("debug " << msg.DebugString());
+    }
+
+
+    // using namespace google::protobuf;
+    // const DescriptorPool* pool = tt.GetDescriptor()->file()->pool();
+    // util::TypeResolver* resolver =
+    //     pool == DescriptorPool::generated_pool()
+    //         ? detail::GetGeneratedTypeResolver()
+    //         : util::NewTypeResolverForDescriptorPool(detail::kTypeUrlPrefix, pool);
+    
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #undef LOG
 
 
