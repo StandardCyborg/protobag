@@ -180,7 +180,10 @@ set_property(
 set(
   PROTOBAG_TEST_DEFAULT_FIXTURES_DIR
   "${PROJECT_SOURCE_DIR}/protobag_test/fixtures")
-add_definitions( -DPROTOBAG_TEST_DEFAULT_FIXTURES_DIR="${PROTOBAG_TEST_DEFAULT_FIXTURES_DIR}" )
+target_compile_definitions(
+  protobag_test
+  PRIVATE
+  -DPROTOBAG_TEST_DEFAULT_FIXTURES_DIR="${PROTOBAG_TEST_DEFAULT_FIXTURES_DIR}" )
   
 target_link_libraries(
   protobag_test

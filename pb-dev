@@ -15,7 +15,7 @@ import sys
 ###############################################################################
 ## Env Configuration
 
-CONTAINER_NAME = 'protobag-dev-' + os.environ.get('USER', '')
+CONTAINER_NAME = 'protobag-dev-' + os.environ.get('USER', 'anon')
 CONTAINER_IMAGE = 'protobag' # need version  ---------------------------------------------------------------
 
 ###############################################################################

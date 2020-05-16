@@ -17,8 +17,10 @@
 
 namespace protobag {
 
+// See "Syntactic Sugar" methods at end of file
+
 // Based upon OarphKit https://github.com/pwais/oarphkit/blob/e799e7904d5b374cb6b58cd06a42d05506e83d94/oarphkit/ok/SerializationUtils/PBUtils-inl.hpp#L1
-// TODO support protobuf arena allocation https://developers.google.com/protocol-buffers/docs/reference/arenas
+// TODO support protobuf arena allocation https://developers.google.com/protocol-buffers/docs/reference/arenas ?
 class PBFactory {
 public:
 
@@ -170,6 +172,27 @@ public:
     }
   }
 
+  template <typename MT>
+  static OkOrErr SaveBinaryToPath(const MT &m, const std::string &path) {
+    VerifyProfobuf();
+    std::ofstream out(path, std::ios::out | std::ios::binary);
+    if (!out.good()) {
+      return {.error = fmt::format("Bad destination: {}", path)};
+    }
+
+    const bool write_success = m.SerializeToOstream(&out);
+    if (!write_success) {
+      return {.error =
+        fmt::format("Error trying to write a {} in binary format to {}",
+          MessageTypeName<MT>(),
+          path)
+      };
+    }
+
+    return kOK;
+  }
+
+
 
 protected:
 
@@ -231,5 +254,21 @@ protected:
   }
 
 };
+
+
+
+// ============================================================================
+// Sugar ======================================================================
+// ============================================================================
+
+// Return a text format string, or throw on error.
+template <typename MT>
+std::string PBToString(const MT &pb_msg) {
+  auto maybe_pb_txt = PBFactory::ToTextFormatString(pb_msg);
+  if (!maybe_pb_txt.IsOk()) {
+    throw std::runtime_error(maybe_pb_txt.error);
+  }
+  return *maybe_pb_txt.value;
+}
 
 } /* namespace protobag */
