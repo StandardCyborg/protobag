@@ -15,9 +15,12 @@
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
 extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fany_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Any_google_2fprotobuf_2fany_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2fdescriptor_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_FileDescriptorSet_google_2fprotobuf_2fdescriptor_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_google_2fprotobuf_2ftimestamp_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_BagMeta_TopicStats_ProtobagMsg_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_BagMeta_TopicToStatsEntry_DoNotUse_ProtobagMsg_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_DescriptorMap_ProtobagMsg_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_ProtobagMsg_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Selection_Events_ProtobagMsg_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Selection_Window_ProtobagMsg_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_TopicTime_ProtobagMsg_2eproto;
@@ -68,6 +71,14 @@ class SelectionDefaultTypeInternal {
   const ::protobag::Selection_Window* window_;
   const ::protobag::Selection_Events* events_;
 } _Selection_default_instance_;
+class DescriptorMap_TypeUrlToDescriptorEntry_DoNotUseDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse> _instance;
+} _DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_default_instance_;
+class DescriptorMapDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DescriptorMap> _instance;
+} _DescriptorMap_default_instance_;
 class BagMeta_TopicStatsDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<BagMeta_TopicStats> _instance;
@@ -92,11 +103,12 @@ static void InitDefaultsscc_info_BagMeta_ProtobagMsg_2eproto() {
   ::protobag::BagMeta::InitAsDefaultInstance();
 }
 
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<3> scc_info_BagMeta_ProtobagMsg_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 3, 0, InitDefaultsscc_info_BagMeta_ProtobagMsg_2eproto}, {
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<4> scc_info_BagMeta_ProtobagMsg_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 4, 0, InitDefaultsscc_info_BagMeta_ProtobagMsg_2eproto}, {
       &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,
       &scc_info_BagMeta_TopicToStatsEntry_DoNotUse_ProtobagMsg_2eproto.base,
-      &scc_info_TopicTime_ProtobagMsg_2eproto.base,}};
+      &scc_info_TopicTime_ProtobagMsg_2eproto.base,
+      &scc_info_DescriptorMap_ProtobagMsg_2eproto.base,}};
 
 static void InitDefaultsscc_info_BagMeta_TopicStats_ProtobagMsg_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -125,6 +137,35 @@ static void InitDefaultsscc_info_BagMeta_TopicToStatsEntry_DoNotUse_ProtobagMsg_
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_BagMeta_TopicToStatsEntry_DoNotUse_ProtobagMsg_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_BagMeta_TopicToStatsEntry_DoNotUse_ProtobagMsg_2eproto}, {
       &scc_info_BagMeta_TopicStats_ProtobagMsg_2eproto.base,}};
+
+static void InitDefaultsscc_info_DescriptorMap_ProtobagMsg_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::protobag::_DescriptorMap_default_instance_;
+    new (ptr) ::protobag::DescriptorMap();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::protobag::DescriptorMap::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_DescriptorMap_ProtobagMsg_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_DescriptorMap_ProtobagMsg_2eproto}, {
+      &scc_info_DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_ProtobagMsg_2eproto.base,}};
+
+static void InitDefaultsscc_info_DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_ProtobagMsg_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::protobag::_DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_default_instance_;
+    new (ptr) ::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse();
+  }
+  ::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_ProtobagMsg_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_ProtobagMsg_2eproto}, {
+      &scc_info_FileDescriptorSet_google_2fprotobuf_2fdescriptor_2eproto.base,}};
 
 static void InitDefaultsscc_info_Selection_ProtobagMsg_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -287,7 +328,7 @@ static void InitDefaultsscc_info_TopicTime_ProtobagMsg_2eproto() {
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_TopicTime_ProtobagMsg_2eproto}, {
       &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_ProtobagMsg_2eproto[14];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_ProtobagMsg_2eproto[16];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_ProtobagMsg_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_ProtobagMsg_2eproto = nullptr;
 
@@ -365,6 +406,21 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_ProtobagMsg_2eproto::offsets[]
   offsetof(::protobag::SelectionDefaultTypeInternal, window_),
   offsetof(::protobag::SelectionDefaultTypeInternal, events_),
   PROTOBUF_FIELD_OFFSET(::protobag::Selection, criteria_),
+  PROTOBUF_FIELD_OFFSET(::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse, _has_bits_),
+  PROTOBUF_FIELD_OFFSET(::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse, key_),
+  PROTOBUF_FIELD_OFFSET(::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse, value_),
+  0,
+  1,
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::protobag::DescriptorMap, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::protobag::DescriptorMap, type_url_to_descriptor_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::protobag::BagMeta_TopicStats, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -391,6 +447,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_ProtobagMsg_2eproto::offsets[]
   PROTOBUF_FIELD_OFFSET(::protobag::BagMeta, protobag_version_),
   PROTOBUF_FIELD_OFFSET(::protobag::BagMeta, topic_to_stats_),
   PROTOBUF_FIELD_OFFSET(::protobag::BagMeta, time_ordered_entries_),
+  PROTOBUF_FIELD_OFFSET(::protobag::BagMeta, descriptor_map_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::protobag::StampedMessage)},
@@ -404,9 +461,11 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 50, -1, sizeof(::protobag::Selection_Window)},
   { 59, -1, sizeof(::protobag::Selection_Events)},
   { 65, -1, sizeof(::protobag::Selection)},
-  { 73, -1, sizeof(::protobag::BagMeta_TopicStats)},
-  { 79, 86, sizeof(::protobag::BagMeta_TopicToStatsEntry_DoNotUse)},
-  { 88, -1, sizeof(::protobag::BagMeta)},
+  { 73, 80, sizeof(::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse)},
+  { 82, -1, sizeof(::protobag::DescriptorMap)},
+  { 88, -1, sizeof(::protobag::BagMeta_TopicStats)},
+  { 94, 101, sizeof(::protobag::BagMeta_TopicToStatsEntry_DoNotUse)},
+  { 103, -1, sizeof(::protobag::BagMeta)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -421,6 +480,8 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_Selection_Window_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_Selection_Events_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_Selection_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_DescriptorMap_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_BagMeta_TopicStats_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_BagMeta_TopicToStatsEntry_DoNotUse_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_BagMeta_default_instance_),
@@ -429,41 +490,51 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
 const char descriptor_table_protodef_ProtobagMsg_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
   "\n\021ProtobagMsg.proto\022\010protobag\032\031google/pr"
   "otobuf/any.proto\032\037google/protobuf/timest"
-  "amp.proto\"b\n\016StampedMessage\022-\n\ttimestamp"
-  "\030\001 \001(\0132\032.google.protobuf.Timestamp\022!\n\003ms"
-  "g\030\002 \001(\0132\024.google.protobuf.Any\"~\n\006StdMsg\032"
-  "\025\n\004Bool\022\r\n\005value\030\001 \001(\010\032\024\n\003Int\022\r\n\005value\030\001"
-  " \001(\003\032\026\n\005Float\022\r\n\005value\030\001 \001(\002\032\027\n\006String\022\r"
-  "\n\005value\030\001 \001(\t\032\026\n\005Bytes\022\r\n\005value\030\001 \001(\014\"\\\n"
-  "\tTopicTime\022\r\n\005topic\030\001 \001(\t\022-\n\ttimestamp\030\002"
-  " \001(\0132\032.google.protobuf.Timestamp\022\021\n\tentr"
-  "yname\030\n \001(\t\"\251\002\n\tSelection\022,\n\006window\030\001 \001("
-  "\0132\032.protobag.Selection.WindowH\000\022,\n\006event"
-  "s\030\002 \001(\0132\032.protobag.Selection.EventsH\000\032\204\001"
-  "\n\006Window\022\016\n\006topics\030\001 \003(\t\022)\n\005start\030\002 \001(\0132"
-  "\032.google.protobuf.Timestamp\022\'\n\003end\030\003 \001(\013"
-  "2\032.google.protobuf.Timestamp\022\026\n\016exclude_"
-  "topics\030\004 \003(\t\032-\n\006Events\022#\n\006events\030\n \003(\0132\023"
-  ".protobag.TopicTimeB\n\n\010criteria\"\363\002\n\007BagM"
-  "eta\022\025\n\rbag_namespace\030\001 \001(\t\022)\n\005start\030\002 \001("
-  "\0132\032.google.protobuf.Timestamp\022\'\n\003end\030\003 \001"
-  "(\0132\032.google.protobuf.Timestamp\022\030\n\020protob"
-  "ag_version\030\n \001(\t\022;\n\016topic_to_stats\030\024 \003(\013"
-  "2#.protobag.BagMeta.TopicToStatsEntry\0221\n"
-  "\024time_ordered_entries\030\036 \003(\0132\023.protobag.T"
-  "opicTime\032 \n\nTopicStats\022\022\n\nn_messages\030\001 \001"
-  "(\003\032Q\n\021TopicToStatsEntry\022\013\n\003key\030\001 \001(\t\022+\n\005"
-  "value\030\002 \001(\0132\034.protobag.BagMeta.TopicStat"
-  "s:\0028\001b\006proto3"
+  "amp.proto\032 google/protobuf/descriptor.pr"
+  "oto\"b\n\016StampedMessage\022-\n\ttimestamp\030\001 \001(\013"
+  "2\032.google.protobuf.Timestamp\022!\n\003msg\030\002 \001("
+  "\0132\024.google.protobuf.Any\"~\n\006StdMsg\032\025\n\004Boo"
+  "l\022\r\n\005value\030\001 \001(\010\032\024\n\003Int\022\r\n\005value\030\001 \001(\003\032\026"
+  "\n\005Float\022\r\n\005value\030\001 \001(\002\032\027\n\006String\022\r\n\005valu"
+  "e\030\001 \001(\t\032\026\n\005Bytes\022\r\n\005value\030\001 \001(\014\"\\\n\tTopic"
+  "Time\022\r\n\005topic\030\001 \001(\t\022-\n\ttimestamp\030\002 \001(\0132\032"
+  ".google.protobuf.Timestamp\022\021\n\tentryname\030"
+  "\n \001(\t\"\251\002\n\tSelection\022,\n\006window\030\001 \001(\0132\032.pr"
+  "otobag.Selection.WindowH\000\022,\n\006events\030\002 \001("
+  "\0132\032.protobag.Selection.EventsH\000\032\204\001\n\006Wind"
+  "ow\022\016\n\006topics\030\001 \003(\t\022)\n\005start\030\002 \001(\0132\032.goog"
+  "le.protobuf.Timestamp\022\'\n\003end\030\003 \001(\0132\032.goo"
+  "gle.protobuf.Timestamp\022\026\n\016exclude_topics"
+  "\030\004 \003(\t\032-\n\006Events\022#\n\006events\030\n \003(\0132\023.proto"
+  "bag.TopicTimeB\n\n\010criteria\"\301\001\n\rDescriptor"
+  "Map\022P\n\026type_url_to_descriptor\030\001 \003(\01320.pr"
+  "otobag.DescriptorMap.TypeUrlToDescriptor"
+  "Entry\032^\n\030TypeUrlToDescriptorEntry\022\013\n\003key"
+  "\030\001 \001(\t\0221\n\005value\030\002 \001(\0132\".google.protobuf."
+  "FileDescriptorSet:\0028\001\"\244\003\n\007BagMeta\022\025\n\rbag"
+  "_namespace\030\001 \001(\t\022)\n\005start\030\002 \001(\0132\032.google"
+  ".protobuf.Timestamp\022\'\n\003end\030\003 \001(\0132\032.googl"
+  "e.protobuf.Timestamp\022\030\n\020protobag_version"
+  "\030\n \001(\t\022;\n\016topic_to_stats\030\024 \003(\0132#.protoba"
+  "g.BagMeta.TopicToStatsEntry\0221\n\024time_orde"
+  "red_entries\030\036 \003(\0132\023.protobag.TopicTime\022/"
+  "\n\016descriptor_map\030( \001(\0132\027.protobag.Descri"
+  "ptorMap\032 \n\nTopicStats\022\022\n\nn_messages\030\001 \001("
+  "\003\032Q\n\021TopicToStatsEntry\022\013\n\003key\030\001 \001(\t\022+\n\005v"
+  "alue\030\002 \001(\0132\034.protobag.BagMeta.TopicStats"
+  ":\0028\001b\006proto3"
   ;
-static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_ProtobagMsg_2eproto_deps[2] = {
+static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_ProtobagMsg_2eproto_deps[3] = {
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
+  &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
   &::descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_ProtobagMsg_2eproto_sccs[14] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_ProtobagMsg_2eproto_sccs[16] = {
   &scc_info_BagMeta_ProtobagMsg_2eproto.base,
   &scc_info_BagMeta_TopicStats_ProtobagMsg_2eproto.base,
   &scc_info_BagMeta_TopicToStatsEntry_DoNotUse_ProtobagMsg_2eproto.base,
+  &scc_info_DescriptorMap_ProtobagMsg_2eproto.base,
+  &scc_info_DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_ProtobagMsg_2eproto.base,
   &scc_info_Selection_ProtobagMsg_2eproto.base,
   &scc_info_Selection_Events_ProtobagMsg_2eproto.base,
   &scc_info_Selection_Window_ProtobagMsg_2eproto.base,
@@ -479,10 +550,10 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_Pro
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_ProtobagMsg_2eproto_once;
 static bool descriptor_table_ProtobagMsg_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_ProtobagMsg_2eproto = {
-  &descriptor_table_ProtobagMsg_2eproto_initialized, descriptor_table_protodef_ProtobagMsg_2eproto, "ProtobagMsg.proto", 1093,
-  &descriptor_table_ProtobagMsg_2eproto_once, descriptor_table_ProtobagMsg_2eproto_sccs, descriptor_table_ProtobagMsg_2eproto_deps, 14, 2,
+  &descriptor_table_ProtobagMsg_2eproto_initialized, descriptor_table_protodef_ProtobagMsg_2eproto, "ProtobagMsg.proto", 1372,
+  &descriptor_table_ProtobagMsg_2eproto_once, descriptor_table_ProtobagMsg_2eproto_sccs, descriptor_table_ProtobagMsg_2eproto_deps, 16, 3,
   schemas, file_default_instances, TableStruct_ProtobagMsg_2eproto::offsets,
-  file_level_metadata_ProtobagMsg_2eproto, 14, file_level_enum_descriptors_ProtobagMsg_2eproto, file_level_service_descriptors_ProtobagMsg_2eproto,
+  file_level_metadata_ProtobagMsg_2eproto, 16, file_level_enum_descriptors_ProtobagMsg_2eproto, file_level_service_descriptors_ProtobagMsg_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -2969,6 +3040,253 @@ void Selection::InternalSwap(Selection* other) {
 
 // ===================================================================
 
+DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse() {}
+DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+    : SuperType(arena) {}
+void DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse::MergeFrom(const DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse& other) {
+  MergeFromInternal(other);
+}
+::PROTOBUF_NAMESPACE_ID::Metadata DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse::GetMetadata() const {
+  return GetMetadataStatic();
+}
+void DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse::MergeFrom(
+    const ::PROTOBUF_NAMESPACE_ID::Message& other) {
+  ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom(other);
+}
+
+
+// ===================================================================
+
+void DescriptorMap::InitAsDefaultInstance() {
+}
+class DescriptorMap::_Internal {
+ public:
+};
+
+void DescriptorMap::clear_type_url_to_descriptor() {
+  type_url_to_descriptor_.Clear();
+}
+DescriptorMap::DescriptorMap()
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:protobag.DescriptorMap)
+}
+DescriptorMap::DescriptorMap(const DescriptorMap& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      _internal_metadata_(nullptr) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  type_url_to_descriptor_.MergeFrom(from.type_url_to_descriptor_);
+  // @@protoc_insertion_point(copy_constructor:protobag.DescriptorMap)
+}
+
+void DescriptorMap::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_DescriptorMap_ProtobagMsg_2eproto.base);
+}
+
+DescriptorMap::~DescriptorMap() {
+  // @@protoc_insertion_point(destructor:protobag.DescriptorMap)
+  SharedDtor();
+}
+
+void DescriptorMap::SharedDtor() {
+}
+
+void DescriptorMap::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const DescriptorMap& DescriptorMap::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_DescriptorMap_ProtobagMsg_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void DescriptorMap::Clear() {
+// @@protoc_insertion_point(message_clear_start:protobag.DescriptorMap)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  type_url_to_descriptor_.Clear();
+  _internal_metadata_.Clear();
+}
+
+const char* DescriptorMap::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // map<string, .google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(&type_url_to_descriptor_, ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* DescriptorMap::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:protobag.DescriptorMap)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // map<string, .google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
+  if (!this->_internal_type_url_to_descriptor().empty()) {
+    typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >::const_pointer
+        ConstPtr;
+    typedef ConstPtr SortItem;
+    typedef ::PROTOBUF_NAMESPACE_ID::internal::CompareByDerefFirst<SortItem> Less;
+    struct Utf8Check {
+      static void Check(ConstPtr p) {
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+          p->first.data(), static_cast<int>(p->first.length()),
+          ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+          "protobag.DescriptorMap.TypeUrlToDescriptorEntry.key");
+      }
+    };
+
+    if (stream->IsSerializationDeterministic() &&
+        this->_internal_type_url_to_descriptor().size() > 1) {
+      ::std::unique_ptr<SortItem[]> items(
+          new SortItem[this->_internal_type_url_to_descriptor().size()]);
+      typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >::size_type size_type;
+      size_type n = 0;
+      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >::const_iterator
+          it = this->_internal_type_url_to_descriptor().begin();
+          it != this->_internal_type_url_to_descriptor().end(); ++it, ++n) {
+        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
+      for (size_type i = 0; i < n; i++) {
+        target = DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse::Funcs::InternalSerialize(1, items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second, target, stream);
+        Utf8Check::Check(&(*items[static_cast<ptrdiff_t>(i)]));
+      }
+    } else {
+      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >::const_iterator
+          it = this->_internal_type_url_to_descriptor().begin();
+          it != this->_internal_type_url_to_descriptor().end(); ++it) {
+        target = DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse::Funcs::InternalSerialize(1, it->first, it->second, target, stream);
+        Utf8Check::Check(&(*it));
+      }
+    }
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:protobag.DescriptorMap)
+  return target;
+}
+
+size_t DescriptorMap::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:protobag.DescriptorMap)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // map<string, .google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
+  total_size += 1 *
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(this->_internal_type_url_to_descriptor_size());
+  for (::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >::const_iterator
+      it = this->_internal_type_url_to_descriptor().begin();
+      it != this->_internal_type_url_to_descriptor().end(); ++it) {
+    total_size += DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse::Funcs::ByteSizeLong(it->first, it->second);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void DescriptorMap::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:protobag.DescriptorMap)
+  GOOGLE_DCHECK_NE(&from, this);
+  const DescriptorMap* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<DescriptorMap>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:protobag.DescriptorMap)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:protobag.DescriptorMap)
+    MergeFrom(*source);
+  }
+}
+
+void DescriptorMap::MergeFrom(const DescriptorMap& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:protobag.DescriptorMap)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  type_url_to_descriptor_.MergeFrom(from.type_url_to_descriptor_);
+}
+
+void DescriptorMap::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:protobag.DescriptorMap)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void DescriptorMap::CopyFrom(const DescriptorMap& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:protobag.DescriptorMap)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool DescriptorMap::IsInitialized() const {
+  if (!::PROTOBUF_NAMESPACE_ID::internal::AllAreInitialized(type_url_to_descriptor_)) return false;
+  return true;
+}
+
+void DescriptorMap::InternalSwap(DescriptorMap* other) {
+  using std::swap;
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  type_url_to_descriptor_.Swap(&other->type_url_to_descriptor_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata DescriptorMap::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
 void BagMeta_TopicStats::InitAsDefaultInstance() {
 }
 class BagMeta_TopicStats::_Internal {
@@ -3177,11 +3495,14 @@ void BagMeta::InitAsDefaultInstance() {
       PROTOBUF_NAMESPACE_ID::Timestamp::internal_default_instance());
   ::protobag::_BagMeta_default_instance_._instance.get_mutable()->end_ = const_cast< PROTOBUF_NAMESPACE_ID::Timestamp*>(
       PROTOBUF_NAMESPACE_ID::Timestamp::internal_default_instance());
+  ::protobag::_BagMeta_default_instance_._instance.get_mutable()->descriptor_map_ = const_cast< ::protobag::DescriptorMap*>(
+      ::protobag::DescriptorMap::internal_default_instance());
 }
 class BagMeta::_Internal {
  public:
   static const PROTOBUF_NAMESPACE_ID::Timestamp& start(const BagMeta* msg);
   static const PROTOBUF_NAMESPACE_ID::Timestamp& end(const BagMeta* msg);
+  static const ::protobag::DescriptorMap& descriptor_map(const BagMeta* msg);
 };
 
 const PROTOBUF_NAMESPACE_ID::Timestamp&
@@ -3191,6 +3512,10 @@ BagMeta::_Internal::start(const BagMeta* msg) {
 const PROTOBUF_NAMESPACE_ID::Timestamp&
 BagMeta::_Internal::end(const BagMeta* msg) {
   return *msg->end_;
+}
+const ::protobag::DescriptorMap&
+BagMeta::_Internal::descriptor_map(const BagMeta* msg) {
+  return *msg->descriptor_map_;
 }
 void BagMeta::clear_start() {
   if (GetArenaNoVirtual() == nullptr && start_ != nullptr) {
@@ -3233,6 +3558,11 @@ BagMeta::BagMeta(const BagMeta& from)
   } else {
     end_ = nullptr;
   }
+  if (from._internal_has_descriptor_map()) {
+    descriptor_map_ = new ::protobag::DescriptorMap(*from.descriptor_map_);
+  } else {
+    descriptor_map_ = nullptr;
+  }
   // @@protoc_insertion_point(copy_constructor:protobag.BagMeta)
 }
 
@@ -3241,8 +3571,8 @@ void BagMeta::SharedCtor() {
   bag_namespace_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   protobag_version_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   ::memset(&start_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&end_) -
-      reinterpret_cast<char*>(&start_)) + sizeof(end_));
+      reinterpret_cast<char*>(&descriptor_map_) -
+      reinterpret_cast<char*>(&start_)) + sizeof(descriptor_map_));
 }
 
 BagMeta::~BagMeta() {
@@ -3255,6 +3585,7 @@ void BagMeta::SharedDtor() {
   protobag_version_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
   if (this != internal_default_instance()) delete start_;
   if (this != internal_default_instance()) delete end_;
+  if (this != internal_default_instance()) delete descriptor_map_;
 }
 
 void BagMeta::SetCachedSize(int size) const {
@@ -3284,6 +3615,10 @@ void BagMeta::Clear() {
     delete end_;
   }
   end_ = nullptr;
+  if (GetArenaNoVirtual() == nullptr && descriptor_map_ != nullptr) {
+    delete descriptor_map_;
+  }
+  descriptor_map_ = nullptr;
   _internal_metadata_.Clear();
 }
 
@@ -3348,6 +3683,13 @@ const char* BagMeta::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<242>(ptr));
+        } else goto handle_unusual;
+        continue;
+      // .protobag.DescriptorMap descriptor_map = 40;
+      case 40:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 66)) {
+          ptr = ctx->ParseMessage(_internal_mutable_descriptor_map(), ptr);
+          CHK_(ptr);
         } else goto handle_unusual;
         continue;
       default: {
@@ -3461,6 +3803,14 @@ failure:
       InternalWriteMessage(30, this->_internal_time_ordered_entries(i), target, stream);
   }
 
+  // .protobag.DescriptorMap descriptor_map = 40;
+  if (this->has_descriptor_map()) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
+      InternalWriteMessage(
+        40, _Internal::descriptor_map(this), target, stream);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields(), target, stream);
@@ -3521,6 +3871,13 @@ size_t BagMeta::ByteSizeLong() const {
         *end_);
   }
 
+  // .protobag.DescriptorMap descriptor_map = 40;
+  if (this->has_descriptor_map()) {
+    total_size += 2 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
+        *descriptor_map_);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
         _internal_metadata_, total_size, &_cached_size_);
@@ -3568,6 +3925,9 @@ void BagMeta::MergeFrom(const BagMeta& from) {
   if (from.has_end()) {
     _internal_mutable_end()->PROTOBUF_NAMESPACE_ID::Timestamp::MergeFrom(from._internal_end());
   }
+  if (from.has_descriptor_map()) {
+    _internal_mutable_descriptor_map()->::protobag::DescriptorMap::MergeFrom(from._internal_descriptor_map());
+  }
 }
 
 void BagMeta::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
@@ -3585,6 +3945,9 @@ void BagMeta::CopyFrom(const BagMeta& from) {
 }
 
 bool BagMeta::IsInitialized() const {
+  if (_internal_has_descriptor_map()) {
+    if (!descriptor_map_->IsInitialized()) return false;
+  }
   return true;
 }
 
@@ -3599,6 +3962,7 @@ void BagMeta::InternalSwap(BagMeta* other) {
     GetArenaNoVirtual());
   swap(start_, other->start_);
   swap(end_, other->end_);
+  swap(descriptor_map_, other->descriptor_map_);
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata BagMeta::GetMetadata() const {
@@ -3641,6 +4005,12 @@ template<> PROTOBUF_NOINLINE ::protobag::Selection_Events* Arena::CreateMaybeMes
 }
 template<> PROTOBUF_NOINLINE ::protobag::Selection* Arena::CreateMaybeMessage< ::protobag::Selection >(Arena* arena) {
   return Arena::CreateInternal< ::protobag::Selection >(arena);
+}
+template<> PROTOBUF_NOINLINE ::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse* Arena::CreateMaybeMessage< ::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse >(Arena* arena) {
+  return Arena::CreateInternal< ::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse >(arena);
+}
+template<> PROTOBUF_NOINLINE ::protobag::DescriptorMap* Arena::CreateMaybeMessage< ::protobag::DescriptorMap >(Arena* arena) {
+  return Arena::CreateInternal< ::protobag::DescriptorMap >(arena);
 }
 template<> PROTOBUF_NOINLINE ::protobag::BagMeta_TopicStats* Arena::CreateMaybeMessage< ::protobag::BagMeta_TopicStats >(Arena* arena) {
   return Arena::CreateInternal< ::protobag::BagMeta_TopicStats >(arena);

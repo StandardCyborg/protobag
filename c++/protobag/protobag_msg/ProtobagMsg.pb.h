@@ -37,6 +37,7 @@
 #include <google/protobuf/unknown_field_set.h>
 #include <google/protobuf/any.pb.h>
 #include <google/protobuf/timestamp.pb.h>
+#include <google/protobuf/descriptor.pb.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
 #define PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto
@@ -52,7 +53,7 @@ struct TableStruct_ProtobagMsg_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[14]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[16]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -69,6 +70,12 @@ extern BagMeta_TopicStatsDefaultTypeInternal _BagMeta_TopicStats_default_instanc
 class BagMeta_TopicToStatsEntry_DoNotUse;
 class BagMeta_TopicToStatsEntry_DoNotUseDefaultTypeInternal;
 extern BagMeta_TopicToStatsEntry_DoNotUseDefaultTypeInternal _BagMeta_TopicToStatsEntry_DoNotUse_default_instance_;
+class DescriptorMap;
+class DescriptorMapDefaultTypeInternal;
+extern DescriptorMapDefaultTypeInternal _DescriptorMap_default_instance_;
+class DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse;
+class DescriptorMap_TypeUrlToDescriptorEntry_DoNotUseDefaultTypeInternal;
+extern DescriptorMap_TypeUrlToDescriptorEntry_DoNotUseDefaultTypeInternal _DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_default_instance_;
 class Selection;
 class SelectionDefaultTypeInternal;
 extern SelectionDefaultTypeInternal _Selection_default_instance_;
@@ -107,6 +114,8 @@ PROTOBUF_NAMESPACE_OPEN
 template<> ::protobag::BagMeta* Arena::CreateMaybeMessage<::protobag::BagMeta>(Arena*);
 template<> ::protobag::BagMeta_TopicStats* Arena::CreateMaybeMessage<::protobag::BagMeta_TopicStats>(Arena*);
 template<> ::protobag::BagMeta_TopicToStatsEntry_DoNotUse* Arena::CreateMaybeMessage<::protobag::BagMeta_TopicToStatsEntry_DoNotUse>(Arena*);
+template<> ::protobag::DescriptorMap* Arena::CreateMaybeMessage<::protobag::DescriptorMap>(Arena*);
+template<> ::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse* Arena::CreateMaybeMessage<::protobag::DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse>(Arena*);
 template<> ::protobag::Selection* Arena::CreateMaybeMessage<::protobag::Selection>(Arena*);
 template<> ::protobag::Selection_Events* Arena::CreateMaybeMessage<::protobag::Selection_Events>(Arena*);
 template<> ::protobag::Selection_Window* Arena::CreateMaybeMessage<::protobag::Selection_Window>(Arena*);
@@ -1731,6 +1740,180 @@ class Selection :
 };
 // -------------------------------------------------------------------
 
+class DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse, 
+    std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE,
+    0 > {
+public:
+  typedef ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse, 
+    std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE,
+    0 > SuperType;
+  DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse();
+  DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  void MergeFrom(const DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse& other);
+  static const DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse*>(&_DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse_default_instance_); }
+  static bool ValidateKey(std::string* s) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "protobag.DescriptorMap.TypeUrlToDescriptorEntry.key");
+ }
+  static bool ValidateValue(void*) { return true; }
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_ProtobagMsg_2eproto);
+    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[11];
+  }
+
+  public:
+};
+
+// -------------------------------------------------------------------
+
+class DescriptorMap :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:protobag.DescriptorMap) */ {
+ public:
+  DescriptorMap();
+  virtual ~DescriptorMap();
+
+  DescriptorMap(const DescriptorMap& from);
+  DescriptorMap(DescriptorMap&& from) noexcept
+    : DescriptorMap() {
+    *this = ::std::move(from);
+  }
+
+  inline DescriptorMap& operator=(const DescriptorMap& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline DescriptorMap& operator=(DescriptorMap&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const DescriptorMap& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const DescriptorMap* internal_default_instance() {
+    return reinterpret_cast<const DescriptorMap*>(
+               &_DescriptorMap_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    12;
+
+  friend void swap(DescriptorMap& a, DescriptorMap& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(DescriptorMap* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline DescriptorMap* New() const final {
+    return CreateMaybeMessage<DescriptorMap>(nullptr);
+  }
+
+  DescriptorMap* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<DescriptorMap>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const DescriptorMap& from);
+  void MergeFrom(const DescriptorMap& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(DescriptorMap* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "protobag.DescriptorMap";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_ProtobagMsg_2eproto);
+    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kTypeUrlToDescriptorFieldNumber = 1,
+  };
+  // map<string, .google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
+  int type_url_to_descriptor_size() const;
+  private:
+  int _internal_type_url_to_descriptor_size() const;
+  public:
+  void clear_type_url_to_descriptor();
+  private:
+  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >&
+      _internal_type_url_to_descriptor() const;
+  ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >*
+      _internal_mutable_type_url_to_descriptor();
+  public:
+  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >&
+      type_url_to_descriptor() const;
+  ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >*
+      mutable_type_url_to_descriptor();
+
+  // @@protoc_insertion_point(class_scope:protobag.DescriptorMap)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::MapField<
+      DescriptorMap_TypeUrlToDescriptorEntry_DoNotUse,
+      std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_MESSAGE,
+      0 > type_url_to_descriptor_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_ProtobagMsg_2eproto;
+};
+// -------------------------------------------------------------------
+
 class BagMeta_TopicStats :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:protobag.BagMeta.TopicStats) */ {
  public:
@@ -1773,7 +1956,7 @@ class BagMeta_TopicStats :
                &_BagMeta_TopicStats_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    13;
 
   friend void swap(BagMeta_TopicStats& a, BagMeta_TopicStats& b) {
     a.Swap(&b);
@@ -1883,7 +2066,7 @@ public:
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_ProtobagMsg_2eproto);
-    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[12];
+    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[14];
   }
 
   public:
@@ -1933,7 +2116,7 @@ class BagMeta :
                &_BagMeta_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    13;
+    15;
 
   friend void swap(BagMeta& a, BagMeta& b) {
     a.Swap(&b);
@@ -2005,6 +2188,7 @@ class BagMeta :
     kProtobagVersionFieldNumber = 10,
     kStartFieldNumber = 2,
     kEndFieldNumber = 3,
+    kDescriptorMapFieldNumber = 40,
   };
   // map<string, .protobag.BagMeta.TopicStats> topic_to_stats = 20;
   int topic_to_stats_size() const;
@@ -2103,6 +2287,21 @@ class BagMeta :
   PROTOBUF_NAMESPACE_ID::Timestamp* _internal_mutable_end();
   public:
 
+  // .protobag.DescriptorMap descriptor_map = 40;
+  bool has_descriptor_map() const;
+  private:
+  bool _internal_has_descriptor_map() const;
+  public:
+  void clear_descriptor_map();
+  const ::protobag::DescriptorMap& descriptor_map() const;
+  ::protobag::DescriptorMap* release_descriptor_map();
+  ::protobag::DescriptorMap* mutable_descriptor_map();
+  void set_allocated_descriptor_map(::protobag::DescriptorMap* descriptor_map);
+  private:
+  const ::protobag::DescriptorMap& _internal_descriptor_map() const;
+  ::protobag::DescriptorMap* _internal_mutable_descriptor_map();
+  public:
+
   // @@protoc_insertion_point(class_scope:protobag.BagMeta)
  private:
   class _Internal;
@@ -2119,6 +2318,7 @@ class BagMeta :
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr protobag_version_;
   PROTOBUF_NAMESPACE_ID::Timestamp* start_;
   PROTOBUF_NAMESPACE_ID::Timestamp* end_;
+  ::protobag::DescriptorMap* descriptor_map_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_ProtobagMsg_2eproto;
 };
@@ -3045,6 +3245,38 @@ inline Selection::CriteriaCase Selection::criteria_case() const {
 }
 // -------------------------------------------------------------------
 
+// -------------------------------------------------------------------
+
+// DescriptorMap
+
+// map<string, .google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
+inline int DescriptorMap::_internal_type_url_to_descriptor_size() const {
+  return type_url_to_descriptor_.size();
+}
+inline int DescriptorMap::type_url_to_descriptor_size() const {
+  return _internal_type_url_to_descriptor_size();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >&
+DescriptorMap::_internal_type_url_to_descriptor() const {
+  return type_url_to_descriptor_.GetMap();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >&
+DescriptorMap::type_url_to_descriptor() const {
+  // @@protoc_insertion_point(field_map:protobag.DescriptorMap.type_url_to_descriptor)
+  return _internal_type_url_to_descriptor();
+}
+inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >*
+DescriptorMap::_internal_mutable_type_url_to_descriptor() {
+  return type_url_to_descriptor_.MutableMap();
+}
+inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, PROTOBUF_NAMESPACE_ID::FileDescriptorSet >*
+DescriptorMap::mutable_type_url_to_descriptor() {
+  // @@protoc_insertion_point(field_mutable_map:protobag.DescriptorMap.type_url_to_descriptor)
+  return _internal_mutable_type_url_to_descriptor();
+}
+
+// -------------------------------------------------------------------
+
 // BagMeta_TopicStats
 
 // int64 n_messages = 1;
@@ -3371,9 +3603,73 @@ BagMeta::time_ordered_entries() const {
   return time_ordered_entries_;
 }
 
+// .protobag.DescriptorMap descriptor_map = 40;
+inline bool BagMeta::_internal_has_descriptor_map() const {
+  return this != internal_default_instance() && descriptor_map_ != nullptr;
+}
+inline bool BagMeta::has_descriptor_map() const {
+  return _internal_has_descriptor_map();
+}
+inline void BagMeta::clear_descriptor_map() {
+  if (GetArenaNoVirtual() == nullptr && descriptor_map_ != nullptr) {
+    delete descriptor_map_;
+  }
+  descriptor_map_ = nullptr;
+}
+inline const ::protobag::DescriptorMap& BagMeta::_internal_descriptor_map() const {
+  const ::protobag::DescriptorMap* p = descriptor_map_;
+  return p != nullptr ? *p : *reinterpret_cast<const ::protobag::DescriptorMap*>(
+      &::protobag::_DescriptorMap_default_instance_);
+}
+inline const ::protobag::DescriptorMap& BagMeta::descriptor_map() const {
+  // @@protoc_insertion_point(field_get:protobag.BagMeta.descriptor_map)
+  return _internal_descriptor_map();
+}
+inline ::protobag::DescriptorMap* BagMeta::release_descriptor_map() {
+  // @@protoc_insertion_point(field_release:protobag.BagMeta.descriptor_map)
+  
+  ::protobag::DescriptorMap* temp = descriptor_map_;
+  descriptor_map_ = nullptr;
+  return temp;
+}
+inline ::protobag::DescriptorMap* BagMeta::_internal_mutable_descriptor_map() {
+  
+  if (descriptor_map_ == nullptr) {
+    auto* p = CreateMaybeMessage<::protobag::DescriptorMap>(GetArenaNoVirtual());
+    descriptor_map_ = p;
+  }
+  return descriptor_map_;
+}
+inline ::protobag::DescriptorMap* BagMeta::mutable_descriptor_map() {
+  // @@protoc_insertion_point(field_mutable:protobag.BagMeta.descriptor_map)
+  return _internal_mutable_descriptor_map();
+}
+inline void BagMeta::set_allocated_descriptor_map(::protobag::DescriptorMap* descriptor_map) {
+  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
+  if (message_arena == nullptr) {
+    delete descriptor_map_;
+  }
+  if (descriptor_map) {
+    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
+    if (message_arena != submessage_arena) {
+      descriptor_map = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
+          message_arena, descriptor_map, submessage_arena);
+    }
+    
+  } else {
+    
+  }
+  descriptor_map_ = descriptor_map;
+  // @@protoc_insertion_point(field_set_allocated:protobag.BagMeta.descriptor_map)
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------
