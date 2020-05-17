@@ -164,8 +164,9 @@ TEST(DemoTest, TestDemo) {
 #include <google/protobuf/descriptor.pb.h>
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
-#include <google/protobuf/util/type_resolver.h>
-#include <google/protobuf/util/type_resolver_util.h>
+// #include <google/protobuf/util/type_resolver.h>
+// #include <google/protobuf/util/type_resolver_util.h>
+#include <google/protobuf/util/json_util.h>
 
 // // https://github.com/protocolbuffers/protobuf/blob/7bff8393cab939bfbb9b5c69b3fe76b4d83c41ee/src/google/protobuf/util/json_util.cc#L217
 // namespace detail {
@@ -214,28 +215,35 @@ TEST(DemoTest, TestMonkey) {
   ::google::protobuf::FileDescriptorSet fds;
   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
   tt.GetDescriptor()->file()->CopyTo(fd);
-  
+  LOG("containing_type " << tt.GetDescriptor()->containing_type());
 
-
-  {
-    google::protobuf::Any any;
+  LOG("dependency_count " << tt.GetDescriptor()->file()->dependency_count());
+  for (int d = 0; d < tt.GetDescriptor()->file()->dependency_count(); ++d) {
     ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
-    any.GetDescriptor()->file()->CopyTo(fd);
-  }
-  {
-    google::protobuf::Timestamp any;
-    ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
-    any.GetDescriptor()->file()->CopyTo(fd);
-  }
-  {
-    google::protobuf::DescriptorProto any;
-    ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
-    any.GetDescriptor()->file()->CopyTo(fd);
+    const ::google::protobuf::FileDescriptor *dep = tt.GetDescriptor()->file()->dependency(d);
+    dep->CopyTo(fd);
+    LOG("copied " << dep->name());
   }
 
-  LOG(
-    "tt fds:" <<
-    PBToString(fds));
+  // {
+  //   google::protobuf::Any any;
+  //   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+  //   any.GetDescriptor()->file()->CopyTo(fd);
+  // }
+  // {
+  //   google::protobuf::Timestamp any;
+  //   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+  //   any.GetDescriptor()->file()->CopyTo(fd);
+  // }
+  // {
+  //   google::protobuf::DescriptorProto any;
+  //   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+  //   any.GetDescriptor()->file()->CopyTo(fd);
+  // }
+
+  // LOG(
+  //   "tt fds:" <<
+  //   PBToString(fds));
 
 
   {
@@ -248,18 +256,43 @@ TEST(DemoTest, TestMonkey) {
       db.Add(fds.file(i));
     }
 
+    {
+      std::vector<std::string> fnames;
+      bool success = db.FindAllFileNames(&fnames);
+      if (success) {
+        for (const auto &fname : fnames) {
+          LOG("db file: " << fname);
+        }
+      }
+    }
+
 
     LOG("full name " << tt.GetDescriptor()->full_name());
     DynamicMessageFactory factory;
-    std::unique_ptr<Message> mp(
-      factory.GetPrototype(
-        pool.FindMessageTypeByName(tt.GetDescriptor()->full_name()))->New());
-    LOG("value of message ptr " << mp.get());
+    const Descriptor *mt = nullptr;
+    mt = pool.FindMessageTypeByName(tt.GetDescriptor()->full_name());
+    LOG("mt " << mt);
+  
+    if (mt) {
+      std::unique_ptr<Message> mp(factory.GetPrototype(mt)->New());
+      LOG("value of message ptr " << mp.get());
 
-    if (mp) {
-      auto &msg = *mp;
-      ::google::protobuf::TextFormat::ParseFromString(msg_str, &msg);
-      LOG("debug " << msg.DebugString());
+      if (mp) {
+        // NOTE! msg is owned by the factory!! might wanna do a Swap
+        auto &msg = *mp;
+        ::google::protobuf::TextFormat::ParseFromString(msg_str, &msg);
+        LOG("debug " << msg.DebugString());
+
+
+        {
+          std::string out;
+          auto status = ::google::protobuf::util::MessageToJsonString(msg, &out);
+          if (!status.ok()) {
+            LOG("status out " << status.ToString());
+          }
+          LOG("my jsons: " << out);
+        }
+      }
     }
 
 

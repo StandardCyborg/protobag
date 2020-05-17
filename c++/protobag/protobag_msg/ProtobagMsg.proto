@@ -27,7 +27,6 @@ message TopicTime {
     google.protobuf.Timestamp timestamp = 2;
 
     string entryname = 10;
-        // TODO when adding parquet back-end, fix this crutch ...
 }
 
 message Selection {
