@@ -2,7 +2,7 @@
 
 #include <memory>
 
-#include "protobag/BagMetaBuilder.hpp"
+#include "protobag/BagIndexBuilder.hpp"
 #include "protobag/Entry.hpp"
 #include "protobag/archive/Archive.hpp"
 
@@ -17,7 +17,7 @@ public:
 
   struct Spec {
     archive::Archive::Spec archive_spec;
-    bool save_meta_index = true;
+    bool save_index_index = true;
 
     static Spec WriteToTempdir() {
       return {
@@ -35,7 +35,7 @@ public:
 protected:
   Spec _spec;
   archive::Archive::Ptr _archive;
-  BagMetaBuilder::UPtr _indexer;
+  BagIndexBuilder::UPtr _indexer;
 };
 
 } /* namespace protobag */

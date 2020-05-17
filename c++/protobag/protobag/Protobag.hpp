@@ -32,7 +32,7 @@ public:
     });
   }
 
-  BagMeta GetIndex() const;
+  BagIndex GetIndex() const;
 };
 
 } /* namespace protobag */

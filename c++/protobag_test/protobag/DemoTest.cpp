@@ -350,7 +350,7 @@ TEST(DemoTest, TestMonkey) {
 //       std::vector<std::string> actual;
 //       for (auto name : namelist) {
 //         name = std::string("/") + name;  // FIXME want leading '/' ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-//         if (!IsProtobagMetaTopic(name)) {
+//         if (!IsProtoBagIndexTopic(name)) {
 //           actual.push_back(name);
 //         }
 //       }

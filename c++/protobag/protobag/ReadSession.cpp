@@ -8,7 +8,7 @@
 
                                                                           #include <iostream>
 
-#include "protobag/BagMetaBuilder.hpp"
+#include "protobag/BagIndexBuilder.hpp"
 #include "protobag/Utils/PBUtils.hpp"
 
 
@@ -69,7 +69,7 @@ std::cout << "entryname " << entryname << std::endl;
 }
 
 
-Result<BagMeta> ReadSession::GetIndex(const std::string &path) {
+Result<BagIndex> ReadSession::GetIndex(const std::string &path) {
   auto maybe_r = ReadSession::Create(ReadSession::Spec::ReadAllFromPath(path));
   if (!maybe_r.IsOk()) {
     return {.error = maybe_r.error};
@@ -109,12 +109,12 @@ Result<StampedMessage> ReadSession::ReadMessageFrom(
   return PBFactory::LoadFromContainer<StampedMessage>(*maybe_bytes.value);
 }
 
-Result<BagMeta> ReadSession::GetReindexed(archive::Archive::Ptr archive) {
+Result<BagIndex> ReadSession::GetReindexed(archive::Archive::Ptr archive) {
   if (!archive) {
     return {.error = "No archive to read"};
   }
 
-  BagMetaBuilder::UPtr builder(new BagMetaBuilder());
+  BagIndexBuilder::UPtr builder(new BagIndexBuilder());
   auto namelist = archive->GetNamelist();
   for (const auto &name : namelist) {
                                                 std::cout << "name " << name << std::endl;
@@ -135,10 +135,10 @@ Result<BagMeta> ReadSession::GetReindexed(archive::Archive::Ptr archive) {
       name);
   }
 
-  return {.value = BagMetaBuilder::Complete(std::move(builder))};
+  return {.value = BagIndexBuilder::Complete(std::move(builder))};
 }
 
-Result<BagMeta> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
+Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
   if (!archive) {
     return {.error = "No archive to read"};
   }
@@ -147,7 +147,7 @@ Result<BagMeta> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
   {
     auto namelist = archive->GetNamelist();
     for (const auto &entryname : namelist) {
-      if (EntryIsInTopic(entryname, "/_protobag_meta/bag_meta")) {
+      if (EntryIsInTopic(entryname, "/_protobag_index/bag_index")) {
         auto maybe_stamped_msg = ReadMessageFrom(archive, entryname);
         if (maybe_stamped_msg.IsOk()) {
           const StampedMessage &cur_msg = *maybe_stamped_msg.value;
@@ -161,7 +161,7 @@ Result<BagMeta> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
   }
 
   if (index_entry.has_value()) {
-    return PBFactory::UnpackFromAny<BagMeta>(index_entry->msg());
+    return PBFactory::UnpackFromAny<BagIndex>(index_entry->msg());
   } else {
     return {.error = "Could not find an index"};
   }
@@ -191,7 +191,7 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
     };
   }
 
-  const BagMeta &index = *maybe_index.value;
+  const BagIndex &index = *maybe_index.value;
         std::cout << " index " << *PBFactory::ToTextFormatString(index).value << std::endl;
 
   if (sel.has_events()) {

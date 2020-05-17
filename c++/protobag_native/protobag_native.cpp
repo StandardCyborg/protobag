@@ -145,7 +145,7 @@ PYBIND11_MODULE(protobag_native, m) {
 
   py::class_<WriteSession::Spec>(m, "WriterSpec", "Spec for a WriteSession")
     .def(py::init<>())
-    .def_readwrite("save_meta_index", &WriteSession::Spec::save_meta_index)
+    .def_readwrite("save_index_index", &WriteSession::Spec::save_index_index)
     .def_property("path", 
       [](WriteSession::Spec &s) { return s.archive_spec.path; },
       [](WriteSession::Spec &s, const std::string &v) {

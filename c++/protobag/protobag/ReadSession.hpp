@@ -46,7 +46,7 @@ public:
   // Utilities
   
   // Read just the index from `path`
-  static Result<BagMeta> GetIndex(const std::string &path);
+  static Result<BagIndex> GetIndex(const std::string &path);
 
 protected:
   Spec _spec;
@@ -56,7 +56,7 @@ protected:
   std::queue<std::string> _entries_to_read;
 
   // maybe move these and make public ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-  static Result<BagMeta> GetReindexed(archive::Archive::Ptr archive);
+  static Result<BagIndex> GetReindexed(archive::Archive::Ptr archive);
   
   static std::string GetTopicFromEntryname(const std::string &entryname);
 
@@ -64,7 +64,7 @@ protected:
     archive::Archive::Ptr archive,
     const std::string &entryname);
   
-  static Result<BagMeta> ReadLatestIndex(archive::Archive::Ptr archive);
+  static Result<BagIndex> ReadLatestIndex(archive::Archive::Ptr archive);
 
   static Result<std::queue<std::string>> GetEntriesToRead(
     archive::Archive::Ptr archive,

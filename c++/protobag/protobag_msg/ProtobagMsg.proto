@@ -59,7 +59,7 @@ message DescriptorMap {
     map<string, google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
 }
 
-message BagMeta {
+message BagIndex {
     string bag_namespace = 1;
     
     google.protobuf.Timestamp start = 2;

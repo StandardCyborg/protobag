@@ -18,7 +18,7 @@ Result<WriteSession::Ptr> WriteSession::Create(const Spec &s) {
   WriteSession::Ptr w(new WriteSession());
   w->_spec = s;
   w->_archive = std::move(*maybe_archive.value);
-  w->_indexer.reset(new BagMetaBuilder());
+  w->_indexer.reset(new BagIndexBuilder());
 
   return {.value = w};
 }
@@ -33,7 +33,7 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry) {
     return OkOrErr::Err(maybe_m_bytes.error);
   }
 
-  if (!IsProtobagMetaTopic(entry.topic)) {
+  if (!IsProtoBagIndexTopic(entry.topic)) {
     if (!_indexer) {
       return OkOrErr::Err("Programming Error: no indexer (at least for file counter)");
     }
@@ -42,7 +42,7 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry) {
       "{}/{}.protobin", entry.topic, next_filenum);
 
     OkOrErr res = _archive->Write(entryname, *maybe_m_bytes.value);
-    if (res.IsOk() && _indexer && _spec.save_meta_index) {
+    if (res.IsOk() && _indexer && _spec.save_index_index) {
       _indexer->Observe(entry, entryname);
     }
 
@@ -50,7 +50,7 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry) {
 
   } else {
 
-    // The `/_protobag_meta` topic gets no indexing
+    // The `/_protobag_index` topic gets no indexing
     std::string entryname = fmt::format(
         "{}/{}.{}.protobin",
         entry.topic,
@@ -62,11 +62,11 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry) {
 }
 
 void WriteSession::Close() {
-  if (_spec.save_meta_index && _indexer) {
-    BagMeta meta = BagMetaBuilder::Complete(std::move(_indexer));
+  if (_spec.save_index_index && _indexer) {
+    BagIndex meta = BagIndexBuilder::Complete(std::move(_indexer));
     WriteEntry(
       Entry::Create(
-        "/_protobag_meta/bag_meta",
+        "/_protobag_index/bag_index",
         ::google::protobuf::util::TimeUtil::GetCurrentTime(),
         meta));
   }

@@ -6,7 +6,7 @@ from google.protobuf.timestamp_pb2 import Timestamp
 
 from protobag.ProtobagMsg_pb2 import Selection
 from protobag.ProtobagMsg_pb2 import StampedMessage
-from protobag.ProtobagMsg_pb2 import BagMeta
+from protobag.ProtobagMsg_pb2 import BagIndex
 
 
 from protobag.ProtobagMsg_pb2 import StdMsg
@@ -107,7 +107,7 @@ class Protobag(object):
       s = WriterSpec()
       s.path = self._path
       s.format = "zip"
-      s.save_meta_index = True
+      s.save_index_index = True
 
       self._native_writer.start(s)
     

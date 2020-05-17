@@ -76,7 +76,7 @@ TEST(WriteSessionDirectory, TestBasic) {
       auto namelist = dar->GetNamelist();
       std::vector<std::string> actual;
       for (auto name : namelist) {
-        if (!IsProtobagMetaTopic(name)) {
+        if (!IsProtoBagIndexTopic(name)) {
           actual.push_back(name);
         }
       }

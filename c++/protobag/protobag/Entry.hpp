@@ -87,8 +87,8 @@ inline bool EntryIsInTopic(const std::string &entryname, const std::string &topi
   return entryname.find(topic) == 0;
 }
 
-inline bool IsProtobagMetaTopic(const std::string &topic) {
-  return EntryIsInTopic(topic, "/_protobag_meta");
+inline bool IsProtoBagIndexTopic(const std::string &topic) {
+  return EntryIsInTopic(topic, "/_protobag_index");
 }
 
 inline

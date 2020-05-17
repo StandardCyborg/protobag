@@ -10,26 +10,26 @@
 
 namespace protobag {
 
-class BagMetaBuilder final {
+class BagIndexBuilder final {
 public:
-  typedef std::unique_ptr<BagMetaBuilder> UPtr;
-  BagMetaBuilder();
-  ~BagMetaBuilder();
+  typedef std::unique_ptr<BagIndexBuilder> UPtr;
+  BagIndexBuilder();
+  ~BagIndexBuilder();
 
   uint64_t GetNextFilenum(const std::string &topic);
 
   void Observe(const Entry &entry, const std::string &entryname="");
 
-  static BagMeta Complete(UPtr &&builder);
+  static BagIndex Complete(UPtr &&builder);
     // NB: Destroys builder!  TODO give an example use case in class docstring to explain ~~~~~
 
 protected:
-  BagMeta _meta;
+  BagIndex _index;
 
   struct TopicTimePQ;
   std::unique_ptr<TopicTimePQ> _ttq;
 
-  BagMeta_TopicStats &GetMutableStats(const std::string &topic);
+  BagIndex_TopicStats &GetMutableStats(const std::string &topic);
 };
 
 } /* namespace protobag */
