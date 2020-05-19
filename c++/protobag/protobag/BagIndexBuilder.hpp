@@ -23,8 +23,16 @@ public:
   static BagIndex Complete(UPtr &&builder);
     // NB: Destroys builder!  TODO give an example use case in class docstring to explain ~~~~~
 
+  void DoTimeseriesIndexing(bool v) { _do_timeseries_indexing = v; }
+  void DoDescriptorIndexing(bool v) { _do_descriptor_indexing = v; }
+  bool IsTimeseriesIndexing() const { return _do_timeseries_indexing; }
+  bool IsDescriptorIndexing() const { return _do_descriptor_indexing; }
+
 protected:
   BagIndex _index;
+
+  bool _do_timeseries_indexing = true;
+  bool _do_descriptor_indexing = true;
 
   struct TopicTimePQ;
   std::unique_ptr<TopicTimePQ> _ttq;

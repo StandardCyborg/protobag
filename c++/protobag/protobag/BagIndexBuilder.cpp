@@ -64,43 +64,53 @@ uint64_t BagIndexBuilder::GetNextFilenum(const std::string &topic) {
 
 void BagIndexBuilder::Observe(const Entry &entry, const std::string &entryname) {
   
-  {
-    auto &stats = GetMutableStats(entry.topic);
-    stats.set_n_messages(stats.n_messages() + 1);
-  }
-
-  {
-    TopicTime tt;
-    tt.set_topic(entry.topic);
-    *tt.mutable_timestamp() = entry.stamped_msg.timestamp();
-    tt.set_entryname(entryname);
-
-    if (!_ttq) {
-      _ttq.reset(new TopicTimePQ());
+  if (_do_timeseries_indexing) {
+    {
+      auto &stats = GetMutableStats(entry.topic);
+      stats.set_n_messages(stats.n_messages() + 1);
     }
-    _ttq->Observe(tt);
+
+    {
+      TopicTime tt;
+      tt.set_topic(entry.topic);
+      *tt.mutable_timestamp() = entry.stamped_msg.timestamp();
+      tt.set_entryname(entryname);
+
+      if (!_ttq) {
+        _ttq.reset(new TopicTimePQ());
+      }
+      _ttq->Observe(tt);
+    }
+
+    {
+      const auto &t = entry.stamped_msg.timestamp();
+      *_index.mutable_start() = std::min(_index.start(), t);
+      *_index.mutable_end() = std::max(_index.end(), t);
+    }
   }
 
-  {
-    const auto &t = entry.stamped_msg.timestamp();
-    *_index.mutable_start() = std::min(_index.start(), t);
-    *_index.mutable_end() = std::max(_index.end(), t);
+  if (_do_descriptor_indexing) {
+    
   }
 
 }
 
 BagIndex BagIndexBuilder::Complete(UPtr &&builder) {
-  BagIndex meta;
+  BagIndex index;
 
-  if (!builder) { return meta; }
+  index.set_protobag_version("TODO GET REAL VERSION");
+
+  if (!builder) { return index; }
 
   // Steal meta and time-ordered entries to avoid large copies
-  meta = std::move(builder->_index);
-  if (builder->_ttq) {
-    auto ttq = std::move(builder->_ttq);
-    ttq->MoveOrderedTTsTo(*meta.mutable_time_ordered_entries());
+  index = std::move(builder->_index);
+  if (builder._do_timeseries_indexing) {
+    if (builder->_ttq) {
+      auto ttq = std::move(builder->_ttq);
+      ttq->MoveOrderedTTsTo(*index.mutable_time_ordered_entries());
+    }
   }
-  return meta;
+  return index;
 }
 
 

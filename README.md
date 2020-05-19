@@ -24,9 +24,9 @@ the number of messages in it.  A substantially better solution is to simply
 create a `tar` archive of string-serialized Protobuf messages-- 
 *enter Protobag*.
 
-A `Protobag` is simply an archive (e.g. a Zip or Tar file, or even just a
+A `Protobag` file is simply an archive (e.g. a Zip or Tar file, or even just a
 directory) with files that are string-serialized Protobuf messages.  You can
-create a 'Protobag file,' throw away the `Protobag` library itself, and still 
+create a protobag, throw away the `Protobag` library itself, and still 
 have usable data.  But maybe you'll want to keep the `Protobag` library around
 for the suite of tools it offers:
  * `Protobag` provides the "glue" needed to interface Proto*buf* with the 
@@ -37,7 +37,7 @@ for the suite of tools it offers:
        ["self-describing message" technique](https://developers.google.com/protocol-buffers/docs/techniques#self-description))
      so that readers of your `Protobag`s need not have your Proto*buf* message
      definitions.  One consequence is that, with this index, you can convert
-     any `Protobag` file to a bunch of JSONs.
+     any protobag to a bunch of JSONs.
  * `Protobag` includes features for time-series data and offers a
      "(topic/channel) - time" interface to data similar to those offered in 
      [ROS](http://wiki.ros.org/rosbag) and 

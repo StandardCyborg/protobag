@@ -18,7 +18,12 @@ Result<WriteSession::Ptr> WriteSession::Create(const Spec &s) {
   WriteSession::Ptr w(new WriteSession());
   w->_spec = s;
   w->_archive = std::move(*maybe_archive.value);
-  w->_indexer.reset(new BagIndexBuilder());
+  if (s.ShouldDoIndexing()) {
+    w->_indexer.reset(new BagIndexBuilder());
+    if (!w->_indexer) { return {.error = "Could not allocate indexer"}; }
+    w->_indexer->DoTimeseriesIndexing(s.save_timeseries_index);
+    w->_indexer->DoDescriptorIndexing(s.save_descriptor_index);
+  }
 
   return {.value = w};
 }
@@ -42,7 +47,7 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry) {
       "{}/{}.protobin", entry.topic, next_filenum);
 
     OkOrErr res = _archive->Write(entryname, *maybe_m_bytes.value);
-    if (res.IsOk() && _indexer && _spec.save_index_index) {
+    if (res.IsOk() && _indexer) {
       _indexer->Observe(entry, entryname);
     }
 
@@ -62,13 +67,14 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry) {
 }
 
 void WriteSession::Close() {
-  if (_spec.save_index_index && _indexer) {
-    BagIndex meta = BagIndexBuilder::Complete(std::move(_indexer));
+  if (_indexer) {
+    BagIndex index = BagIndexBuilder::Complete(std::move(_indexer));
     WriteEntry(
       Entry::Create(
         "/_protobag_index/bag_index",
         ::google::protobuf::util::TimeUtil::GetCurrentTime(),
-        meta));
+        index));
+    _indexer = nullptr; // FIXME do we need this?  getting double index entries ....
   }
 }
 
