@@ -1,0 +1,39 @@
+{
+  "name": "ProtobagCocoaTest",
+  "version": "0.0.1",
+  "summary": "Protobag: an archive of string-serialized Protobufs",
+  "homepage": "https://github.com/StandardCyborg/protobag",
+  "license": "Apache 2",
+  "authors": {
+    "Protobag Maintainers": "paul@standardcyborg.com"
+  },
+  "cocoapods_version": ">= 1.0",
+  "source": {
+    "git": "git@github.com:StandardCyborg/protobag.git",
+    "tag": "v0.0.1"
+  },
+  "public_header_files": [
+	  "c++/protobag_test/**/*.{hpp,h,cpp,cc}"
+  ],
+  "source_files": [
+    "c++/protobag_test/**/*.{hpp,h,cpp,cc}"
+  ],
+  "header_mappings_dir": "c++/protobag_test",
+  "platforms": {
+    "ios": "13.0",
+    "osx": "10.15"
+  },
+  "dependencies": {
+    "ProtobagCocoa": "~> 0.0.1",
+	  "GTestCpp": "~> 1.10.0"
+  },
+  "pod_target_xcconfig": {
+    "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
+    "CLANG_CXX_LIBRARY": "libc++"
+  },
+  "user_target_xcconfig": {
+    "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
+    "CLANG_CXX_LIBRARY": "libc++"
+  },
+  "libraries": ["c++", "iconv"]
+}

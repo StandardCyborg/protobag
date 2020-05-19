@@ -1,0 +1,11 @@
+.vscode
+*.DS_Store
+*/**/.DS_Store
+*.egg-info
+*.pyc
+*/**/__pycache__
+.eggs
+eggs
+build
+dist
+*~

@@ -1,0 +1,252 @@
+#!/usr/bin/env python
+# vim: tabstop=2 shiftwidth=2 expandtab
+
+"""
+pb-dev: A CLI for Protobag development
+TODO examples
+"""
+
+import os
+import platform
+import subprocess
+import sys
+
+
+###############################################################################
+## Env Configuration
+
+CONTAINER_NAME = 'protobag-dev-' + os.environ.get('USER', 'anon')
+CONTAINER_IMAGE = 'protobag' # need version  ---------------------------------------------------------------
+
+###############################################################################
+## Setup Hints
+
+INSTALL_DOCKER_LINUX = """
+To install Docker on Linux, try the curl | bash solution:
+curl -fsSL https://get.docker.com | bash
+If your machine has NVidia GPUs and drivers installed (you can check
+with `nvidia-smi`), you should also install nvidia-docker:
+https://github.com/NVIDIA/nvidia-docker#ubuntu-16041804-debian-jessiestretchbuster
+"""
+
+INSTALL_DOCKER_MAC = """
+To install Docker on a Mac, we advocate you install docker-machine (which uses 
+VirtualBox-based virtual machines) versus Docker Desktop for Mac (which uses
+the xhyve hypervisor) because:
+  * The VirtualBox-based environment is more similar to Docker on Linux
+  * Networking with VirtualBox-based Docker is much easier
+To install docker-machine:
+  1. Install Homebrew: https://brew.sh/
+  2. Install Docker: `$ brew install docker docker-machine`
+  3. Install VirtualBox (you may need to allow permissions in System
+      Preferences):
+        `$ brew cask install virtualbox`
+  4. Create your first virtual machine, which will be the Docker host:
+      ```
+      $ docker-machine create --driver virtualbox --virtualbox-disk-size 50000 default
+      $ docker-machine env default
+      ```
+  5. Test your install:
+      ```
+      $ eval `docker-machine env` # Tells the docker client how to reach your
+                                  # VirtualBox; run once per shell session.
+      
+      $ docker run hello-world
+      ...
+      Hello from Docker!
+      This message shows that your installation appears to be working correctly.
+      ...
+      ```
+"""
+
+###############################################################################
+## Utils
+
+## Logging
+import logging
+LOG_FORMAT = ""#"%(asctime)s\t%(name)-4s %(process)d : %(message)s"
+log = logging.getLogger("ppg")
+log.setLevel(logging.INFO)
+console_handler = logging.StreamHandler(sys.stderr)
+console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
+log.addHandler(console_handler)
+
+def run_cmd(cmd, collect=False, quiet=False):
+  cmd = cmd.replace('\n', '').strip()
+
+  kwargs = {
+    'shell': True,
+  }
+  if quiet:
+    f_devnull = open(os.devnull, 'w')
+    kwargs['stdout'] = f_devnull
+  if quiet or collect:
+    kwargs['stderr'] = subprocess.STDOUT
+
+  if not quiet:
+    log.info("Running: %s ..." % cmd)
+    
+  if collect:
+    out = subprocess.check_output(cmd, **kwargs)
+  else:
+    subprocess.check_call(cmd, **kwargs)
+    out = None
+  
+  if not quiet:
+    log.info("... done with %s " % cmd)
+  
+  return out
+
+
+def is_cmd_missing(cmd):
+  try:
+    run_cmd(cmd, quiet=True)
+  except OSError as e:
+    if e.errno == errno.ENOENT:
+      return True
+    else:
+      raise
+  return False
+
+
+def raise_if_no_docker():
+  p = platform.system()
+  if is_cmd_missing('docker -v'):
+    if p == 'Linux':
+      raise ValueError("\n\nMissing Docker \n\n %s" % INSTALL_DOCKER_LINUX)
+    elif p == 'Darwin':
+      raise ValueError("\n\nMissing Docker \n\n %s" % INSTALL_DOCKER_MAC)
+    else:
+      raise ValueError("Unsupported platform: %s" % p)
+
+  # Check for docker-machine on a Mac
+  if p == 'Darwin':
+    try:
+      run_cmd("docker ps", quiet=True)
+    except Exception as e:
+      print(e)
+      raise ValueError("""
+        Docker client could not connect to daemon; is your docker-machine VM
+        running?  Try 
+          $ eval $(docker-machine env) 
+        or, if your machine is down, run this first:
+          $ docker-machine start default
+        Error: %s
+        """ % (e,))
+    
+
+
+###############################################################################
+## Main Entrypoint
+
+def create_arg_parser():
+  import argparse
+
+  parser = argparse.ArgumentParser(
+                      description=__doc__,
+                      formatter_class=argparse.RawDescriptionHelpFormatter)
+
+  # Configuration
+  parser.add_argument(
+    '--root', default=os.path.dirname(os.path.abspath(__file__)),
+    help='Use source at this root directory [default %(default)s]')
+
+  # Actions
+  parser.add_argument(
+    '--build-env', default=False, action='store_true',
+    help='Build the Dockerized dev env')
+  parser.add_argument(
+    '--shell', default=False, action='store_true',
+    help='Drop into a dockerized dev environment')
+  parser.add_argument(
+    '--shell-rm', default=False, action='store_true',
+    help='Delete the dockerized dev environment')
+  parser.add_argument(
+    '--post-release', default=False, action='store_true',
+    help='Run the post-release workflow; run this on master after merging '
+         'your feature branch')
+
+  return parser
+
+
+def build_env(args):
+  raise_if_no_docker()
+
+  # TODO(tag with version etc)
+  CMD = """
+    docker build -t {image} -f {dockerfile} {docker_root}
+  """.format(
+    image=CONTAINER_IMAGE,
+    dockerfile=os.path.join(args.root, 'docker/Dockerfile'),
+    docker_root=args.root)
+  
+  run_cmd(CMD)
+
+
+def post_release(args):
+  print('todo get_version')
+  version = 'v0.0.1'
+  
+  # Tag for cocoapods release
+  print('todo: podspec version matches version')
+  CMD = """
+    git tag -f {version} && git push -f origin {version}
+  """.format(version=version)
+  run_cmd(CMD)
+
+
+def start_container(src_root, container_name=CONTAINER_NAME, mnt_local_root=True):
+  local_mount = ''
+  if mnt_local_root:
+    local_mount = '-v %s:/opt/protobag:z' % src_root
+
+  CMD = """
+      docker run
+        --name {container_name}
+        -d -it -P --net=host
+        {local_mount}
+        -w /opt/protobag
+          {docker_image} sleep infinity || docker start {container_name} || true
+    """.format(
+          container_name=container_name,
+          local_mount=local_mount,
+          docker_image=CONTAINER_IMAGE)
+  run_cmd(CMD)
+
+
+def enter_container(container_name=CONTAINER_NAME):
+  EXEC_CMD = 'docker exec -it %s bash' % container_name
+  os.execvp("docker", EXEC_CMD.split(' '))
+
+
+def main(args=None):
+  if args is None:
+    parser = create_arg_parser()
+    args = parser.parse_args()
+
+  if args.build_env:
+    build_env(args)
+  elif args.post_release:
+    post_release(args)
+  elif args.shell:
+    start_container(args.root)
+    enter_container()
+  elif args.shell_rm:
+    CMD = "docker rm -f %s || true" % CONTAINER_NAME
+    run_cmd(CMD)
+  elif args.run_protoc:
+    container_name = 'protobag-dev-protoc'
+    start_container(args.root, container_name=container_name)
+    CMD = """
+      docker exec -it {container_name} bash -c "
+        cd /opt/protobag/c++/protobag/protobag_msg &&
+        protoc ProtobagMsg.proto --python_out=../../../python/protobag/ &&
+        protoc ProtobagMsg.proto --cpp_out=../../../c++/protobag/protobag_msg/ &&
+        "
+    """.format(container_name=container_name)
+    run_cmd(CMD)
+    run_cmd("docker rm -f %s || true" % container_name)
+
+if __name__ == '__main__':
+  main()
+

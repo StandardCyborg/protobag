@@ -1,0 +1,13 @@
+*.DS_Store
+*/**/.DS_Store
+*.egg-info
+*.pyc
+*/**/__pycache__
+.eggs
+eggs
+build
+dist
+*~
+
+# Don't put Mac stuff in the docker build env
+cocoa

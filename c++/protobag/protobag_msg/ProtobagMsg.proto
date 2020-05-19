@@ -1,0 +1,79 @@
+syntax = "proto3";
+
+package protobag;
+
+import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/descriptor.proto";
+
+// TODO
+// option cc_enable_arenas = true;
+
+message StampedMessage {
+    google.protobuf.Timestamp timestamp = 1;
+    google.protobuf.Any msg = 2;
+}
+
+message StdMsg {
+    message Bool { bool value = 1; }
+    message Int { int64 value = 1; }
+    message Float { float value = 1; }
+    message String { string value = 1; }
+    message Bytes { bytes value = 1; }
+}
+
+message TopicTime {
+    string topic = 1;
+    google.protobuf.Timestamp timestamp = 2;
+
+    string entryname = 10;
+        // TODO when adding parquet back-end, fix this crutch ...
+}
+
+message Selection {
+    message Window {
+        // An empty Window means "SELECT *"
+        
+        // A Window may include a specific list of topics and/or an inclusive
+        // time range
+        repeated string topics = 1;
+        google.protobuf.Timestamp start = 2;
+        google.protobuf.Timestamp end = 3;
+        
+        // A Window might exclude certain topics entirely
+        // (e.g. high-res images)
+        repeated string exclude_topics = 4;
+    }
+
+    message Events {
+        // A Selection may alteratively be a list of specific messages
+        repeated TopicTime events = 10;
+    }
+
+    oneof criteria {
+        Window window = 1;
+        Events events = 2;
+    }
+}
+
+message DescriptorMap {
+    map<string, google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
+}
+
+message BagMeta {
+    string bag_namespace = 1;
+    
+    google.protobuf.Timestamp start = 2;
+    google.protobuf.Timestamp end = 3;
+    
+    string protobag_version = 10;
+
+    message TopicStats {
+        int64 n_messages = 1;
+    }
+    map<string, TopicStats> topic_to_stats = 20;
+
+    repeated TopicTime time_ordered_entries = 30;
+
+    DescriptorMap descriptor_map = 40;
+}
