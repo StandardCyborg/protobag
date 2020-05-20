@@ -39,7 +39,8 @@ public:
       return {.value = msg};
     }
     return {.error = fmt::format(
-      "Failed to unpack a {} from Any[{}]", MessageTypeName<MT>(), any.type_url())
+      "Failed to unpack a {} from Any[{}]", 
+      MessageTypeName<MT>(), any.type_url())
     };
   }
 
