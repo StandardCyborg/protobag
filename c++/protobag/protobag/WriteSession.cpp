@@ -28,53 +28,116 @@ Result<WriteSession::Ptr> WriteSession::Create(const Spec &s) {
   return {.value = w};
 }
 
-OkOrErr WriteSession::WriteEntry(const Entry &entry) {
+OkOrErr WriteSession::WriteEntry(const Entry &entry, bool use_text_format) {
   if (!_archive) {
     return OkOrErr::Err("Programming Error: no archive open for writing");
   }
 
-  auto maybe_m_bytes = PBFactory::ToBinaryString<StampedMessage>(entry.stamped_msg);
-  if (!maybe_m_bytes.IsOk()) {
-    return OkOrErr::Err(maybe_m_bytes.error);
+  std::string entryname = entry.entryname;
+  {
+    if (entryname.empty()) {
+      const auto &topic = entry.GetTopic();
+      if (topic.empty()) {
+        return {.error = fmt::format(
+          "Entry must have an entryname or a topic.  Got {}",
+          entry.ToString())
+        };
+      }
+
+      if (!entry.ctx.has_value()) {
+        return {.error = fmt::format(
+          "Invalid stamped entry; needs timestamp. {}", entry.ToString())
+        };
+      }
+
+      entryname = fmt::format(
+          "{}/{}.{}.protobin",
+          topic,
+          entry.ctx->stamp.seconds(),
+          entry.ctx->stamp.nanos());
+    }
+
+    if (entry.IsRaw()) {
+      entryname = fmt::format("{}.raw", entryname);
+    }
+
+    entryname = 
+      use_text_format ? 
+        fmt::format("{}.prototxt", entryname) : 
+        fmt::format("{}.protobin", entryname);
+  }
+  
+
+  auto maybe_m_bytes = 
+    use_text_format ?
+      PBFactory::ToTextFormatString(entry.msg) :
+      PBFactory::ToBinaryString(entry.msg);
+  if (!maybe_bytes.IsOk()) {
+    return {.error = maybe_bytes.error};
   }
 
-  if (!IsProtoBagIndexTopic(entry.topic)) {
-    if (!_indexer) {
-      return OkOrErr::Err("Programming Error: no indexer (at least for file counter)");
-    }
-    auto next_filenum = _indexer->GetNextFilenum(entry.topic);
-    std::string entryname = fmt::format(
-      "{}/{}.protobin", entry.topic, next_filenum);
-
-    OkOrErr res = _archive->Write(entryname, *maybe_m_bytes.value);
-    if (res.IsOk() && _indexer) {
-      _indexer->Observe(entry, entryname);
-    }
-
-    return res;
-
-  } else {
-
-    // The `/_protobag_index` topic gets no indexing
-    std::string entryname = fmt::format(
-        "{}/{}.{}.protobin",
-        entry.topic,
-        entry.stamped_msg.timestamp().seconds(), 
-        entry.stamped_msg.timestamp().nanos());
-    return _archive->Write(entryname, *maybe_m_bytes.value);
-
+  OkOrErr res = _archive->Write(entryname, *maybe_m_bytes.value);
+  if (res.IsOk() && _indexer) {
+    _indexer->Observe(entry, entryname);
   }
+  return res;
 }
+
+
+
+//   if (use_text_format) {
+//     entryname = fmt::format("{}.prototxt", entryname);
+
+//     res = _archive->Write(entryname, *maybe_m_bytes.value);
+//   } else {
+//     entryname = fmt::format("{}.protobin", entryname);
+//     res = _archive->Write(entryname, *maybe_m_bytes.value);
+//   }
+
+
+
+//   auto maybe_m_bytes = PBFactory::ToBinaryString<StampedMessage>(entry.stamped_msg);
+//   if (!maybe_m_bytes.IsOk()) {
+//     return OkOrErr::Err(maybe_m_bytes.error);
+//   }
+
+//   if (!IsProtoBagIndexTopic(entry.topic)) {
+//     if (!_indexer) {
+//       return OkOrErr::Err("Programming Error: no indexer (at least for file counter)");
+//     }
+//     auto next_filenum = _indexer->GetNextFilenum(entry.topic);
+//     std::string entryname = fmt::format(
+//       "{}/{}.protobin", entry.topic, next_filenum);
+
+//     OkOrErr res = _archive->Write(entryname, *maybe_m_bytes.value);
+//     if (res.IsOk() && _indexer) {
+//       _indexer->Observe(entry, entryname);
+//     }
+
+//     return res;
+
+//   } else {
+
+//     // The `/_protobag_index` topic gets no indexing
+//     std::string entryname = fmt::format(
+//         "{}/{}.{}.protobin",
+//         entry.topic,
+//         entry.stamped_msg.timestamp().seconds(), 
+//         entry.stamped_msg.timestamp().nanos());
+//     return _archive->Write(entryname, *maybe_m_bytes.value);
+
+//   }
+// }
 
 void WriteSession::Close() {
   if (_indexer) {
     BagIndex index = BagIndexBuilder::Complete(std::move(_indexer));
     WriteEntry(
-      Entry::Create(
+      Entry::CreateStamped(
         "/_protobag_index/bag_index",
         ::google::protobuf::util::TimeUtil::GetCurrentTime(),
         index));
-    _indexer = nullptr; // FIXME do we need this?  getting double index entries ....
+    _indexer = nullptr; // FIXME do we need this?  getting double index entries ....~~~~~~~~~~~~~~~~~~~~~~~~
   }
 }
 

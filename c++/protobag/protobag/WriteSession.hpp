@@ -17,18 +17,23 @@ public:
 
   struct Spec {
     archive::Archive::Spec archive_spec;
-    bool save_index_index = true;
+    bool save_timeseries_index = true;
+    bool save_descriptor_index = true;
 
     static Spec WriteToTempdir() {
       return {
         .archive_spec = archive::Archive::Spec::WriteToTempdir()
       };
     }
+
+    bool ShouldDoIndexing() const {
+      return save_timeseries_index || save_descriptor_index;
+    }
   };
 
   static Result<Ptr> Create(const Spec &s=Spec::WriteToTempdir());
 
-  OkOrErr WriteEntry(const Entry &entry);
+  OkOrErr WriteEntry(const Entry &entry, bool use_text_format=false);
 
   void Close();
 

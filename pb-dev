@@ -162,6 +162,10 @@ def create_arg_parser():
     '--shell-rm', default=False, action='store_true',
     help='Delete the dockerized dev environment')
   parser.add_argument(
+    '--run-protoc', default=False, action='store_true',
+    help='Re-generate protoc-generated files, updating the source tree '
+         'in-place')
+  parser.add_argument(
     '--post-release', default=False, action='store_true',
     help='Run the post-release workflow; run this on master after merging '
          'your feature branch')

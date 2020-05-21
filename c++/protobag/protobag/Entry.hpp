@@ -33,18 +33,33 @@ inline std::string GetTypeURL() {
 struct Entry {
   // == Core Entry ============================================================
 
+  // The name of this entry; similar to a file path relative to the root of
+  // an archive.
   std::string entryname;
     // Never empty on read.  If empty on write, then Protobag will auto-
     // generate an entryname (likely based on `context.topic` below).
 
+  // The payload of the entry.  
   ::google::protobuf::Any msg;
     // If `type_url` is unset, then the message is a "raw message" and Protobag
     // will forgo all indexing; see CreateRaw() below.  But `type_url`, is
     // usually automatically set.
 
+  // Optional context
   struct Context {
+    // For timeseries data: the topic, which is a directory for a sequence
+    // of messages that all have the same type.
     std::string topic;
+    
+    // For timeseries data: the time associated with a message.
     ::google::protobuf::Timestamp stamp;
+
+    // For timeseries data: the type URI of the contained message (if known)
+    std::string inner_type_url;
+
+    // For descriptor indexing, which allows readers of your protobag to decode
+    // messages without having your protobuf definitions.  This is the
+    // descriptor of the innermost msg (not StampedMessage nor Any).
     const ::google::protobuf::Descriptor *descriptor = nullptr;
   };
   std::optional<Context> ctx;
@@ -59,7 +74,13 @@ struct Entry {
         const std::string &entryname,
         const MT &msg) {
 
-    return Create<MT>(entryname, msg, {.descriptor = msg.GetDescriptor()});
+    return Create<MT>(
+      entryname,
+      msg,
+      {
+        .descriptor = msg.GetDescriptor(),
+        .inner_type_url = GetTypeURL<MT>(),
+      });
   }
 
   template <typename MT>
@@ -145,6 +166,7 @@ struct Entry {
               {
                 .topic = topic,
                 .stamp = t,
+                .inner_type_url = GetTypeURL<MT>(),
                 .descriptor = msg.GetDescriptor(),
               });
 
@@ -162,10 +184,22 @@ struct Entry {
     return IsA<StampedMessage>();
   }
 
+  bool IsRaw() const {
+    return msg.type_url().empty();
+  }
+
+  const std::string &GetTopic() const {
+    if (ctx.has_value()) {
+      return ctx->topic;
+    } else {
+      return "";
+    }
+  }
+
   template <typename MT>
   Result<MT> GetAs(bool validate_type_url = true) const {
     if (validate_type_url) {
-      if (msg.type_url().empty()) {
+      if (IsRaw()) {
         return {.error = fmt::format((
           "Tried to decode a {} but this entry has no known type_url. "
           "Try again with validation disabled; you will also need to "
@@ -251,11 +285,8 @@ struct MaybeEntry : public Result<Entry> {
   
   bool IsEndOfSequence() { return error == "EndOfSequence"; }
 
-  // FIXME can't we brace init for the base class ..? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   static MaybeEntry Err(const std::string &s) {
-    MaybeEntry m;
-    m.error = s;
-    return m;
+    return {.error = s};
   }
 
   static MaybeEntry Ok(Entry &&v) {

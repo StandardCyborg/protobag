@@ -16,9 +16,9 @@ public:
   BagIndexBuilder();
   ~BagIndexBuilder();
 
-  uint64_t GetNextFilenum(const std::string &topic);
+  // uint64_t GetNextFilenum(const std::string &topic);
 
-  void Observe(const Entry &entry, const std::string &entryname="");
+  void Observe(const Entry &entry, const std::string &final_entryname="");
 
   static BagIndex Complete(UPtr &&builder);
     // NB: Destroys builder!  TODO give an example use case in class docstring to explain ~~~~~
@@ -36,6 +36,9 @@ protected:
 
   struct TopicTimePQ;
   std::unique_ptr<TopicTimePQ> _ttq;
+
+  struct DescriptorIndexer;
+  std::unique_ptr<DescriptorIndexer> _ttq;
 
   BagIndex_TopicStats &GetMutableStats(const std::string &topic);
 };
