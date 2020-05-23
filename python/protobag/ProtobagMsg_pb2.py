@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='protobag',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x11ProtobagMsg.proto\x12\x08protobag\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/descriptor.proto\"b\n\x0eStampedMessage\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\x03msg\x18\x02 \x01(\x0b\x32\x14.google.protobuf.Any\"~\n\x06StdMsg\x1a\x15\n\x04\x42ool\x12\r\n\x05value\x18\x01 \x01(\x08\x1a\x14\n\x03Int\x12\r\n\x05value\x18\x01 \x01(\x03\x1a\x16\n\x05\x46loat\x12\r\n\x05value\x18\x01 \x01(\x02\x1a\x17\n\x06String\x12\r\n\x05value\x18\x01 \x01(\t\x1a\x16\n\x05\x42ytes\x12\r\n\x05value\x18\x01 \x01(\x0c\"\\\n\tTopicTime\x12\r\n\x05topic\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tentryname\x18\n \x01(\t\"\xa9\x02\n\tSelection\x12,\n\x06window\x18\x01 \x01(\x0b\x32\x1a.protobag.Selection.WindowH\x00\x12,\n\x06\x65vents\x18\x02 \x01(\x0b\x32\x1a.protobag.Selection.EventsH\x00\x1a\x84\x01\n\x06Window\x12\x0e\n\x06topics\x18\x01 \x03(\t\x12)\n\x05start\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\'\n\x03\x65nd\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x16\n\x0e\x65xclude_topics\x18\x04 \x03(\t\x1a-\n\x06\x45vents\x12#\n\x06\x65vents\x18\n \x03(\x0b\x32\x13.protobag.TopicTimeB\n\n\x08\x63riteria\"\xc1\x01\n\rDescriptorMap\x12P\n\x16type_url_to_descriptor\x18\x01 \x03(\x0b\x32\x30.protobag.DescriptorMap.TypeUrlToDescriptorEntry\x1a^\n\x18TypeUrlToDescriptorEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".google.protobuf.FileDescriptorSet:\x02\x38\x01\"\xa7\x03\n\x08\x42\x61gIndex\x12\x15\n\rbag_namespace\x18\x01 \x01(\t\x12)\n\x05start\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\'\n\x03\x65nd\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x18\n\x10protobag_version\x18\n \x01(\t\x12<\n\x0etopic_to_stats\x18\x14 \x03(\x0b\x32$.protobag.BagIndex.TopicToStatsEntry\x12\x31\n\x14time_ordered_entries\x18\x1e \x03(\x0b\x32\x13.protobag.TopicTime\x12/\n\x0e\x64\x65scriptor_map\x18( \x01(\x0b\x32\x17.protobag.DescriptorMap\x1a \n\nTopicStats\x12\x12\n\nn_messages\x18\x01 \x01(\x03\x1aR\n\x11TopicToStatsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12,\n\x05value\x18\x02 \x01(\x0b\x32\x1d.protobag.BagIndex.TopicStats:\x02\x38\x01\x62\x06proto3'
+  serialized_pb=b'\n\x11ProtobagMsg.proto\x12\x08protobag\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/descriptor.proto\"b\n\x0eStampedMessage\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\x03msg\x18\x02 \x01(\x0b\x32\x14.google.protobuf.Any\"~\n\x06StdMsg\x1a\x15\n\x04\x42ool\x12\r\n\x05value\x18\x01 \x01(\x08\x1a\x14\n\x03Int\x12\r\n\x05value\x18\x01 \x01(\x03\x1a\x16\n\x05\x46loat\x12\r\n\x05value\x18\x01 \x01(\x02\x1a\x17\n\x06String\x12\r\n\x05value\x18\x01 \x01(\t\x1a\x16\n\x05\x42ytes\x12\r\n\x05value\x18\x01 \x01(\x0c\"\\\n\tTopicTime\x12\r\n\x05topic\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tentryname\x18\n \x01(\t\"\xa2\x04\n\tSelection\x12-\n\nselect_all\x18\x01 \x01(\x0b\x32\x17.protobag.Selection.AllH\x00\x12\x34\n\nentrynames\x18\x02 \x01(\x0b\x32\x1e.protobag.Selection.EntrynamesH\x00\x12,\n\x06window\x18\x03 \x01(\x0b\x32\x1a.protobag.Selection.WindowH\x00\x12,\n\x06\x65vents\x18\x04 \x01(\x0b\x32\x1a.protobag.Selection.EventsH\x00\x1a\"\n\x03\x41ll\x12\x1b\n\x13\x61ll_entries_are_raw\x18\x01 \x01(\x08\x1aY\n\nEntrynames\x12\x12\n\nentrynames\x18\x01 \x03(\t\x12\x1e\n\x16ignore_missing_entries\x18\x02 \x01(\x08\x12\x17\n\x0f\x65ntries_are_raw\x18\x03 \x01(\x08\x1a\x84\x01\n\x06Window\x12\x0e\n\x06topics\x18\x01 \x03(\t\x12)\n\x05start\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\'\n\x03\x65nd\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x16\n\x0e\x65xclude_topics\x18\x04 \x03(\t\x1a\x42\n\x06\x45vents\x12#\n\x06\x65vents\x18\n \x03(\x0b\x32\x13.protobag.TopicTime\x12\x13\n\x0brequire_all\x18\x02 \x01(\x08\x42\n\n\x08\x63riteria\"\xb0\x06\n\x08\x42\x61gIndex\x12\x15\n\rbag_namespace\x18\x01 \x01(\t\x12\x18\n\x10protobag_version\x18\x02 \x01(\t\x12\x44\n\x14\x64\x65scriptor_pool_data\x18\xe8\x07 \x01(\x0b\x32%.protobag.BagIndex.DescriptorPoolData\x12*\n\x05start\x18\xd0\x0f \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12(\n\x03\x65nd\x18\xd1\x0f \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12=\n\x0etopic_to_stats\x18\xe4\x0f \x03(\x0b\x32$.protobag.BagIndex.TopicToStatsEntry\x12\x32\n\x14time_ordered_entries\x18\xee\x0f \x03(\x0b\x32\x13.protobag.TopicTime\x1a\xed\x02\n\x12\x44\x65scriptorPoolData\x12^\n\x16type_url_to_descriptor\x18\x01 \x03(\x0b\x32>.protobag.BagIndex.DescriptorPoolData.TypeUrlToDescriptorEntry\x12\\\n\x15\x65ntryname_to_type_url\x18\x02 \x03(\x0b\x32=.protobag.BagIndex.DescriptorPoolData.EntrynameToTypeUrlEntry\x1a^\n\x18TypeUrlToDescriptorEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".google.protobuf.FileDescriptorSet:\x02\x38\x01\x1a\x39\n\x17\x45ntrynameToTypeUrlEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a \n\nTopicStats\x12\x12\n\nn_messages\x18\x01 \x01(\x03\x1aR\n\x11TopicToStatsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12,\n\x05value\x18\x02 \x01(\x0b\x32\x1d.protobag.BagIndex.TopicStats:\x02\x38\x01\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_any__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_descriptor__pb2.DESCRIPTOR,])
 
@@ -285,6 +285,80 @@ _TOPICTIME = _descriptor.Descriptor(
 )
 
 
+_SELECTION_ALL = _descriptor.Descriptor(
+  name='All',
+  full_name='protobag.Selection.All',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='all_entries_are_raw', full_name='protobag.Selection.All.all_entries_are_raw', index=0,
+      number=1, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=654,
+  serialized_end=688,
+)
+
+_SELECTION_ENTRYNAMES = _descriptor.Descriptor(
+  name='Entrynames',
+  full_name='protobag.Selection.Entrynames',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='entrynames', full_name='protobag.Selection.Entrynames.entrynames', index=0,
+      number=1, type=9, cpp_type=9, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='ignore_missing_entries', full_name='protobag.Selection.Entrynames.ignore_missing_entries', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='entries_are_raw', full_name='protobag.Selection.Entrynames.entries_are_raw', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=690,
+  serialized_end=779,
+)
+
 _SELECTION_WINDOW = _descriptor.Descriptor(
   name='Window',
   full_name='protobag.Selection.Window',
@@ -332,8 +406,8 @@ _SELECTION_WINDOW = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=554,
-  serialized_end=686,
+  serialized_start=782,
+  serialized_end=914,
 )
 
 _SELECTION_EVENTS = _descriptor.Descriptor(
@@ -350,6 +424,13 @@ _SELECTION_EVENTS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='require_all', full_name='protobag.Selection.Events.require_all', index=1,
+      number=2, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -362,8 +443,8 @@ _SELECTION_EVENTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=688,
-  serialized_end=733,
+  serialized_start=916,
+  serialized_end=982,
 )
 
 _SELECTION = _descriptor.Descriptor(
@@ -374,15 +455,29 @@ _SELECTION = _descriptor.Descriptor(
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='window', full_name='protobag.Selection.window', index=0,
+      name='select_all', full_name='protobag.Selection.select_all', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='events', full_name='protobag.Selection.events', index=1,
+      name='entrynames', full_name='protobag.Selection.entrynames', index=1,
       number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='window', full_name='protobag.Selection.window', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='events', full_name='protobag.Selection.events', index=3,
+      number=4, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -390,7 +485,7 @@ _SELECTION = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_SELECTION_WINDOW, _SELECTION_EVENTS, ],
+  nested_types=[_SELECTION_ALL, _SELECTION_ENTRYNAMES, _SELECTION_WINDOW, _SELECTION_EVENTS, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -403,26 +498,26 @@ _SELECTION = _descriptor.Descriptor(
       index=0, containing_type=None, fields=[]),
   ],
   serialized_start=448,
-  serialized_end=745,
+  serialized_end=994,
 )
 
 
-_DESCRIPTORMAP_TYPEURLTODESCRIPTORENTRY = _descriptor.Descriptor(
+_BAGINDEX_DESCRIPTORPOOLDATA_TYPEURLTODESCRIPTORENTRY = _descriptor.Descriptor(
   name='TypeUrlToDescriptorEntry',
-  full_name='protobag.DescriptorMap.TypeUrlToDescriptorEntry',
+  full_name='protobag.BagIndex.DescriptorPoolData.TypeUrlToDescriptorEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='key', full_name='protobag.DescriptorMap.TypeUrlToDescriptorEntry.key', index=0,
+      name='key', full_name='protobag.BagIndex.DescriptorPoolData.TypeUrlToDescriptorEntry.key', index=0,
       number=1, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='value', full_name='protobag.DescriptorMap.TypeUrlToDescriptorEntry.value', index=1,
+      name='value', full_name='protobag.BagIndex.DescriptorPoolData.TypeUrlToDescriptorEntry.value', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -440,20 +535,64 @@ _DESCRIPTORMAP_TYPEURLTODESCRIPTORENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=847,
-  serialized_end=941,
+  serialized_start=1542,
+  serialized_end=1636,
 )
 
-_DESCRIPTORMAP = _descriptor.Descriptor(
-  name='DescriptorMap',
-  full_name='protobag.DescriptorMap',
+_BAGINDEX_DESCRIPTORPOOLDATA_ENTRYNAMETOTYPEURLENTRY = _descriptor.Descriptor(
+  name='EntrynameToTypeUrlEntry',
+  full_name='protobag.BagIndex.DescriptorPoolData.EntrynameToTypeUrlEntry',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='type_url_to_descriptor', full_name='protobag.DescriptorMap.type_url_to_descriptor', index=0,
+      name='key', full_name='protobag.BagIndex.DescriptorPoolData.EntrynameToTypeUrlEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='protobag.BagIndex.DescriptorPoolData.EntrynameToTypeUrlEntry.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1638,
+  serialized_end=1695,
+)
+
+_BAGINDEX_DESCRIPTORPOOLDATA = _descriptor.Descriptor(
+  name='DescriptorPoolData',
+  full_name='protobag.BagIndex.DescriptorPoolData',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='type_url_to_descriptor', full_name='protobag.BagIndex.DescriptorPoolData.type_url_to_descriptor', index=0,
       number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='entryname_to_type_url', full_name='protobag.BagIndex.DescriptorPoolData.entryname_to_type_url', index=1,
+      number=2, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
@@ -461,7 +600,7 @@ _DESCRIPTORMAP = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_DESCRIPTORMAP_TYPEURLTODESCRIPTORENTRY, ],
+  nested_types=[_BAGINDEX_DESCRIPTORPOOLDATA_TYPEURLTODESCRIPTORENTRY, _BAGINDEX_DESCRIPTORPOOLDATA_ENTRYNAMETOTYPEURLENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -470,10 +609,9 @@ _DESCRIPTORMAP = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=748,
-  serialized_end=941,
+  serialized_start=1330,
+  serialized_end=1695,
 )
-
 
 _BAGINDEX_TOPICSTATS = _descriptor.Descriptor(
   name='TopicStats',
@@ -501,8 +639,8 @@ _BAGINDEX_TOPICSTATS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1251,
-  serialized_end=1283,
+  serialized_start=1697,
+  serialized_end=1729,
 )
 
 _BAGINDEX_TOPICTOSTATSENTRY = _descriptor.Descriptor(
@@ -538,8 +676,8 @@ _BAGINDEX_TOPICTOSTATSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1285,
-  serialized_end=1367,
+  serialized_start=1731,
+  serialized_end=1813,
 )
 
 _BAGINDEX = _descriptor.Descriptor(
@@ -557,51 +695,51 @@ _BAGINDEX = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='start', full_name='protobag.BagIndex.start', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='end', full_name='protobag.BagIndex.end', index=2,
-      number=3, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='protobag_version', full_name='protobag.BagIndex.protobag_version', index=3,
-      number=10, type=9, cpp_type=9, label=1,
+      name='protobag_version', full_name='protobag.BagIndex.protobag_version', index=1,
+      number=2, type=9, cpp_type=9, label=1,
       has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='topic_to_stats', full_name='protobag.BagIndex.topic_to_stats', index=4,
-      number=20, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='time_ordered_entries', full_name='protobag.BagIndex.time_ordered_entries', index=5,
-      number=30, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='descriptor_map', full_name='protobag.BagIndex.descriptor_map', index=6,
-      number=40, type=11, cpp_type=10, label=1,
+      name='descriptor_pool_data', full_name='protobag.BagIndex.descriptor_pool_data', index=2,
+      number=1000, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='start', full_name='protobag.BagIndex.start', index=3,
+      number=2000, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='end', full_name='protobag.BagIndex.end', index=4,
+      number=2001, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='topic_to_stats', full_name='protobag.BagIndex.topic_to_stats', index=5,
+      number=2020, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='time_ordered_entries', full_name='protobag.BagIndex.time_ordered_entries', index=6,
+      number=2030, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
-  nested_types=[_BAGINDEX_TOPICSTATS, _BAGINDEX_TOPICTOSTATSENTRY, ],
+  nested_types=[_BAGINDEX_DESCRIPTORPOOLDATA, _BAGINDEX_TOPICSTATS, _BAGINDEX_TOPICTOSTATSENTRY, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -610,8 +748,8 @@ _BAGINDEX = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=944,
-  serialized_end=1367,
+  serialized_start=997,
+  serialized_end=1813,
 )
 
 _STAMPEDMESSAGE.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
@@ -622,35 +760,47 @@ _STDMSG_FLOAT.containing_type = _STDMSG
 _STDMSG_STRING.containing_type = _STDMSG
 _STDMSG_BYTES.containing_type = _STDMSG
 _TOPICTIME.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
+_SELECTION_ALL.containing_type = _SELECTION
+_SELECTION_ENTRYNAMES.containing_type = _SELECTION
 _SELECTION_WINDOW.fields_by_name['start'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 _SELECTION_WINDOW.fields_by_name['end'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 _SELECTION_WINDOW.containing_type = _SELECTION
 _SELECTION_EVENTS.fields_by_name['events'].message_type = _TOPICTIME
 _SELECTION_EVENTS.containing_type = _SELECTION
+_SELECTION.fields_by_name['select_all'].message_type = _SELECTION_ALL
+_SELECTION.fields_by_name['entrynames'].message_type = _SELECTION_ENTRYNAMES
 _SELECTION.fields_by_name['window'].message_type = _SELECTION_WINDOW
 _SELECTION.fields_by_name['events'].message_type = _SELECTION_EVENTS
+_SELECTION.oneofs_by_name['criteria'].fields.append(
+  _SELECTION.fields_by_name['select_all'])
+_SELECTION.fields_by_name['select_all'].containing_oneof = _SELECTION.oneofs_by_name['criteria']
+_SELECTION.oneofs_by_name['criteria'].fields.append(
+  _SELECTION.fields_by_name['entrynames'])
+_SELECTION.fields_by_name['entrynames'].containing_oneof = _SELECTION.oneofs_by_name['criteria']
 _SELECTION.oneofs_by_name['criteria'].fields.append(
   _SELECTION.fields_by_name['window'])
 _SELECTION.fields_by_name['window'].containing_oneof = _SELECTION.oneofs_by_name['criteria']
 _SELECTION.oneofs_by_name['criteria'].fields.append(
   _SELECTION.fields_by_name['events'])
 _SELECTION.fields_by_name['events'].containing_oneof = _SELECTION.oneofs_by_name['criteria']
-_DESCRIPTORMAP_TYPEURLTODESCRIPTORENTRY.fields_by_name['value'].message_type = google_dot_protobuf_dot_descriptor__pb2._FILEDESCRIPTORSET
-_DESCRIPTORMAP_TYPEURLTODESCRIPTORENTRY.containing_type = _DESCRIPTORMAP
-_DESCRIPTORMAP.fields_by_name['type_url_to_descriptor'].message_type = _DESCRIPTORMAP_TYPEURLTODESCRIPTORENTRY
+_BAGINDEX_DESCRIPTORPOOLDATA_TYPEURLTODESCRIPTORENTRY.fields_by_name['value'].message_type = google_dot_protobuf_dot_descriptor__pb2._FILEDESCRIPTORSET
+_BAGINDEX_DESCRIPTORPOOLDATA_TYPEURLTODESCRIPTORENTRY.containing_type = _BAGINDEX_DESCRIPTORPOOLDATA
+_BAGINDEX_DESCRIPTORPOOLDATA_ENTRYNAMETOTYPEURLENTRY.containing_type = _BAGINDEX_DESCRIPTORPOOLDATA
+_BAGINDEX_DESCRIPTORPOOLDATA.fields_by_name['type_url_to_descriptor'].message_type = _BAGINDEX_DESCRIPTORPOOLDATA_TYPEURLTODESCRIPTORENTRY
+_BAGINDEX_DESCRIPTORPOOLDATA.fields_by_name['entryname_to_type_url'].message_type = _BAGINDEX_DESCRIPTORPOOLDATA_ENTRYNAMETOTYPEURLENTRY
+_BAGINDEX_DESCRIPTORPOOLDATA.containing_type = _BAGINDEX
 _BAGINDEX_TOPICSTATS.containing_type = _BAGINDEX
 _BAGINDEX_TOPICTOSTATSENTRY.fields_by_name['value'].message_type = _BAGINDEX_TOPICSTATS
 _BAGINDEX_TOPICTOSTATSENTRY.containing_type = _BAGINDEX
+_BAGINDEX.fields_by_name['descriptor_pool_data'].message_type = _BAGINDEX_DESCRIPTORPOOLDATA
 _BAGINDEX.fields_by_name['start'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 _BAGINDEX.fields_by_name['end'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 _BAGINDEX.fields_by_name['topic_to_stats'].message_type = _BAGINDEX_TOPICTOSTATSENTRY
 _BAGINDEX.fields_by_name['time_ordered_entries'].message_type = _TOPICTIME
-_BAGINDEX.fields_by_name['descriptor_map'].message_type = _DESCRIPTORMAP
 DESCRIPTOR.message_types_by_name['StampedMessage'] = _STAMPEDMESSAGE
 DESCRIPTOR.message_types_by_name['StdMsg'] = _STDMSG
 DESCRIPTOR.message_types_by_name['TopicTime'] = _TOPICTIME
 DESCRIPTOR.message_types_by_name['Selection'] = _SELECTION
-DESCRIPTOR.message_types_by_name['DescriptorMap'] = _DESCRIPTORMAP
 DESCRIPTOR.message_types_by_name['BagIndex'] = _BAGINDEX
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -717,6 +867,20 @@ _sym_db.RegisterMessage(TopicTime)
 
 Selection = _reflection.GeneratedProtocolMessageType('Selection', (_message.Message,), {
 
+  'All' : _reflection.GeneratedProtocolMessageType('All', (_message.Message,), {
+    'DESCRIPTOR' : _SELECTION_ALL,
+    '__module__' : 'ProtobagMsg_pb2'
+    # @@protoc_insertion_point(class_scope:protobag.Selection.All)
+    })
+  ,
+
+  'Entrynames' : _reflection.GeneratedProtocolMessageType('Entrynames', (_message.Message,), {
+    'DESCRIPTOR' : _SELECTION_ENTRYNAMES,
+    '__module__' : 'ProtobagMsg_pb2'
+    # @@protoc_insertion_point(class_scope:protobag.Selection.Entrynames)
+    })
+  ,
+
   'Window' : _reflection.GeneratedProtocolMessageType('Window', (_message.Message,), {
     'DESCRIPTOR' : _SELECTION_WINDOW,
     '__module__' : 'ProtobagMsg_pb2'
@@ -735,25 +899,33 @@ Selection = _reflection.GeneratedProtocolMessageType('Selection', (_message.Mess
   # @@protoc_insertion_point(class_scope:protobag.Selection)
   })
 _sym_db.RegisterMessage(Selection)
+_sym_db.RegisterMessage(Selection.All)
+_sym_db.RegisterMessage(Selection.Entrynames)
 _sym_db.RegisterMessage(Selection.Window)
 _sym_db.RegisterMessage(Selection.Events)
 
-DescriptorMap = _reflection.GeneratedProtocolMessageType('DescriptorMap', (_message.Message,), {
+BagIndex = _reflection.GeneratedProtocolMessageType('BagIndex', (_message.Message,), {
 
-  'TypeUrlToDescriptorEntry' : _reflection.GeneratedProtocolMessageType('TypeUrlToDescriptorEntry', (_message.Message,), {
-    'DESCRIPTOR' : _DESCRIPTORMAP_TYPEURLTODESCRIPTORENTRY,
+  'DescriptorPoolData' : _reflection.GeneratedProtocolMessageType('DescriptorPoolData', (_message.Message,), {
+
+    'TypeUrlToDescriptorEntry' : _reflection.GeneratedProtocolMessageType('TypeUrlToDescriptorEntry', (_message.Message,), {
+      'DESCRIPTOR' : _BAGINDEX_DESCRIPTORPOOLDATA_TYPEURLTODESCRIPTORENTRY,
+      '__module__' : 'ProtobagMsg_pb2'
+      # @@protoc_insertion_point(class_scope:protobag.BagIndex.DescriptorPoolData.TypeUrlToDescriptorEntry)
+      })
+    ,
+
+    'EntrynameToTypeUrlEntry' : _reflection.GeneratedProtocolMessageType('EntrynameToTypeUrlEntry', (_message.Message,), {
+      'DESCRIPTOR' : _BAGINDEX_DESCRIPTORPOOLDATA_ENTRYNAMETOTYPEURLENTRY,
+      '__module__' : 'ProtobagMsg_pb2'
+      # @@protoc_insertion_point(class_scope:protobag.BagIndex.DescriptorPoolData.EntrynameToTypeUrlEntry)
+      })
+    ,
+    'DESCRIPTOR' : _BAGINDEX_DESCRIPTORPOOLDATA,
     '__module__' : 'ProtobagMsg_pb2'
-    # @@protoc_insertion_point(class_scope:protobag.DescriptorMap.TypeUrlToDescriptorEntry)
+    # @@protoc_insertion_point(class_scope:protobag.BagIndex.DescriptorPoolData)
     })
   ,
-  'DESCRIPTOR' : _DESCRIPTORMAP,
-  '__module__' : 'ProtobagMsg_pb2'
-  # @@protoc_insertion_point(class_scope:protobag.DescriptorMap)
-  })
-_sym_db.RegisterMessage(DescriptorMap)
-_sym_db.RegisterMessage(DescriptorMap.TypeUrlToDescriptorEntry)
-
-BagIndex = _reflection.GeneratedProtocolMessageType('BagIndex', (_message.Message,), {
 
   'TopicStats' : _reflection.GeneratedProtocolMessageType('TopicStats', (_message.Message,), {
     'DESCRIPTOR' : _BAGINDEX_TOPICSTATS,
@@ -773,10 +945,14 @@ BagIndex = _reflection.GeneratedProtocolMessageType('BagIndex', (_message.Messag
   # @@protoc_insertion_point(class_scope:protobag.BagIndex)
   })
 _sym_db.RegisterMessage(BagIndex)
+_sym_db.RegisterMessage(BagIndex.DescriptorPoolData)
+_sym_db.RegisterMessage(BagIndex.DescriptorPoolData.TypeUrlToDescriptorEntry)
+_sym_db.RegisterMessage(BagIndex.DescriptorPoolData.EntrynameToTypeUrlEntry)
 _sym_db.RegisterMessage(BagIndex.TopicStats)
 _sym_db.RegisterMessage(BagIndex.TopicToStatsEntry)
 
 
-_DESCRIPTORMAP_TYPEURLTODESCRIPTORENTRY._options = None
+_BAGINDEX_DESCRIPTORPOOLDATA_TYPEURLTODESCRIPTORENTRY._options = None
+_BAGINDEX_DESCRIPTORPOOLDATA_ENTRYNAMETOTYPEURLENTRY._options = None
 _BAGINDEX_TOPICTOSTATSENTRY._options = None
 # @@protoc_insertion_point(module_scope)

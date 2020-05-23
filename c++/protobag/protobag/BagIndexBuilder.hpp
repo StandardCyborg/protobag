@@ -38,7 +38,7 @@ protected:
   std::unique_ptr<TopicTimePQ> _ttq;
 
   struct DescriptorIndexer;
-  std::unique_ptr<DescriptorIndexer> _ttq;
+  std::unique_ptr<DescriptorIndexer> _desc_idx;
 
   BagIndex_TopicStats &GetMutableStats(const std::string &topic);
 };

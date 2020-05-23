@@ -97,7 +97,7 @@ struct BagIndexBuilder::DescriptorIndexer {
     type_url_to_fds[type_url] = fds;
   }
 
-  void MoveToDescriptorPoolData(DescriptorPoolData &dpd) {
+  void MoveToDescriptorPoolData(BagIndex_DescriptorPoolData &dpd) {
     {
       auto &type_url_to_descriptor = *dpd.mutable_type_url_to_descriptor();
       for (const auto &entry : type_url_to_fds) {
@@ -207,13 +207,13 @@ BagIndex BagIndexBuilder::Complete(UPtr &&builder) {
 
   // Steal meta and time-ordered entries to avoid large copies
   index = std::move(builder->_index);
-  if (builder._do_timeseries_indexing) {
+  if (builder->_do_timeseries_indexing) {
     if (builder->_ttq) {
       auto ttq = std::move(builder->_ttq);
       ttq->MoveOrderedTTsTo(*index.mutable_time_ordered_entries());
     }
   }
-  if (builder._do_descriptor_indexing) {
+  if (builder->_do_descriptor_indexing) {
     if (builder->_desc_idx) {
       auto desc_idx = std::move(builder->_desc_idx);
       desc_idx->MoveToDescriptorPoolData(

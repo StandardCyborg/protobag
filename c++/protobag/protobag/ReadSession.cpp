@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <set>
+#include <sstream>
 
 #include <fmt/format.h>
 #include <google/protobuf/util/time_util.h>
@@ -30,43 +31,81 @@ Result<ReadSession::Ptr> ReadSession::Create(const ReadSession::Spec &s) {
 }
 
 MaybeEntry ReadSession::GetNext() {
-  if (!_archive) {
-    return MaybeEntry::Err("Programming Error: no archive open for writing");
-  }
-
   // TODO: make a lot faster ... 
   if (!_started) {
     auto maybe_entries_to_read = GetEntriesToRead(_archive, _spec.selection);
     if (!maybe_entries_to_read.IsOk()) {
       return MaybeEntry::Err(
-        fmt::format("Could not select entries to read: {}", maybe_entries_to_read.error));
+        fmt::format(
+          "Could not select entries to read: \n{}",
+          maybe_entries_to_read.error));
     }
-    _entries_to_read = *maybe_entries_to_read.value;
+    _plan = *maybe_entries_to_read.value;
     _started = true;
   }
 
-  if (_entries_to_read.empty()) {
+  if (_plan.entries_to_read.empty()) {
     return MaybeEntry::EndOfSequence();
   }
-std::cout << "_entries_to_read " << _entries_to_read.size() << std::endl;
-  std::string entryname = _entries_to_read.front();
+std::cout << "_entries_to_read " << _plan.entries_to_read.size() << std::endl;
+  std::string entryname = _plan.entries_to_read.front();
 std::cout << "entryname " << entryname << std::endl;
-  _entries_to_read.pop();
+  _plan.entries_to_read.pop();
 
-  auto maybe_stamped_msg = ReadMessageFrom(_archive, entryname);
-  if (!maybe_stamped_msg.IsOk()) {
-    return MaybeEntry::Err(
-      fmt::format(
-        "Could not decode StampedMessage from {}, error {} ", 
-        entryname, maybe_stamped_msg.error)
-    );
+  if (!_archive) {
+    return MaybeEntry::Err("Programming Error: no archive open for writing");
   }
 
-  return MaybeEntry::Ok({
-    .topic = GetTopicFromEntryname(entryname),
-    .stamped_msg = *maybe_stamped_msg.value,
-  });
+// TODO fixup for not found vs other error ~~~ for require_all ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  const auto maybe_bytes = _archive->ReadAsStr(entryname);
+  if (!maybe_bytes.IsOk()) {
+    return {.error = 
+      fmt::format("Read error for {}: {}", entryname, maybe_bytes.error)
+    };
+  }
+
+  if (_plan.raw_mode) {
+    
+    Entry entry;
+    entry.entryname = entryname;
+    entry.msg.set_value(std::move(*maybe_bytes.value));
+    return MaybeEntry::Ok(entry);
+
+  } else {
+
+    auto maybe_any = 
+      PBFactory::LoadFromContainer<google::protobuf::Any>(*maybe_bytes.value);
+        // do we need to handle text format separately ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if (!maybe_any) {
+      return {.error = fmt::format(
+        "Could not read protobuf from {}: {}", entryname, maybe_any.error)};
+    }
+
+    return MaybeEntry::Ok({
+      .entryname = entryname,
+      .msg = std:move(*maybe_any.value),
+    });
+
+  }
 }
+
+  
+
+
+//   auto maybe_stamped_msg = ReadMessageFrom(_archive, entryname);
+//   if (!maybe_stamped_msg.IsOk()) {
+//     return MaybeEntry::Err(
+//       fmt::format(
+//         "Could not decode StampedMessage from {}, error {} ", 
+//         entryname, maybe_stamped_msg.error)
+//     );
+//   }
+
+//   return MaybeEntry::Ok({
+//     .topic = GetTopicFromEntryname(entryname),
+//     .stamped_msg = *maybe_stamped_msg.value,
+//   });
+// }
 
 
 Result<BagIndex> ReadSession::GetIndex(const std::string &path) {
@@ -91,52 +130,48 @@ std::string ReadSession::GetTopicFromEntryname(const std::string &entryname) {
       fs::path(entryname).parent_path().u8string();
 }
 
-Result<StampedMessage> ReadSession::ReadMessageFrom(
-    archive::Archive::Ptr archive,
-    const std::string &entryname) {
+// Result<std::string> ReadSession::ReadMessageFrom(
+//     archive::Archive::Ptr archive,
+//     const std::string &entryname) {
 
-  if (!archive) {
-    return {.error = "No archive to read"};
-  }
+//   if (!archive) {
+//     return {.error = "No archive to read"};
+//   }
 
-  const auto maybe_bytes = archive->ReadAsStr(entryname);
-  if (!maybe_bytes.IsOk()) {
-    return {.error = 
-      fmt::format("Read error for {}: {}", entryname, maybe_bytes.error)
-    };
-  }
+  
 
-  return PBFactory::LoadFromContainer<StampedMessage>(*maybe_bytes.value);
-}
+//   return PBFactory::LoadFromContainer<StampedMessage>(*maybe_bytes.value);
+// }
 
-Result<BagIndex> ReadSession::GetReindexed(archive::Archive::Ptr archive) {
-  if (!archive) {
-    return {.error = "No archive to read"};
-  }
+// Result<BagIndex> ReadSession::GetReindexed(archive::Archive::Ptr archive) {
+//   TODO if we bring this back, use stampedmsg in filename to key off sniffing?
+//   if (!archive) {
+//     return {.error = "No archive to read"};
+//   }
 
-  BagIndexBuilder::UPtr builder(new BagIndexBuilder());
-  auto namelist = archive->GetNamelist();
-  for (const auto &name : namelist) {
-                                                std::cout << "name " << name << std::endl;
-    auto maybe_stamped_msg = ReadMessageFrom(archive, name);
-    if (!maybe_stamped_msg.IsOk()) {
-      return {.error = 
-        fmt::format(
-          "Could not decode StampedMessage from {}, error {} ", 
-          name, maybe_stamped_msg.error)
-        };
-    }
+//   BagIndexBuilder::UPtr builder(new BagIndexBuilder());
+//   auto namelist = archive->GetNamelist();
+//   for (const auto &name : namelist) {
+//                                                 std::cout << "name " << name << std::endl;
+//     auto maybe_stamped_msg = ReadMessageFrom(archive, name);
+//     if (!maybe_stamped_msg.IsOk()) {
+//       return {.error = 
+//         fmt::format(
+//           "Could not decode StampedMessage from {}, error {} ", 
+//           name, maybe_stamped_msg.error)
+//         };
+//     }
 
-    builder->Observe(
-      Entry{
-        .topic = GetTopicFromEntryname(name),
-        .stamped_msg = *maybe_stamped_msg.value,
-      },
-      name);
-  }
+//     builder->Observe(
+//       Entry{
+//         .topic = GetTopicFromEntryname(name),
+//         .stamped_msg = *maybe_stamped_msg.value,
+//       },
+//       name);
+//   }
 
-  return {.value = BagIndexBuilder::Complete(std::move(builder))};
-}
+//   return {.value = BagIndexBuilder::Complete(std::move(builder))};
+// }
 
 Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
   if (!archive) {
@@ -176,10 +211,11 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
     return {.error = "No archive to read"};
   }
 
-  auto maybe_index = ReadLatestIndex(archive);
+  auto maybe_index = ReadLatestIndex(archive); // TODO support multiple indices ~~~~~~~~~~~~~~~~
   if (!maybe_index.IsOk()) {
-    // Then create one!
-    maybe_index = GetReindexed(archive);
+    // // Then create one!
+    // maybe_index = GetReindexed(archive);
+    return {.error = "Unindexed protobag not supported right now"}; // ~~~~~~~~~~~~~~~~~~~~~~~~~
   }
 
   if (!maybe_index.IsOk()) {
@@ -194,28 +230,69 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
   const BagIndex &index = *maybe_index.value;
         std::cout << " index " << *PBFactory::ToTextFormatString(index).value << std::endl;
 
-  if (sel.has_events()) {
+  if (sel.has_select_all()) {
+
+    auto namelist = archive->GetNamelist();
+    std::queue<std::string> entries_to_read(namelist);
+    return {.value = {
+      .entries_to_read = entries_to_read,
+      .require_all = false,
+      .raw_mode = sel.select_all().all_entries_are_raw(),
+    }};
+
+  } else if (sel.has_entrynames()) {
+
+    const Selection_Entrynames &sel_entrynames = sel.entrynames();
+    std::queue<std::string> entries_to_read;
+    for (int i = 0; i < sel_entrynames.entrynames_size(); ++i) {
+      entries_to_read.push_back(sel_entrynames.entrynames(i));
+    }
+    return {.value = {
+      .entries_to_read = entries_to_read,
+      .require_all = !sel_entrynames.ignore_missing_entries(),
+      .raw_mode = sel_entrynames.entries_are_raw(),
+    }};
+
+  } else if (sel.has_events()) {
+
     const Selection_Events &sel_events = sel.events();
 
     std::set<TopicTime> events;
     for (size_t i = 0; i < sel_events.events_size(); ++i) {
       TopicTime tt = sel_events.events(i);
       tt.set_entryname(""); // Do not match on archive entryname
-      events.insert(sel_events.events(i));
+      events.insert(tt);
     }
 
     std::queue<std::string> entries_to_read;
+    std::list<TopicTime> missing_entries;
     for (size_t i = 0; i < index.time_ordered_entries_size(); ++i) {
       TopicTime tt = index.time_ordered_entries().Get(i);
       std::string entryname = tt.entryname();
       tt.set_entryname(""); // Do not match on archive entryname
       if (events.find(tt) != events.end()) {
         entries_to_read.push(entryname);
+      } else if (sel_events.require_all()) {
+        missing_entries.push_back(tt);
       }
     }
 
-    return {.value = entries_to_read};
+    if (sel_events.require_all() && !missing_entries.empty()) {
+      std::stringstream ss;
+      for (const auto &missing : missing_entries) {
+        ss << PBFactory::ToTextFormatString(missing) << "\n";
+      }
+      return {.error = fmt::format((
+        "Could not find all requested entries and all were required.  "
+        "Missing: \n{}"), ss.str())
+      };
+    }
 
+    return {.value = {
+      .entries_to_read = entries_to_read,
+      .require_all = sel_events.require_all(),
+      .raw_mode = false,
+    }};
 
   } else if (sel.has_window()) {
 
@@ -255,9 +332,14 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
 std::cout << "tt.entryname() " << tt.entryname() << std::endl;
       entries_to_read.push(tt.entryname());
     }
-    return {.value = entries_to_read};
+    return {.value = {
+      .entries_to_read = entries_to_read,
+      .require_all = false, // TODO should we report if index and archive don't match? ~~~~~~~~~~~~~~
+      .raw_mode = false,
+    }};
 
   } else {
+
     // We don't support whatever criteria `sel` has
     std::string sel_txt;
     {
@@ -269,6 +351,7 @@ std::cout << "tt.entryname() " << tt.entryname() << std::endl;
     return {.error = 
       fmt::format("Unsupported selection {}", sel_txt)
     };
+
   }
 }
 

@@ -27,8 +27,24 @@ message TopicTime {
 }
 
 message Selection {
+    message All {
+        // Just select everything in the protobag
+        bool all_entries_are_raw = 1; // defaults to false
+    }
+
+    message Entrynames {
+        // Just read these entries
+        repeated string entrynames = 1;
+
+        // By default, a "file not found" causes an error
+        bool ignore_missing_entries = 2; // defaults to false
+
+        // Set to true to enable reading of messages written in "raw mode"
+        bool entries_are_raw = 3; // defaults to false
+    }
+
     message Window {
-        // An empty Window means "SELECT *"
+        // NB: An empty Window means "SELECT *"
         
         // A Window may include a specific list of topics and/or an inclusive
         // time range
@@ -42,13 +58,20 @@ message Selection {
     }
 
     message Events {
-        // A Selection may alteratively be a list of specific messages
+        // A Selection may alteratively be a list of specific messages. The 
+        // entryname attribute of these events is ignored; if you need
+        // to select entries, use `Entrynames` above.
         repeated TopicTime events = 10;
+
+        // By default, missing messages do *NOT* cause an error
+        bool require_all = 2; // defaults to false
     }
 
     oneof criteria {
-        Window window = 1;
-        Events events = 2;
+        All select_all = 1;
+        Entrynames entrynames = 2;
+        Window window = 3;
+        Events events = 4;
     }
 }
 
@@ -67,7 +90,7 @@ message BagIndex {
     string protobag_version = 2;
 
 
-    // General Data
+    // Descriptor Data
 
     // Underlying data that a protobuf DescriptorPool (and 
     // SimpleDescriptorDatabase) need in order to recreate message instances.

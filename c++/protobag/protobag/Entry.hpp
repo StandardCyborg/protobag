@@ -19,17 +19,6 @@
 
 namespace protobag {
 
-
-// TODO move to pbfactory
-template <typename MT>
-inline std::string GetTypeURL() {
-  return ::google::protobuf::internal::GetTypeUrl(
-    T::descriptor()->full_name(),
-    ::google::protobuf::internal::kTypeGoogleApisComPrefix);
-      // This prefix is what protobuf uses internally:
-      // https://github.com/protocolbuffers/protobuf/blob/39d730dd96c81196893734ee1e075c34567e59ae/src/google/protobuf/any.cc#L44
-}
-
 struct Entry {
   // == Core Entry ============================================================
 
@@ -42,8 +31,9 @@ struct Entry {
   // The payload of the entry.  
   ::google::protobuf::Any msg;
     // If `type_url` is unset, then the message is a "raw message" and Protobag
-    // will forgo all indexing; see CreateRaw() below.  But `type_url`, is
-    // usually automatically set.
+    // will forgo all indexing and boxing; see CreateRaw() below.  But raw mode
+    // is a special case and `type_url`, is usually automatically set in
+    // the Entry factory methods.
 
   // Optional context
   struct Context {
@@ -90,7 +80,7 @@ struct Entry {
         const Context &ctx) {
 
     ::google::protobuf::Any packed;
-    packed.PackFrom(raw_msg);
+    packed.PackFrom(msg);
     return {
       .entryname = entryname,
       .msg = packed,
@@ -109,9 +99,9 @@ struct Entry {
     
     Result<std::string> maybe_encoded;
     if (use_text_format) {
-      maybe_encoded = PBFactory<MT>::ToTextFormatString(raw_msg);
+      maybe_encoded = PBFactory::ToTextFormatString(raw_msg);
     } else {
-      maybe_encoded = PBFactory<MT>::ToBinaryString(raw_msg);
+      maybe_encoded = PBFactory::ToBinaryString(raw_msg);
     }
 
     if (!maybe_encoded.IsOk()) {
@@ -192,7 +182,8 @@ struct Entry {
     if (ctx.has_value()) {
       return ctx->topic;
     } else {
-      return "";
+      static const std::string kEmpty;
+      return kEmpty;
     }
   }
 
@@ -205,17 +196,17 @@ struct Entry {
           "Try again with validation disabled; you will also need to "
           "accept that you might be casting the wrong protocol upon "
           "this buffer.  Entry: {}"
-          ), GetTypeURL<MT>(), ToString());
+          ), GetTypeURL<MT>(), ToString())
         };
       } else if (msg.type_url() != GetTypeURL<MT>()) {
         return {.error = fmt::format(
           "Tried to read a {} but entry is a {}.  Entry: {}",
           GetTypeURL<MT>(), msg.type_url(), ToString())
-        )};
+        };
       }
     }
 
-    return PBFactory<MT>::UnpackFromAny(msg);
+    return PBFactory::UnpackFromAny<MT>(msg);
   }
 
 
@@ -286,7 +277,9 @@ struct MaybeEntry : public Result<Entry> {
   bool IsEndOfSequence() { return error == "EndOfSequence"; }
 
   static MaybeEntry Err(const std::string &s) {
-    return {.error = s};
+    MaybeEntry m;
+    m.error = s;
+    return m;
   }
 
   static MaybeEntry Ok(Entry &&v) {

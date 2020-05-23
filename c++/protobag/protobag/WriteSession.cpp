@@ -34,46 +34,40 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry, bool use_text_format) {
   }
 
   std::string entryname = entry.entryname;
-  {
-    if (entryname.empty()) {
-      const auto &topic = entry.GetTopic();
-      if (topic.empty()) {
-        return {.error = fmt::format(
-          "Entry must have an entryname or a topic.  Got {}",
-          entry.ToString())
-        };
-      }
-
-      if (!entry.ctx.has_value()) {
-        return {.error = fmt::format(
-          "Invalid stamped entry; needs timestamp. {}", entry.ToString())
-        };
-      }
-
-      entryname = fmt::format(
-          "{}/{}.{}.protobin",
-          topic,
-          entry.ctx->stamp.seconds(),
-          entry.ctx->stamp.nanos());
+  if (entryname.empty()) {
+    // Derive entryname from topic & time
+    const auto &topic = entry.GetTopic();
+    if (topic.empty()) {
+      return {.error = fmt::format(
+        "Entry must have an entryname or a topic.  Got {}",
+        entry.ToString())
+      };
     }
 
-    if (entry.IsRaw()) {
-      entryname = fmt::format("{}.raw", entryname);
+    if (!entry.ctx.has_value()) {
+      return {.error = fmt::format(
+        "Invalid stamped entry; needs timestamp. {}", entry.ToString())
+      };
     }
+
+    entryname = fmt::format(
+        "{}/{}.{}.stampedmsg",
+        topic,
+        entry.ctx->stamp.seconds(),
+        entry.ctx->stamp.nanos());
 
     entryname = 
       use_text_format ? 
         fmt::format("{}.prototxt", entryname) : 
         fmt::format("{}.protobin", entryname);
   }
-  
 
   auto maybe_m_bytes = 
     use_text_format ?
       PBFactory::ToTextFormatString(entry.msg) :
       PBFactory::ToBinaryString(entry.msg);
-  if (!maybe_bytes.IsOk()) {
-    return {.error = maybe_bytes.error};
+  if (!maybe_m_bytes.IsOk()) {
+    return {.error = maybe_m_bytes.error};
   }
 
   OkOrErr res = _archive->Write(entryname, *maybe_m_bytes.value);
