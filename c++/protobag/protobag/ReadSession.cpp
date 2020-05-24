@@ -1,6 +1,7 @@
 #include "protobag/ReadSession.hpp"
 
 #include <filesystem>
+#include <list>
 #include <set>
 #include <sstream>
 
@@ -30,6 +31,48 @@ Result<ReadSession::Ptr> ReadSession::Create(const ReadSession::Spec &s) {
   return {.value = r};
 }
 
+MaybeEntry ReadSession::ReadEntryFrom(
+      archive::Archive::Ptr archive,
+      const std::string &entryname,
+      bool raw_mode) {
+
+  if (!archive) {
+    return MaybeEntry::Err("No archive to read");
+  }
+
+  const auto maybe_bytes = archive->ReadAsStr(entryname);
+  if (maybe_bytes.IsEntryNotFound()) {
+    return MaybeEntry::Err(maybe_bytes.error);
+  } else if (!maybe_bytes.IsOk()) {
+    return MaybeEntry::Err(
+      fmt::format("Read error for {}: {}", entryname, maybe_bytes.error));
+  }
+
+  if (raw_mode) {
+    
+    Entry entry;
+    entry.entryname = entryname;
+    entry.msg.set_value(std::move(*maybe_bytes.value));
+    return MaybeEntry::Ok(std::move(entry));
+
+  } else {
+
+    auto maybe_any = 
+      PBFactory::LoadFromContainer<google::protobuf::Any>(*maybe_bytes.value);
+        // do we need to handle text format separately ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if (!maybe_any.IsOk()) {
+      return MaybeEntry::Err(fmt::format(
+        "Could not read protobuf from {}: {}", entryname, maybe_any.error));
+    }
+
+    return MaybeEntry::Ok({
+      .entryname = entryname,
+      .msg = std::move(*maybe_any.value),
+    });
+
+  }
+}
+
 MaybeEntry ReadSession::GetNext() {
   // TODO: make a lot faster ... 
   if (!_started) {
@@ -56,40 +99,20 @@ std::cout << "entryname " << entryname << std::endl;
     return MaybeEntry::Err("Programming Error: no archive open for writing");
   }
 
-// TODO fixup for not found vs other error ~~~ for require_all ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  const auto maybe_bytes = _archive->ReadAsStr(entryname);
-  if (!maybe_bytes.IsOk()) {
-    return {.error = 
-      fmt::format("Read error for {}: {}", entryname, maybe_bytes.error)
-    };
-  }
-
-  if (_plan.raw_mode) {
-    
-    Entry entry;
-    entry.entryname = entryname;
-    entry.msg.set_value(std::move(*maybe_bytes.value));
-    return MaybeEntry::Ok(entry);
-
-  } else {
-
-    auto maybe_any = 
-      PBFactory::LoadFromContainer<google::protobuf::Any>(*maybe_bytes.value);
-        // do we need to handle text format separately ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    if (!maybe_any) {
-      return {.error = fmt::format(
-        "Could not read protobuf from {}: {}", entryname, maybe_any.error)};
+  auto maybe_entry = ReadEntryFrom(_archive, entryname, _plan.raw_mode);
+  if (maybe_entry.IsNotFound()) {
+    if (_plan.require_all) {
+      return MaybeEntry::Err(fmt::format("Entry not found: {}", entryname));
+    } else {
+      return GetNext();
     }
-
-    return MaybeEntry::Ok({
-      .entryname = entryname,
-      .msg = std:move(*maybe_any.value),
-    });
-
+  } else {
+    return maybe_entry;
   }
 }
 
-  
+
+
 
 
 //   auto maybe_stamped_msg = ReadMessageFrom(_archive, entryname);
@@ -183,12 +206,15 @@ Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
     auto namelist = archive->GetNamelist();
     for (const auto &entryname : namelist) {
       if (EntryIsInTopic(entryname, "/_protobag_index/bag_index")) {
-        auto maybe_stamped_msg = ReadMessageFrom(archive, entryname);
-        if (maybe_stamped_msg.IsOk()) {
-          const StampedMessage &cur_msg = *maybe_stamped_msg.value;
-          if (!index_entry.has_value() ||
-                (cur_msg.timestamp() < index_entry->timestamp())) {
-            index_entry = cur_msg;
+        auto maybe_entry = ReadEntryFrom(archive, entryname);
+        if (maybe_entry.IsOk()) {
+          auto maybe_stamped_msg = maybe_entry.value->GetAs<StampedMessage>();
+          if (maybe_stamped_msg.IsOk()) {
+            const StampedMessage &cur_msg = *maybe_stamped_msg.value;
+            if (!index_entry.has_value() ||
+                  (cur_msg.timestamp() < index_entry->timestamp())) {
+              index_entry = cur_msg;
+            }
           }
         }
       }
@@ -203,7 +229,7 @@ Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
 
 }
 
-Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
+Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
     archive::Archive::Ptr archive,
     const Selection &sel) {
 
@@ -233,8 +259,9 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
   if (sel.has_select_all()) {
 
     auto namelist = archive->GetNamelist();
-    std::queue<std::string> entries_to_read(namelist);
-    return {.value = {
+    std::queue<std::string> entries_to_read;
+    for (const auto &n : namelist) { entries_to_read.push(n); }
+    return {.value = ReadPlan{
       .entries_to_read = entries_to_read,
       .require_all = false,
       .raw_mode = sel.select_all().all_entries_are_raw(),
@@ -245,9 +272,9 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
     const Selection_Entrynames &sel_entrynames = sel.entrynames();
     std::queue<std::string> entries_to_read;
     for (int i = 0; i < sel_entrynames.entrynames_size(); ++i) {
-      entries_to_read.push_back(sel_entrynames.entrynames(i));
+      entries_to_read.push(sel_entrynames.entrynames(i));
     }
-    return {.value = {
+    return {.value = ReadPlan{
       .entries_to_read = entries_to_read,
       .require_all = !sel_entrynames.ignore_missing_entries(),
       .raw_mode = sel_entrynames.entries_are_raw(),
@@ -280,7 +307,11 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
     if (sel_events.require_all() && !missing_entries.empty()) {
       std::stringstream ss;
       for (const auto &missing : missing_entries) {
-        ss << PBFactory::ToTextFormatString(missing) << "\n";
+        auto maybe_txt = PBFactory::ToTextFormatString(missing);
+        if (!maybe_txt.IsOk()) {
+          return {.error = maybe_txt.error};
+        }
+        ss << *maybe_txt.value << "\n";
       }
       return {.error = fmt::format((
         "Could not find all requested entries and all were required.  "
@@ -288,7 +319,7 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
       };
     }
 
-    return {.value = {
+    return {.value = ReadPlan{
       .entries_to_read = entries_to_read,
       .require_all = sel_events.require_all(),
       .raw_mode = false,
@@ -332,7 +363,7 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
 std::cout << "tt.entryname() " << tt.entryname() << std::endl;
       entries_to_read.push(tt.entryname());
     }
-    return {.value = {
+    return {.value = ReadPlan{
       .entries_to_read = entries_to_read,
       .require_all = false, // TODO should we report if index and archive don't match? ~~~~~~~~~~~~~~
       .raw_mode = false,

@@ -35,7 +35,7 @@ struct Entry {
     // is a special case and `type_url`, is usually automatically set in
     // the Entry factory methods.
 
-  // Optional context
+  // Optional context, mainly for writing
   struct Context {
     // For timeseries data: the topic, which is a directory for a sequence
     // of messages that all have the same type.
@@ -88,6 +88,26 @@ struct Entry {
     };
   }
 
+  static Entry CreateUnchecked(
+        const std::string &entryname,
+        const std::string &type_url,
+        std::string &&msg_bytes,
+        const Context &ctx) {
+
+    // Below: essentially equivalent to PackFrom(), but the type_url might not
+    // be equivalent.  FMI:
+    // https://github.com/protocolbuffers/protobuf/blob/39d730dd96c81196893734ee1e075c34567e59ae/src/google/protobuf/any.cc#L48
+    ::google::protobuf::Any packed;
+    packed.set_type_url(type_url);
+    packed.set_value(std::move(msg_bytes));
+
+    return {
+      .entryname = entryname,
+      .msg = packed,
+      .ctx = ctx,
+    };
+  }
+
 
   // == Raw Mode ================================
 
@@ -108,15 +128,17 @@ struct Entry {
       return {.error = maybe_encoded.error};
     }
 
-    return {.value = CreateRaw(entryname, *maybe_encoded.value)};
+    return {.value = 
+      CreateRawFromBytes(entryname, std::move(*maybe_encoded.value))
+    };
   }
 
-  static Entry CreateRaw(
+  static Entry CreateRawFromBytes(
         const std::string &entryname,
-        const std::string &raw_msg_contents) {
+        std::string &&raw_msg_contents) {
 
     ::google::protobuf::Any packed;
-    *packed.mutable_value() = raw_msg_contents;
+    packed.set_value(std::move(raw_msg_contents));
       // Intentionally leave type_url empty
     
     return {
@@ -158,6 +180,36 @@ struct Entry {
                 .stamp = t,
                 .inner_type_url = GetTypeURL<MT>(),
                 .descriptor = msg.GetDescriptor(),
+              });
+
+  }
+
+  static Entry CreateStampedUnchecked(
+        const std::string &topic,
+        uint64_t sec,
+        uint32_t nsec,
+        const std::string &type_url,
+        std::string &&msg_bytes) {
+          // TODO: add descriptor-like context; see protobag_native.cpp ~~~~~~~~~~~~~~~~
+
+    StampedMessage stamped_msg;
+    stamped_msg.mutable_timestamp()->set_seconds(sec);
+    stamped_msg.mutable_timestamp()->set_nanos(nsec);
+    
+    // Below: essentially equivalent to PackFrom(), but the type_url might not
+    // be equivalent.  FMI:
+    // https://github.com/protocolbuffers/protobuf/blob/39d730dd96c81196893734ee1e075c34567e59ae/src/google/protobuf/any.cc#L48
+    stamped_msg.mutable_msg()->set_type_url(type_url);
+    stamped_msg.mutable_msg()->set_value(std::move(msg_bytes));
+    
+    return Create(
+              "", 
+              stamped_msg,
+              {
+                .topic = topic,
+                .stamp = stamped_msg.timestamp(),
+                .inner_type_url = type_url,
+                // .descriptor = msg.GetDescriptor(), TODO
               });
 
   }
@@ -214,6 +266,14 @@ struct Entry {
   
   std::string ToString() const;
 
+  // bool operator==(const Entry &other) const;
+  bool EntryDataEqualTo(const Entry &other) const {
+    return
+      entryname == other.entryname &&
+      msg.type_url() == other.msg.type_url() &&
+      msg.value() == other.msg.value();
+  }
+
   // bool operator<(const Entry &other) const {
   //   return (topic < other.topic) ||
   //     (stamped_msg.timestamp().seconds() < other.stamped_msg.timestamp().seconds()) ||
@@ -268,24 +328,18 @@ struct Entry {
 // A Result<Entry> with a reserved "error" state for end of a stream of
 // entries; similar to python `StopIteration`.
 struct MaybeEntry : public Result<Entry> {
-  static MaybeEntry EndOfSequence() {
-    MaybeEntry m;
-    m.error = "EndOfSequence";
-    return m;
-  }
-  
-  bool IsEndOfSequence() { return error == "EndOfSequence"; }
+  static MaybeEntry EndOfSequence() { return Err("EndOfSequence"); }
+  bool IsEndOfSequence() const { return error == "EndOfSequence"; }
+
+  // See Archive::ReadStatus
+  bool IsNotFound() const;
 
   static MaybeEntry Err(const std::string &s) {
-    MaybeEntry m;
-    m.error = s;
-    return m;
+    MaybeEntry m; m.error = s; return m;
   }
 
   static MaybeEntry Ok(Entry &&v) {
-    MaybeEntry m;
-    m.value = std::move(v);
-    return m;
+    MaybeEntry m; m.value = std::move(v); return m;
   }
 };
 

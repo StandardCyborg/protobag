@@ -128,8 +128,10 @@ public:
     return namelist;
   }
   
-  Result<std::string> ReadAsStr(const std::string &entryname) {
-    if (!_archive) { return {.error = "Archive not open for reading"}; }
+  Archive::ReadStatus ReadAsStr(const std::string &entryname) {
+    if (!_archive) {
+      return Archive::ReadStatus::Err("Archive not open for reading");
+    }
       
     // A linear find is the best we can do with libarchive, but libarchive will
     // generally use seeks to skip entries if possible.  FMI see
@@ -137,7 +139,7 @@ public:
     // archive_read_extract_set_skip_file()
     // https://github.com/libarchive/libarchive/wiki/Examples#a-note-about-the-skip-callback
     archive_entry *entry = nullptr;
-    Result<std::string> result{.error = fmt::format("Entry {} not found", entryname)};
+    Archive::ReadStatus result = Archive::ReadStatus::EntryNotFound();
     while (archive_read_next_header(_archive, &entry) == ARCHIVE_OK) {
       std::string cur = archive_entry_pathname_utf8(entry);
                                           // std::cout << "entryname " << entryname << " cur " << cur << std::endl;
@@ -147,7 +149,7 @@ public:
       } else {
         std::string maybe_err = CheckOrError(archive_read_data_skip(_archive));
         if (!maybe_err.empty()) {
-          result = {.error = maybe_err};
+          result = Archive::ReadStatus::Err(maybe_err);
         }
       }
     }
@@ -156,9 +158,13 @@ public:
   }
 
 protected:
-  Result<std::string> ReadEntry(archive_entry *entry) {
-    if (!_archive) { return {.error = "ReadEntry: archive not open"}; }
-    if (!entry) { return {.error = "ReadEntry: entry invalid"}; }
+  Archive::ReadStatus ReadEntry(archive_entry *entry) {
+    if (!_archive) {
+      return Archive::ReadStatus::Err("ReadEntry: archive not open");
+    }
+    if (!entry) {
+      return Archive::ReadStatus::Err("ReadEntry: entry invalid");
+    }
 
     std::string out;
     size_t entry_size = archive_entry_size(entry);
@@ -176,7 +182,7 @@ protected:
         if (ret < 0) {
           std::string error = CheckOrError(ret);
           if (!error.empty()) {
-            return {.error = error};
+            return Archive::ReadStatus::Err(error);
           }
         }
 
@@ -184,7 +190,7 @@ protected:
       }
     }
 
-    return {.value = out};
+    return Archive::ReadStatus::OK(std::move(out));
   }
 };
 
@@ -489,11 +495,11 @@ std::vector<std::string> LibArchiveArchive::GetNamelist() {
 //   return result;
 // }
 
-Result<std::string> LibArchiveArchive::ReadAsStr(const std::string &entryname) {
+Archive::ReadStatus LibArchiveArchive::ReadAsStr(const std::string &entryname) {
   Reader reader;
   OkOrErr r = reader.Open(GetSpec());
   if (!r.IsOk()) {
-    return {};
+    return Archive::ReadStatus::Err(r.error);
   }
 
   return reader.ReadAsStr(entryname);

@@ -66,6 +66,8 @@ TEST(LibArchiveArchiveTest, TestRead) {
     auto res = ar->ReadAsStr("does-not-exist");
     EXPECT_FALSE(res.IsOk());
     EXPECT_FALSE(res.error.empty()) << res.error;
+    EXPECT_EQ(res, Archive::ReadStatus::EntryNotFound());
+    EXPECT_TRUE(res.IsEntryNotFound());
   }
   {
     auto res = ar->ReadAsStr("foo");
@@ -80,3 +82,5 @@ TEST(LibArchiveArchiveTest, TestRead) {
     EXPECT_EQ(value, "bar");
   }
 }
+
+// TODO: test zip

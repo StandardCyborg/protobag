@@ -15,7 +15,7 @@ public:
   static bool IsSupported(const std::string &format);
   
   virtual std::vector<std::string> GetNamelist() override;
-  virtual Result<std::string> ReadAsStr(const std::string &entryname) override;
+  virtual Archive::ReadStatus ReadAsStr(const std::string &entryname) override;
 
   virtual OkOrErr Write(
     const std::string &entryname, const std::string &data) override;

@@ -16,9 +16,9 @@ using namespace protobag;
 using namespace protobag_test;
 
 static const std::vector<Entry> kExpectedEntries = {
-  Entry::Create("/topic1", 0, ToStringMsg("foo")),
-  Entry::Create("/topic2", 0, ToIntMsg(1337)),
-  Entry::Create("/topic1", 1, ToStringMsg("bar")),
+  Entry::CreateStamped("/topic1", 0, 0, ToStringMsg("foo")),
+  Entry::CreateStamped("/topic2", 0, 0, ToIntMsg(1337)),
+  Entry::CreateStamped("/topic1", 1, 0, ToStringMsg("bar")),
 };
 
 inline 
@@ -62,24 +62,19 @@ TEST(ReadSessionDirectory, TestBasic) {
   } while(still_reading);
 
   auto expected_entries = kExpectedEntries;
-  // std::sort(expected_entries.begin(), expected_entries.end());
-  // std::sort(actual_entries.begin(), actual_entries.end());
 
   ASSERT_EQ(actual_entries.size(), expected_entries.size());
   for (size_t i = 0; i < actual_entries.size(); ++i) {
     auto expected = expected_entries[i];
     auto actual = actual_entries[i];
-    EXPECT_EQ(actual.topic, expected.topic);
-    
-    auto ToTextFormatOrThrow = [] (const auto &entry) -> auto {
-      auto maybe_txt = PBFactory::ToTextFormatString(entry);
-      if (!maybe_txt.IsOk()) {
-        throw std::runtime_error(maybe_txt.error);
-      }
-      return *maybe_txt.value;
-    };
+
     EXPECT_EQ(
-      ToTextFormatOrThrow(actual.stamped_msg),
-      ToTextFormatOrThrow(expected.stamped_msg));
+      PBToString(actual.msg),
+      PBToString(expected.msg));
+    
+
+    EXPECT_TRUE(actual.EntryDataEqualTo(expected)) << 
+      "Actual: " << actual.ToString() << 
+      "\nExpected:\n" << expected.ToString();
   }
 }

@@ -65,9 +65,10 @@ protected:
   
   static std::string GetTopicFromEntryname(const std::string &entryname);
 
-  // static Result<std::string> ReadMessageFrom(
-  //   archive::Archive::Ptr archive,
-  //   const std::string &entryname);
+  static MaybeEntry ReadEntryFrom(
+    archive::Archive::Ptr archive,
+    const std::string &entryname,
+    bool raw_mode = false);
   
   static Result<BagIndex> ReadLatestIndex(archive::Archive::Ptr archive);
 

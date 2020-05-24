@@ -14,9 +14,9 @@ using namespace protobag_test;
 
 std::vector<Entry> CreateEntriesFixture() {
   return {
-    Entry::Create("/topic1", 0, ToStringMsg("foo")),
-    Entry::Create("/topic1", 1, ToStringMsg("bar")),
-    Entry::Create("/topic2", 0, ToIntMsg(1337)),
+    Entry::CreateStamped("/topic1", 0, 0, ToStringMsg("foo")),
+    Entry::CreateStamped("/topic1", 1, 0, ToStringMsg("bar")),
+    Entry::CreateStamped("/topic2", 0, 0, ToIntMsg(1337)),
   };
 }
 

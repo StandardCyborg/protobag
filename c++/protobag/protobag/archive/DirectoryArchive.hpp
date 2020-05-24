@@ -11,7 +11,7 @@ public:
   static Result<Archive::Ptr> Open(Archive::Spec s);
   
   virtual std::vector<std::string> GetNamelist() override;
-  virtual Result<std::string> ReadAsStr(const std::string &entryname) override;
+  virtual Archive::ReadStatus ReadAsStr(const std::string &entryname) override;
 
   virtual OkOrErr Write(
     const std::string &entryname, const std::string &data) override;

@@ -69,7 +69,8 @@ struct BagIndexBuilder::DescriptorIndexer {
       std::queue<const ::google::protobuf::FileDescriptor*> q;
       std::unordered_set<std::string> visited;
       while (!q.empty()) {
-        const ::google::protobuf::FileDescriptor *current = q.pop();
+        const ::google::protobuf::FileDescriptor *current = q.front();
+        q.pop();
         if (!current) { continue; } // BUG! TODO asserts
         
         if (visited.find(current->name()) != visited.end()) {
@@ -88,7 +89,7 @@ struct BagIndexBuilder::DescriptorIndexer {
         // Enqueue children
         {
           for (int d = 0; d < current->dependency_count(); ++d) {
-            q.push_back(current->dependency(d));
+            q.push(current->dependency(d));
           }
         }
       }

@@ -18,29 +18,56 @@ using namespace protobag;
 
 // A convenience SERDES to avoid pybind boxing of StampedMessage
 struct native_entry final {
-  std::string topic;
-  int64_t sec = 0;
-  int32_t nanos = 0;
+  std::string entryname;
   std::string type_url;
   py::bytes msg_bytes;
 
+  std::string ctx_topic;
+  int64_t ctx_sec = 0;
+  int32_t ctx_nanos = 0;
+  // TODO not msg descriptor pointer but all the FileDescriptorSet stuff BagIndexBuilder would need ~~~~~
+  
+  
+
   Entry AsEntry() const {
-    StampedMessage stamped_msg;
-    *stamped_msg.mutable_msg()->mutable_type_url() = type_url;
-    *stamped_msg.mutable_msg()->mutable_value() = msg_bytes;
-    stamped_msg.mutable_timestamp()->set_seconds(sec);
-    stamped_msg.mutable_timestamp()->set_nanos(nanos);
-    return Entry{.topic = topic, .stamped_msg = stamped_msg};
+    if (type_url.empty()) {
+
+      return Entry::CreateRawFromBytes(entryname, msg_bytes);
+    
+    } else if (!ctx_topic.empty()) {
+
+      return Entry::CreateStampedUnchecked(
+        ctx_topic,
+        ctx_sec,
+        ctx_nanos,
+        type_url,
+        std::move(msg_bytes));  
+
+    } else {
+
+      return Entry::CreateUnchecked(
+        entryname,
+        type_url,
+        std::move(msg_bytes),
+        {}); // TODO add descriptor stuff for context ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    }
   }
 
   static native_entry FromEntry(const Entry &entry) {
-    return {
-      .topic = entry.topic,
-      .sec = entry.stamped_msg.timestamp().seconds(),
-      .nanos = entry.stamped_msg.timestamp().nanos(),
-      .type_url = entry.stamped_msg.msg().type_url(),
-      .msg_bytes = entry.stamped_msg.msg().value(),
+    native_entry ne = {
+      .entryname = entry.entryname,
+      .type_url = entry.msg.type_url(),
+      .msg_bytes = entry.msg.value(),
     };
+    if (entry.ctx.has_value()) {
+      ne.ctx_topic = entry.ctx->topic;
+      ne.ctx_sec = entry.ctx->stamp.seconds();
+      ne.ctx_nanos = entry.ctx->stamp.nanos();
+      ne.type_url = entry.ctx->inner_type_url; // overrides msg.type_url()
+      // TODO add descriptor context for decode ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    }
+    return ne;
   }
 };
 
@@ -130,11 +157,12 @@ PYBIND11_MODULE(protobag_native, m) {
 
   py::class_<native_entry>(m, "native_entry", "Handle to a native entry")
     .def(py::init<>())
-    .def_readwrite("topic", &native_entry::topic)
-    .def_readwrite("sec", &native_entry::sec)
-    .def_readwrite("nanos", &native_entry::nanos)
+    .def_readwrite("entryname", &native_entry::entryname)
     .def_readwrite("type_url", &native_entry::type_url)
-    .def_readwrite("msg_bytes", &native_entry::msg_bytes);
+    .def_readwrite("msg_bytes", &native_entry::msg_bytes)
+    .def_readwrite("ctx_topic", &native_entry::ctx_topic)
+    .def_readwrite("ctx_sec", &native_entry::ctx_sec)
+    .def_readwrite("ctx_nanos", &native_entry::ctx_nanos);
 
   py::class_<Reader>(m, "Reader", "Handle to a Protobag ReadSession")
     .def(py::init<>(), "Create a null session")
@@ -145,7 +173,10 @@ PYBIND11_MODULE(protobag_native, m) {
 
   py::class_<WriteSession::Spec>(m, "WriterSpec", "Spec for a WriteSession")
     .def(py::init<>())
-    .def_readwrite("save_index_index", &WriteSession::Spec::save_index_index)
+    .def_readwrite(
+      "save_timeseries_index", &WriteSession::Spec::save_timeseries_index)
+    .def_readwrite(
+      "save_descriptor_index", &WriteSession::Spec::save_descriptor_index)
     .def_property("path", 
       [](WriteSession::Spec &s) { return s.archive_spec.path; },
       [](WriteSession::Spec &s, const std::string &v) {
@@ -165,28 +196,4 @@ PYBIND11_MODULE(protobag_native, m) {
     .def("__iter__", [](Reader &r) -> Reader& { return r; })
     .def("write_entry", &Writer::WriteEntry, "Write the given `native_entry`");
     
-
-
-
-  // py::class_<Protobag>(m, "Protobag", "Handle to a single Protobag archive")
-  //   .def(py::init<>(),
-  //         "Create a null protobag")
-  //   .def(py::init<const std::string &>(),
-  //         "Read or write a Protobag to the given path",
-  //         py::arg("path"))
-  //   .def("read_entries", 
-  //     [](const Protobag &bag, const std::string &sel_pb_bytes) {
-          
-
-  //         return read_sess_generator{.r = *maybe_rp.value};
-  //     },
-  //     "Create & return a generator that emits entries for the given Selection",
-  //     py::arg("selection"));
-
-  // py::class_<read_sess_generator>(
-  //   m, "read_sess_generator", "A generator emitting entries in a Protobag")
-    
-  //   .def(py::init<>())
-  //   .def("next", &read_sess_generator::next);
-
 }

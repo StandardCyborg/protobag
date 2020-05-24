@@ -33,6 +33,10 @@ TEST(DirectoryArchiveTest, ReadEmpty) {
   
   auto names = ar->GetNamelist();
   EXPECT_TRUE(names.empty());
+
+  auto res = ar->ReadAsStr("does/not/exist");
+  EXPECT_EQ(res, Archive::ReadStatus::EntryNotFound());
+  EXPECT_TRUE(res.IsEntryNotFound());
 }
 
 
@@ -76,6 +80,8 @@ TEST(DirectoryArchiveTest, TestRead) {
     auto res = ar->ReadAsStr("does-not-exist");
     EXPECT_FALSE(res.IsOk());
     EXPECT_FALSE(res.error.empty()) << res.error;
+    EXPECT_EQ(res, Archive::ReadStatus::EntryNotFound());
+    EXPECT_TRUE(res.IsEntryNotFound());
   }
 
   {
@@ -145,6 +151,8 @@ TEST(DirectoryArchiveTest, TestWriteAndRead) {
       auto res = ar->ReadAsStr("does-not-exist");
       EXPECT_FALSE(res.IsOk());
       EXPECT_FALSE(res.error.empty()) << res.error;
+      EXPECT_EQ(res, Archive::ReadStatus::EntryNotFound());
+      EXPECT_TRUE(res.IsEntryNotFound());
     }
     {
       auto res = ar->ReadAsStr("foo");

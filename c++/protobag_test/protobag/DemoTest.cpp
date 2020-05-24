@@ -75,9 +75,9 @@ TEST(DemoTest, TestDemo) {
   // First we're going to create a protobag.  Here's the data we'll write:
   std::vector<Entry> entries_to_write = {
     // (topic, time, msg) tuples.  Boxed for easier interop with the writer.
-    Entry::Create("/topic1", 1, ToStringMsg("foo")),
-    Entry::Create("/topic1", 2, ToStringMsg("bar")),
-    Entry::Create("/topic2", 1, ToIntMsg(1337)),
+    Entry::CreateStamped("/topic1", 1, 0, ToStringMsg("foo")),
+    Entry::CreateStamped("/topic1", 2, 0, ToStringMsg("bar")),
+    Entry::CreateStamped("/topic2", 1, 0, ToIntMsg(1337)),
   };
 
   // Now create the protobag:
@@ -94,7 +94,7 @@ TEST(DemoTest, TestDemo) {
     for (const Entry &entry : entries_to_write) {
       ExpectWriteOk(writer, entry);
 
-      LOG("Wrote: " << PBToString(entry.stamped_msg));
+      LOG("Wrote: " << entry.ToString());
     }
 
     // writer auto-closes and writes meta
@@ -130,16 +130,16 @@ TEST(DemoTest, TestDemo) {
       Entry current = *maybe_next.value;
       LOG(
         "Read entry:" << std::endl <<
-        "topic: " << current.topic << std::endl <<
-        "time: " << current.stamped_msg.timestamp());
+        current.ToString());
 
-      if (current.topic == "/topic1") {
-        LOG("Read a string msg: " << UnpackedToPBTxt<StdMsg_String>(current.stamped_msg));
-      } else if (current.topic == "/topic2") {
-        LOG("Read an int msg: " << UnpackedToPBTxt<StdMsg_Int>(current.stamped_msg));
-      } else {
-        LOG("Got ??? " << PBToString(current.stamped_msg));
-      }
+      // TODO show how to decode, also with dynamic decode! ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      // if (current.topic == "/topic1") {
+      //   LOG("Read a string msg: " << UnpackedToPBTxt<StdMsg_String>(current.stamped_msg));
+      // } else if (current.topic == "/topic2") {
+      //   LOG("Read an int msg: " << UnpackedToPBTxt<StdMsg_Int>(current.stamped_msg));
+      // } else {
+      //   LOG("Got ??? " << PBToString(current.stamped_msg));
+      // }
 
       LOG("");
 

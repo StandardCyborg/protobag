@@ -76,17 +76,15 @@ std::vector<std::string> DirectoryArchive::GetNamelist() {
   return paths;
 }
 
-Result<std::string> 
-  DirectoryArchive::ReadAsStr(const std::string &entryname) {
+Archive::ReadStatus DirectoryArchive::ReadAsStr(const std::string &entryname) {
 
   std::string entry_path_rel = CanonicalEntryname(entryname);
   fs::path entry_path = fs::path(_spec.path) / entry_path_rel;
   if (!fs::is_regular_file(entry_path)) {
-    return Result<std::string>::Err(
-      fmt::format("Entry {} not found in {}", entryname, ToString()));
+    return Archive::ReadStatus::EntryNotFound();
   }
 
-  return {.value = ReadFile(entry_path.u8string())};
+  return Archive::ReadStatus::OK(ReadFile(entry_path.u8string()));
 }
 
 OkOrErr DirectoryArchive::Write(

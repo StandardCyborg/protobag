@@ -40,13 +40,36 @@ public:
   static Result<Ptr> Open(const Spec &s=Spec::WriteToTempdir());
   virtual void Close() { }
 
-  // Reading
+  // Reading ------------------------------------------------------------------
   virtual std::vector<std::string> GetNamelist() { return {}; }
-  virtual Result<std::string> ReadAsStr(const std::string &entryname) {
-    return Result<std::string>::Err("Reading unsupported in base");
+
+
+  // A Result<string> with a special status code for entry not found (which
+  // sometimes is an acceptable error).
+  struct ReadStatus : public Result<std::string> {
+    static ReadStatus EntryNotFound() { return Err("EntryNotFound"); }
+    bool IsEntryNotFound() const { return error == "EntryNotFound"; }
+    
+    static ReadStatus Err(const std::string &s) {
+      ReadStatus st; st.error = s; return st;
+    }
+
+    static ReadStatus OK(std::string &&s) {
+      ReadStatus st; st.value = std::move(s); return st;
+    }
+
+    bool operator==(const ReadStatus &other) const {
+      return error == other.error && value == other.value;
+    }
+  };
+
+  virtual ReadStatus ReadAsStr(const std::string &entryname) {
+    return ReadStatus::Err("Reading unsupported in base");
   }
 
-  // Writing
+  // TODO: bulk reads of several entries, probably be faster
+
+  // Writing ------------------------------------------------------------------
   virtual OkOrErr Write(
     const std::string &entryname, const std::string &data) {
       return OkOrErr::Err("Writing unsupported in base");
