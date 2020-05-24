@@ -271,8 +271,8 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
 
     const Selection_Entrynames &sel_entrynames = sel.entrynames();
     std::queue<std::string> entries_to_read;
-    for (int i = 0; i < sel_entrynames.entrynames_size(); ++i) {
-      entries_to_read.push(sel_entrynames.entrynames(i));
+    for (const auto &entryname : sel_entrynames.entrynames()) {
+      entries_to_read.push(entryname);
     }
     return {.value = ReadPlan{
       .entries_to_read = entries_to_read,
@@ -285,21 +285,20 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
     const Selection_Events &sel_events = sel.events();
 
     std::set<TopicTime> events;
-    for (size_t i = 0; i < sel_events.events_size(); ++i) {
-      TopicTime tt = sel_events.events(i);
+    for (TopicTime tt : sel_events.events()) {
       tt.set_entryname(""); // Do not match on archive entryname
       events.insert(tt);
     }
 
     std::queue<std::string> entries_to_read;
     std::list<TopicTime> missing_entries;
-    for (size_t i = 0; i < index.time_ordered_entries_size(); ++i) {
-      TopicTime tt = index.time_ordered_entries().Get(i);
+    for (TopicTime tt : index.time_ordered_entries()) {
       std::string entryname = tt.entryname();
       tt.set_entryname(""); // Do not match on archive entryname
       if (events.find(tt) != events.end()) {
         entries_to_read.push(entryname);
       } else if (sel_events.require_all()) {
+        tt.set_entryname(entryname); // Restore for easier debugging
         missing_entries.push_back(tt);
       }
     }
@@ -330,18 +329,17 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
     const Selection_Window &window = sel.window();
     
     std::set<std::string> exclude_topics;
-    for (size_t i = 0; i < window.exclude_topics_size(); ++i) {
-      exclude_topics.insert(window.exclude_topics(i));
+    for (const auto &topic : window.exclude_topics()) {
+      exclude_topics.insert(topic);
     }
 
     std::set<std::string> include_topics;
-    for (size_t i = 0; i < window.topics_size(); ++i) {
-      include_topics.insert(window.topics(i));
+    for (const auto &topic : window.topics()) {
+      include_topics.insert(topic);
     }
 
     std::queue<std::string> entries_to_read;
-    for (size_t i = 0; i < index.time_ordered_entries_size(); ++i) {
-      TopicTime tt = index.time_ordered_entries().Get(i);
+    for (const TopicTime &tt : index.time_ordered_entries()) {
       
       if (!exclude_topics.empty() &&
             (exclude_topics.find(tt.topic()) != exclude_topics.end())) {
