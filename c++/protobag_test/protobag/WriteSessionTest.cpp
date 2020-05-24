@@ -82,63 +82,92 @@ TEST(WriteSessionDirectory, TestBasic) {
       }
       
       std::vector<std::string> expected = {
-        "/topic1/1.protobin",
-        "/topic1/2.protobin",
-        "/topic2/1.protobin",
+        "/topic1/0.0.stampedmsg.protobin",
+        "/topic1/1.0.stampedmsg.protobin",
+        "/topic2/0.0.stampedmsg.protobin",
       };
       EXPECT_SORTED_SEQUENCES_EQUAL(expected, actual);
     }
 
-    {
-      auto res = dar->ReadAsStr("topic1/1.protobin");
-      EXPECT_TRUE(res.IsOk()) << res.error;
-      auto maybe_msg = PBFactory::LoadFromContainer<StampedMessage>(*res.value);
-      EXPECT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
-      const StampedMessage &m = *maybe_msg.value;
-      EXPECT_EQ(m.timestamp().seconds(), 0);
-      EXPECT_EQ(m.timestamp().nanos(), 0);
-      EXPECT_EQ(m.msg().type_url(), "type.googleapis.com/protobag.StdMsg.String");
 
+    //
+    // Test very manual reads of the files we expect in place
+    //
+
+    {
+      auto res = dar->ReadAsStr("topic1/0.0.stampedmsg.protobin");
+      ASSERT_TRUE(res.IsOk()) << res.error;
+      auto maybe_msg = PBFactory::LoadFromContainer<::google::protobuf::Any>(*res.value);
+      ASSERT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
+      const ::google::protobuf::Any &any_msg = *maybe_msg.value;
+      ASSERT_EQ(any_msg.type_url(), GetTypeURL<StampedMessage>());
       {
-        auto maybe_msg = PBFactory::UnpackFromAny<StdMsg_String>(m.msg());
-        EXPECT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
-        EXPECT_EQ(maybe_msg.value->value(), "foo");
+        auto maybe_stamped = PBFactory::UnpackFromAny<StampedMessage>(any_msg);
+        ASSERT_TRUE(maybe_stamped.IsOk()) << maybe_stamped.error;
+
+        const StampedMessage &m = *maybe_stamped.value;
+        EXPECT_EQ(m.timestamp().seconds(), 0);
+        EXPECT_EQ(m.timestamp().nanos(), 0);
+        EXPECT_EQ(m.msg().type_url(), "type.googleapis.com/protobag.StdMsg.String");
+
+        {
+          auto maybe_msg = PBFactory::UnpackFromAny<StdMsg_String>(m.msg());
+          ASSERT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
+          EXPECT_EQ(maybe_msg.value->value(), "foo");
+        }
       }
     }
     
-    {
-      auto res = dar->ReadAsStr("topic1/2.protobin");
-      EXPECT_TRUE(res.IsOk()) << res.error;
-      auto maybe_msg = PBFactory::LoadFromContainer<StampedMessage>(*res.value);
-      EXPECT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
-      const StampedMessage &m = *maybe_msg.value;
-      EXPECT_EQ(m.timestamp().seconds(), 1);
-      EXPECT_EQ(m.timestamp().nanos(), 0);
-      EXPECT_EQ(m.msg().type_url(), "type.googleapis.com/protobag.StdMsg.String");
 
+    {
+      auto res = dar->ReadAsStr("topic1/1.0.stampedmsg.protobin");
+      ASSERT_TRUE(res.IsOk()) << res.error;
+      auto maybe_msg = PBFactory::LoadFromContainer<::google::protobuf::Any>(*res.value);
+      ASSERT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
+      const ::google::protobuf::Any &any_msg = *maybe_msg.value;
+      ASSERT_EQ(any_msg.type_url(), GetTypeURL<StampedMessage>());
       {
-        auto maybe_msg = PBFactory::UnpackFromAny<StdMsg_String>(m.msg());
-        EXPECT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
-        EXPECT_EQ(maybe_msg.value->value(), "bar");
+        auto maybe_stamped = PBFactory::UnpackFromAny<StampedMessage>(any_msg);
+        ASSERT_TRUE(maybe_stamped.IsOk()) << maybe_stamped.error;
+
+        const StampedMessage &m = *maybe_stamped.value;
+        EXPECT_EQ(m.timestamp().seconds(), 1);
+        EXPECT_EQ(m.timestamp().nanos(), 0);
+        EXPECT_EQ(m.msg().type_url(), "type.googleapis.com/protobag.StdMsg.String");
+
+        {
+          auto maybe_msg = PBFactory::UnpackFromAny<StdMsg_String>(m.msg());
+          EXPECT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
+          EXPECT_EQ(maybe_msg.value->value(), "bar");
+        }
       }
     }
 
-    {
-      auto res = dar->ReadAsStr("topic2/1.protobin");
-      EXPECT_TRUE(res.IsOk()) << res.error;
-      auto maybe_msg = PBFactory::LoadFromContainer<StampedMessage>(*res.value);
-      EXPECT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
-      const StampedMessage &m = *maybe_msg.value;
-      EXPECT_EQ(m.timestamp().seconds(), 0);
-      EXPECT_EQ(m.timestamp().nanos(), 0);
-      EXPECT_EQ(m.msg().type_url(), "type.googleapis.com/protobag.StdMsg.Int");
 
+    {
+      auto res = dar->ReadAsStr("topic2/0.0.stampedmsg.protobin");
+      ASSERT_TRUE(res.IsOk()) << res.error;
+      auto maybe_msg = PBFactory::LoadFromContainer<::google::protobuf::Any>(*res.value);
+      ASSERT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
+      const ::google::protobuf::Any &any_msg = *maybe_msg.value;
+      ASSERT_EQ(any_msg.type_url(), GetTypeURL<StampedMessage>());
       {
-        auto maybe_msg = PBFactory::UnpackFromAny<StdMsg_Int>(m.msg());
-        EXPECT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
-        EXPECT_EQ(maybe_msg.value->value(), 1337);
+        auto maybe_stamped = PBFactory::UnpackFromAny<StampedMessage>(any_msg);
+        ASSERT_TRUE(maybe_stamped.IsOk()) << maybe_stamped.error;
+
+        const StampedMessage &m = *maybe_stamped.value;
+        EXPECT_EQ(m.timestamp().seconds(), 0);
+        EXPECT_EQ(m.timestamp().nanos(), 0);
+        EXPECT_EQ(m.msg().type_url(), "type.googleapis.com/protobag.StdMsg.Int");
+
+        {
+          auto maybe_msg = PBFactory::UnpackFromAny<StdMsg_Int>(m.msg());
+          EXPECT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
+          EXPECT_EQ(maybe_msg.value->value(), 1337);
+        }
       }
     }
+
 
     {
       // TODO check bag meta ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
