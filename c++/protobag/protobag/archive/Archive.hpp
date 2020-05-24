@@ -44,12 +44,15 @@ public:
   virtual std::vector<std::string> GetNamelist() { return {}; }
 
 
-  // A Result<string> with a special status code for entry not found (which
-  // sometimes is an acceptable error).
+  // A Result<string> with special status codes for "entry not found" (which
+  // sometimes is an acceptable error) as well as "end of archive."
   struct ReadStatus : public Result<std::string> {
     static ReadStatus EntryNotFound() { return Err("EntryNotFound"); }
     bool IsEntryNotFound() const { return error == "EntryNotFound"; }
     
+    // static ReadStatus EndOfArchive() { return Err("EndOfArchive"); }
+    // bool IsEndOfArchive() const { return error == "EndOfArchive"; }
+
     static ReadStatus Err(const std::string &s) {
       ReadStatus st; st.error = s; return st;
     }
