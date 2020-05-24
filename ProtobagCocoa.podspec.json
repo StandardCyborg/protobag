@@ -1,6 +1,6 @@
 {
   "name": "ProtobagCocoa",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "summary": "Protobag: an archive of string-serialized Protobufs",
   "homepage": "https://github.com/StandardCyborg/protobag",
   "license": "Apache 2",
