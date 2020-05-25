@@ -31,7 +31,7 @@
   "pod_target_xcconfig": {
     "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
     "CLANG_CXX_LIBRARY": "libc++",
-    "OTHER_CPLUSPLUSFLAGS": "-DFMT_HEADER_ONLY=1"
+    "OTHER_CPLUSPLUSFLAGS": "$(inherited) -fembed-bitcode -DFMT_HEADER_ONLY=1"
   },
   "libraries": "c++"
 }
