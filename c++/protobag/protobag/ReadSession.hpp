@@ -19,6 +19,7 @@ public:
   struct Spec {
     archive::Archive::Spec archive_spec;
     Selection selection;
+    bool unpack_stamped_messages;
 
     // NB: for now we *only* support time-ordered reads
 
@@ -31,6 +32,7 @@ public:
           .path=path,
         },
         .selection = sel,
+        .unpack_stamped_messages = true,
       };
     }
   };
@@ -63,12 +65,13 @@ protected:
   // maybe move these and make public ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
   // static Result<BagIndex> GetReindexed(archive::Archive::Ptr archive);
   
-  static std::string GetTopicFromEntryname(const std::string &entryname);
+  
 
   static MaybeEntry ReadEntryFrom(
     archive::Archive::Ptr archive,
     const std::string &entryname,
-    bool raw_mode = false);
+    bool raw_mode = false,
+    bool unpack_stamped = true);
   
   static Result<BagIndex> ReadLatestIndex(archive::Archive::Ptr archive);
 

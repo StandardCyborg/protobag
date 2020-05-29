@@ -1,6 +1,5 @@
 #include "protobag/ReadSession.hpp"
 
-#include <filesystem>
 #include <list>
 #include <set>
 #include <sstream>
@@ -13,8 +12,6 @@
 #include "protobag/BagIndexBuilder.hpp"
 #include "protobag/Utils/PBUtils.hpp"
 
-
-namespace fs = std::filesystem;
 
 namespace protobag {
 
@@ -34,7 +31,8 @@ Result<ReadSession::Ptr> ReadSession::Create(const ReadSession::Spec &s) {
 MaybeEntry ReadSession::ReadEntryFrom(
       archive::Archive::Ptr archive,
       const std::string &entryname,
-      bool raw_mode) {
+      bool raw_mode,
+      bool unpack_stamped) {
 
   if (!archive) {
     return MaybeEntry::Err("No archive to read");
@@ -65,10 +63,15 @@ MaybeEntry ReadSession::ReadEntryFrom(
         "Could not read protobuf from {}: {}", entryname, maybe_any.error));
     }
 
-    return MaybeEntry::Ok({
+    Entry entry{
       .entryname = entryname,
       .msg = std::move(*maybe_any.value),
-    });
+    };
+    if (unpack_stamped && entry.IsStampedMessage()) {
+      return entry.UnpackFromStamped();
+    } else {
+      return MaybeEntry::Ok(std::move(entry));
+    }
 
   }
 }
@@ -99,7 +102,8 @@ std::cout << "entryname " << entryname << std::endl;
     return MaybeEntry::Err("Programming Error: no archive open for writing");
   }
 
-  auto maybe_entry = ReadEntryFrom(_archive, entryname, _plan.raw_mode);
+  auto maybe_entry = ReadEntryFrom(
+    _archive, entryname, _plan.raw_mode, _spec.unpack_stamped_messages);
   if (maybe_entry.IsNotFound()) {
     if (_plan.require_all) {
       return MaybeEntry::Err(fmt::format("Entry not found: {}", entryname));
@@ -143,14 +147,6 @@ Result<BagIndex> ReadSession::GetIndex(const std::string &path) {
   }
 
   return ReadLatestIndex(rp->_archive);
-}
-
-
-std::string ReadSession::GetTopicFromEntryname(const std::string &entryname) {
-  // return std::string("/") +  // fixme ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //     fs::path(entryname).parent_path().u8string();
-  return 
-      fs::path(entryname).parent_path().u8string();
 }
 
 // Result<std::string> ReadSession::ReadMessageFrom(
@@ -201,19 +197,23 @@ Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
     return {.error = "No archive to read"};
   }
 
-  std::optional<StampedMessage> index_entry;
+  std::optional<Entry> index_entry;
   {
     auto namelist = archive->GetNamelist();
     for (const auto &entryname : namelist) {
       if (EntryIsInTopic(entryname, "/_protobag_index/bag_index")) {
-        auto maybe_entry = ReadEntryFrom(archive, entryname);
-        if (maybe_entry.IsOk()) {
-          auto maybe_stamped_msg = maybe_entry.value->GetAs<StampedMessage>();
-          if (maybe_stamped_msg.IsOk()) {
-            const StampedMessage &cur_msg = *maybe_stamped_msg.value;
-            if (!index_entry.has_value() ||
-                  (cur_msg.timestamp() < index_entry->timestamp())) {
-              index_entry = cur_msg;
+        auto maybe_entry = ReadEntryFrom(
+                              archive,
+                              entryname,
+                              /* raw_mode */ false,
+                              /* unpack_stamped */ true);
+        if (maybe_entry.IsOk() && maybe_entry.value->ctx.has_value()) {
+          if (!index_entry.has_value()) {
+            index_entry = std::move(*maybe_entry.value);
+          } else {
+            const Entry::Context &current = *maybe_entry.value->ctx;
+            if (current.stamp < index_entry->ctx->stamp) {
+              index_entry = std::move(*maybe_entry.value);
             }
           }
         }
@@ -222,7 +222,7 @@ Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
   }
 
   if (index_entry.has_value()) {
-    return PBFactory::UnpackFromAny<BagIndex>(index_entry->msg());
+    return PBFactory::UnpackFromAny<BagIndex>(index_entry->msg);
   } else {
     return {.error = "Could not find an index"};
   }

@@ -19,6 +19,12 @@
 
 namespace protobag {
 
+
+struct Entry;
+struct MaybeEntry;
+std::string GetTopicFromEntryname(const std::string &entryname);
+
+
 struct Entry {
   // == Core Entry ============================================================
 
@@ -35,8 +41,11 @@ struct Entry {
     // is a special case and `type_url`, is usually automatically set in
     // the Entry factory methods.
 
-  // Optional context, mainly for writing
+
+  // == Optional context, mainly for timeseries and indexing features =========
   struct Context {
+    /// Time Series Data; StampedMessage
+
     // For timeseries data: the topic, which is a directory for a sequence
     // of messages that all have the same type.
     std::string topic;
@@ -46,10 +55,14 @@ struct Entry {
 
     // For timeseries data: the type URI of the contained message (if known)
     std::string inner_type_url;
+   
+
+    /// Descriptor Indexing
 
     // For descriptor indexing, which allows readers of your protobag to decode
     // messages without having your protobuf definitions.  This is the
     // descriptor of the innermost msg (not StampedMessage nor Any).
+    // Mainly for writing; for reading we can't populate this member.
     const ::google::protobuf::Descriptor *descriptor = nullptr;
   };
   std::optional<Context> ctx;
@@ -184,6 +197,9 @@ struct Entry {
 
   }
 
+  // Create a StampedMessage entry given the user-provided `msg_bytes` and 
+  // `type_url`; are `msg_bytes` actually from a message of type `type_url`?
+  // We leave that issue "Unchecked" and trust the user.
   static Entry CreateStampedUnchecked(
         const std::string &topic,
         uint64_t sec,
@@ -230,13 +246,15 @@ struct Entry {
     return msg.type_url().empty();
   }
 
-  const std::string &GetTopic() const {
-    if (ctx.has_value()) {
-      return ctx->topic;
-    } else {
-      static const std::string kEmpty;
-      return kEmpty;
+  std::optional<TopicTime> GetTopicTime() const {
+    if (!ctx.has_value()) {
+      return std::nullopt;
     }
+
+    TopicTime tt;
+    tt.set_topic(ctx->topic);
+    *tt.mutable_timestamp() = ctx->stamp;
+    return tt;
   }
 
   template <typename MT>
@@ -261,6 +279,7 @@ struct Entry {
     return PBFactory::UnpackFromAny<MT>(msg);
   }
 
+  MaybeEntry UnpackFromStamped() const;
 
   // == Other Utils ===========================================================
   
@@ -343,6 +362,33 @@ struct MaybeEntry : public Result<Entry> {
   }
 };
 
+
+inline MaybeEntry Entry::UnpackFromStamped() const {
+  if (!IsStampedMessage()) {
+    return MaybeEntry::Err(fmt::format(
+      "Entry is not actually a StampedMessage. Entry: {}", ToString()));
+  }
+
+  auto maybe_stamped = PBFactory::UnpackFromAny<StampedMessage>(msg);
+  if (!maybe_stamped.IsOk()) {
+    return MaybeEntry::Err(fmt::format(
+      "Failed to decode StampedMessage: {} .  Entry: {}",
+      maybe_stamped.error, ToString()));
+  }
+
+  const StampedMessage &stamped = *maybe_stamped.value;
+  Entry entry = {
+    .entryname = entryname,
+    .ctx = Context{
+      .topic = GetTopicFromEntryname(entryname),
+      .stamp = stamped.timestamp(),
+      .inner_type_url = stamped.msg().type_url(),
+    }
+  };
+  entry.msg.set_type_url(stamped.msg().type_url());
+  entry.msg.set_value(std::move(stamped.msg().value()));
+  return MaybeEntry::Ok(std::move(entry));
+}
 
 
 // TODO move these to core protobag ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

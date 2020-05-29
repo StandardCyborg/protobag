@@ -150,32 +150,34 @@ BagIndex_TopicStats &BagIndexBuilder::GetMutableStats(const std::string &topic) 
 // }
 
 
-void BagIndexBuilder::Observe(const Entry &entry, const std::string &final_entryname) {
+void BagIndexBuilder::Observe(
+    const Entry &entry, const std::string &final_entryname) {
+  
   const std::string entryname = 
     final_entryname.empty() ? entry.entryname : final_entryname;
 
-  if (_do_timeseries_indexing && entry.ctx.has_value()) {
-    {
-      auto &stats = GetMutableStats(entry.GetTopic());
-      stats.set_n_messages(stats.n_messages() + 1);
-    }
+  if (_do_timeseries_indexing) {
+    const auto &maybe_tt = entry.GetTopicTime();
+    if (maybe_tt.has_value()) {
+      const TopicTime tt = *maybe_tt;
 
-    {
-      TopicTime tt;
-      tt.set_topic(entry.GetTopic());
-      *tt.mutable_timestamp() = entry.ctx->stamp;
-      tt.set_entryname(entryname);
-
-      if (!_ttq) {
-        _ttq.reset(new TopicTimePQ());
+      {
+        auto &stats = GetMutableStats(tt.topic());
+        stats.set_n_messages(stats.n_messages() + 1);
       }
-      _ttq->Observe(tt);
-    }
 
-    {
-      const auto &t = entry.ctx->stamp;
-      *_index.mutable_start() = std::min(_index.start(), t);
-      *_index.mutable_end() = std::max(_index.end(), t);
+      {
+        if (!_ttq) {
+          _ttq.reset(new TopicTimePQ());
+        }
+        _ttq->Observe(tt);
+      }
+
+      {
+        const auto &t = tt.timestamp();
+        *_index.mutable_start() = std::min(_index.start(), t);
+        *_index.mutable_end() = std::max(_index.end(), t);
+      }
     }
   }
 
