@@ -176,52 +176,58 @@ TEST(PBUtilsTest, TestDynamicMsgFactoryBasic) {
         EXPECT_EQ(*maybe_v.value, "i am a dogcow");
       }
       
-      // // Error attribute `x`
-      // {
-      //   auto maybe_v = GetAttr_string(msgp.get(), "does_not_exist");
-      //   ASSERT_TRUE(!maybe_v.IsOk());
-      //   EXPECT_EQ(maybe_v.error, "error 1");
-      // }
+      // Error attribute `x`
+      {
+        auto maybe_v = GetAttr_string(msgp.get(), "does_not_exist");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(
+          maybe_v.error, "Msg my_package.Moof has no field does_not_exist");
+      }
 
-      // {
-      //   auto maybe_v = GetDeep_string(msgp.get(), "does_not_exist");
-      //   ASSERT_TRUE(!maybe_v.IsOk());
-      //   EXPECT_EQ(maybe_v.error, "error 2");
-      // }
+      {
+        auto maybe_v = GetDeep_string(msgp.get(), "does_not_exist");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(
+          maybe_v.error, "Msg my_package.Moof has no field does_not_exist");
+      }
 
-      // {
-      //   auto maybe_v = GetDeep_string(msgp.get(), "");
-      //   ASSERT_TRUE(!maybe_v.IsOk());
-      //   EXPECT_EQ(maybe_v.error, "error 3");
-      // }
+      {
+        auto maybe_v = GetDeep_string(msgp.get(), "");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(maybe_v.error, "Msg my_package.Moof has no field ");
+      }
       
-      // {
-      //   auto maybe_v = GetAttr_int32(msgp.get(), "x");
-      //   ASSERT_TRUE(!maybe_v.IsOk());
-      //   EXPECT_EQ(maybe_v.error, "error 2");
-      // }
+      {
+        auto maybe_v = GetAttr_int32(msgp.get(), "x");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(
+          maybe_v.error,
+          "Wanted field x on msg my_package.Moof to be type double, but my_package.Moof.x is of type string");
+      }
 
-      // {
-      //   auto maybe_v = GetDeep_int32(msgp.get(), "x");
-      //   ASSERT_TRUE(!maybe_v.IsOk());
-      //   EXPECT_EQ(maybe_v.error, "error 4");
-      // }
+      {
+        auto maybe_v = GetDeep_int32(msgp.get(), "x");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(
+          maybe_v.error,
+          "Wanted field x on msg my_package.Moof to be type double, but my_package.Moof.x is of type string");
+      }
 
-      // // Hit nested message
-      // {
-      //   auto maybe_v = GetAttr_msg(msgp.get(), "inner");
-      //   ASSERT_TRUE(maybe_v.IsOk()) << maybe_v.error;
-      //   auto inner_msgp = *maybe_v.value;
-      //   ASSERT_TRUE(inner_msgp);
-      //   EXPECT_EQ(inner_msgp->DebugString(), "need to debug string");
-      // }
+      // Hit nested message
+      {
+        auto maybe_v = GetAttr_msg(msgp.get(), "inner");
+        ASSERT_TRUE(maybe_v.IsOk()) << maybe_v.error;
+        auto inner_msgp = *maybe_v.value;
+        ASSERT_TRUE(inner_msgp);
+        EXPECT_EQ(inner_msgp->DebugString(), "inner_v: 1337\n");
+      }
 
-      // // Hit nested message value
-      // {
-      //   auto maybe_v = GetDeep_int64(msgp.get(), "inner.inner_v");
-      //   ASSERT_TRUE(maybe_v.IsOk()) << maybe_v.error;
-      //   EXPECT_EQ(*maybe_v.value, 1337);
-      // }
+      // Hit nested message value
+      {
+        auto maybe_v = GetDeep_int64(msgp.get(), "inner.inner_v");
+        ASSERT_TRUE(maybe_v.IsOk()) << maybe_v.error;
+        EXPECT_EQ(*maybe_v.value, 1337);
+      }
     }
   }
 

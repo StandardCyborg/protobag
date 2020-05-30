@@ -236,9 +236,10 @@ Result<const ::google::protobuf::Message *> GetAttr_msg(
 std::pair<std::string, std::string> SplitHeadTail(
     const std::string &field_path) {
   size_t pos = field_path.find_first_of(".");
-  std::string head = field_path.substr(pos);
+  std::string head = field_path;
   std::string tail;
   if (pos != std::string::npos) {
+    head = field_path.substr(0, pos);
     tail = field_path.substr(pos + 1);
   }
   return std::make_pair(head, tail);
@@ -251,7 +252,7 @@ std::pair<std::string, std::string> GetPrefixAttr(
   std::string prefix;
   std::string attr = field_path;
   if (pos != std::string::npos) {
-    prefix = field_path.substr(pos);
+    prefix = field_path.substr(0, pos);
     attr = field_path.substr(pos + 1);
   }
   return std::make_pair(prefix, attr);
@@ -312,42 +313,48 @@ Result<int32_t> GetDeep_int32(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_int32", &GetAttr_int32, int32_t());
+  return GetDeep_attr(
+    message, field_path, "GetDeep_int32", &GetAttr_int32, int32_t());
 }
 
 Result<int64_t> GetDeep_int64(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_int64", &GetAttr_int64, int64_t());
+  return GetDeep_attr(
+    message, field_path, "GetDeep_int64", &GetAttr_int64, int64_t());
 }
 
 Result<float> GetDeep_float(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_float", &GetAttr_float, float());
+  return GetDeep_attr(
+    message, field_path, "GetDeep_float", &GetAttr_float, float());
 }
 
 Result<double> GetDeep_double(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_double", &GetAttr_double, double());
+  return GetDeep_attr(
+    message, field_path, "GetDeep_double", &GetAttr_double, double());
 }
 
 Result<bool> GetDeep_bool(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_bool", &GetAttr_bool, bool());
+  return GetDeep_attr(
+    message, field_path, "GetDeep_bool", &GetAttr_bool, bool());
 }
 
 Result<std::string> GetDeep_string(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_string", &GetAttr_string, std::string());
+  return GetDeep_attr(
+    message, field_path, "GetDeep_string", &GetAttr_string, std::string());
 }
 
 
