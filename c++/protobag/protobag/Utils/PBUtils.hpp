@@ -370,25 +370,24 @@ std::string PBToString(const MT &pb_msg) {
 Result<int32_t> GetAttr_int32(
     const ::google::protobuf::Message *message,
     const std::string &fieldname);
-Result<int64_t> GetDeep_int64(
+Result<int64_t> GetAttr_int64(
     const ::google::protobuf::Message *message,
-    const std::string &field_path);
-
-Result<float> GetDeep_float(
+    const std::string &fieldname);
+Result<float> GetAttr_float(
     const ::google::protobuf::Message *message,
-    const std::string &field_path);
-
-Result<double> GetDeep_double(
+    const std::string &fieldname);
+Result<double> GetAttr_double(
     const ::google::protobuf::Message *message,
-    const std::string &field_path);
-
-Result<bool> GetDeep_bool(
+    const std::string &fieldname);
+Result<bool> GetAttr_bool(
     const ::google::protobuf::Message *message,
-    const std::string &field_path);
-
-Result<std::string> GetDeep_string(
+    const std::string &fieldname);
+Result<std::string> GetAttr_string(
     const ::google::protobuf::Message *message,
-    const std::string &field_path);
+    const std::string &fieldname);
+Result<const ::google::protobuf::Message *> GetAttr_msg(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname);
 
 // Given a `message`, get the attribute at `field_path`.  If `field_path` is
 // a field on `message`, get that field.  Otherwise if `field_path` is a
