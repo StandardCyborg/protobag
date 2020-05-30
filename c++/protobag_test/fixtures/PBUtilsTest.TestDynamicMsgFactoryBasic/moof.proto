@@ -1,0 +1,8 @@
+syntax = "proto3";
+
+package my_package;
+
+message Moof {
+  string x = 1;
+}
+
