@@ -2,8 +2,8 @@
 
 #include <algorithm>
 #include <list>
-#include <pair>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <google/protobuf/descriptor.h>
@@ -44,19 +44,27 @@ static const char* const kPBCppTypeToName[kPBNumCPPTypes + 1] = {
 };
 const char * const GetPBCPPTypeName(
   ::google::protobuf::FieldDescriptor::CppType type_id) {
+  
+  // We want to be resilent to building with future protobuf versions, so
+  // disable tautology warning.
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wtautological-constant-out-of-range-compare"
+  
+  
   if (type_id < kPBNumCPPTypes + 1) {
     return kPBCppTypeToName[type_id];
   } else {
     return "OUT_OF_BOUNDS_UPDATE_kPBCppTypeToName";
   }
+  
+  #pragma clang diagnostic pop
 }
 
-
-template <typename PBCPPType>
 Result<const ::google::protobuf::FieldDescriptor*> 
 GetField(
     const ::google::protobuf::Message *message,
-    const std::string &fieldname) {
+    const std::string &fieldname,
+    ::google::protobuf::FieldDescriptor::CppType pb_cpp_type) {
 
   if (!message) {
     return {.error = "Programming error: need user-allocated output message"};
@@ -78,13 +86,13 @@ GetField(
     };
   }
 
-  if (field->cpp_type() != PBCPPType) {
+  if (field->cpp_type() != pb_cpp_type) {
     return {
       .error = fmt::format(
         "Wanted field {} on msg {} to be type {}, but {}.{} is of type {}",
         fieldname,
         message->GetTypeName(),
-        GetPBCPPTypeName(PBCPPType),
+        GetPBCPPTypeName(pb_cpp_type),
         message->GetTypeName(), fieldname,
         GetPBCPPTypeName(field->cpp_type()))
     };
@@ -97,12 +105,12 @@ struct ctx {
   const ::google::protobuf::Reflection* reflection;
   const ::google::protobuf::FieldDescriptor* field;
 };
-template <typename PBCPPType>
 Result<ctx> GetCTX(
       const ::google::protobuf::Message *message,
-      const std::string &fieldname) {
+      const std::string &fieldname,
+      ::google::protobuf::FieldDescriptor::CppType pb_cpp_type) {
 
-  auto maybe_field = GetField<PBCPPType>(message, fieldname);
+  auto maybe_field = GetField(message, fieldname, pb_cpp_type);
   if (!maybe_field.IsOk()) { return {.error = maybe_field.error}; }
 
   const ::google::protobuf::Reflection* reflection = message->GetReflection();
@@ -113,7 +121,7 @@ Result<ctx> GetCTX(
     };
   }
 
-  return {.value = {.reflection = reflection, field = *maybe_field.value}};
+  return {.value = ctx{.reflection = reflection, .field = *maybe_field.value}};
 }
 
 
@@ -125,12 +133,12 @@ Result<int32_t> GetAttr_int32(
     const ::google::protobuf::Message *message,
     const std::string &fieldname) {
 
-  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_INT32>(
-    message, fieldname);
-  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  auto maybe_ctx = GetCTX(
+    message, fieldname, ::google::protobuf::FieldDescriptor::CPPTYPE_INT32);
+  if (!maybe_ctx.IsOk()) { return {.error = maybe_ctx.error }; }
   return {
     .value = maybe_ctx.value->reflection->GetInt32(
-      message,
+      *message,
       maybe_ctx.value->field)
   };
 }
@@ -139,12 +147,12 @@ Result<int64_t> GetAttr_int64(
     const ::google::protobuf::Message *message,
     const std::string &fieldname) {
 
-  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_INT64>(
-    message, fieldname);
-  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  auto maybe_ctx = GetCTX(
+    message, fieldname, ::google::protobuf::FieldDescriptor::CPPTYPE_INT64);
+  if (!maybe_ctx.IsOk()) { return {.error = maybe_ctx.error }; }
   return {
     .value = maybe_ctx.value->reflection->GetInt64(
-      message,
+      *message,
       maybe_ctx.value->field)
   };
 }
@@ -153,12 +161,12 @@ Result<float> GetAttr_float(
     const ::google::protobuf::Message *message,
     const std::string &fieldname) {
 
-  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_FLOAT>(
-    message, fieldname);
-  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  auto maybe_ctx = GetCTX(
+    message, fieldname, ::google::protobuf::FieldDescriptor::CPPTYPE_FLOAT);
+  if (!maybe_ctx.IsOk()) { return {.error = maybe_ctx.error }; }
   return {
     .value = maybe_ctx.value->reflection->GetFloat(
-      message,
+      *message,
       maybe_ctx.value->field)
   };
 }
@@ -167,12 +175,12 @@ Result<double> GetAttr_double(
     const ::google::protobuf::Message *message,
     const std::string &fieldname) {
 
-  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_DOUBLE>(
-    message, fieldname);
-  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  auto maybe_ctx = GetCTX(
+    message, fieldname, ::google::protobuf::FieldDescriptor::CPPTYPE_DOUBLE);
+  if (!maybe_ctx.IsOk()) { return {.error = maybe_ctx.error }; }
   return {
     .value = maybe_ctx.value->reflection->GetDouble(
-      message,
+      *message,
       maybe_ctx.value->field)
   };
 }
@@ -181,27 +189,26 @@ Result<bool> GetAttr_bool(
     const ::google::protobuf::Message *message,
     const std::string &fieldname) {
 
-  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_BOOL>(
-    message, fieldname);
-  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  auto maybe_ctx = GetCTX(
+    message, fieldname, ::google::protobuf::FieldDescriptor::CPPTYPE_BOOL);
+  if (!maybe_ctx.IsOk()) { return {.error = maybe_ctx.error }; }
   return {
     .value = maybe_ctx.value->reflection->GetBool(
-      message,
+      *message,
       maybe_ctx.value->field)
   };
 }
-
 
 Result<std::string> GetAttr_string(
     const ::google::protobuf::Message *message,
     const std::string &fieldname) {
 
-  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_STRING>(
-    message, fieldname);
-  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  auto maybe_ctx = GetCTX(
+    message, fieldname, ::google::protobuf::FieldDescriptor::CPPTYPE_STRING);
+  if (!maybe_ctx.IsOk()) { return {.error = maybe_ctx.error }; }
   return {
     .value = maybe_ctx.value->reflection->GetString(
-      message,
+      *message,
       maybe_ctx.value->field)
   };
 }
@@ -210,12 +217,12 @@ Result<const ::google::protobuf::Message *> GetAttr_msg(
     const ::google::protobuf::Message *message,
     const std::string &fieldname) {
 
-  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE>(
-    message, fieldname);
-  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  auto maybe_ctx = GetCTX(
+    message, fieldname, ::google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE);
+  if (!maybe_ctx.IsOk()) { return {.error = maybe_ctx.error }; }
   return {
-    .value = maybe_ctx.value->reflection->GetMessage(
-      message,
+    .value = &maybe_ctx.value->reflection->GetMessage(
+      *message,
       maybe_ctx.value->field)
   };
 }
@@ -231,7 +238,7 @@ std::pair<std::string, std::string> SplitHeadTail(
   size_t pos = field_path.find_first_of(".");
   std::string head = field_path.substr(pos);
   std::string tail;
-  if (pos != std::string npos) {
+  if (pos != std::string::npos) {
     tail = field_path.substr(pos + 1);
   }
   return std::make_pair(head, tail);
@@ -243,7 +250,7 @@ std::pair<std::string, std::string> GetPrefixAttr(
   size_t pos = field_path.find_last_of(".");
   std::string prefix;
   std::string attr = field_path;
-  if (pos != std::string npos) {
+  if (pos != std::string::npos) {
     prefix = field_path.substr(pos);
     attr = field_path.substr(pos + 1);
   }
@@ -268,19 +275,20 @@ Result<const ::google::protobuf::Message *> GetDeep_msg(
       };
     }
 
-    message = *mayeb_member.value;
+    message = *maybe_member.value;
     head_tail = SplitHeadTail(head_tail.second);
   }
   
   return {.value = message};
 }
 
-template <typename ResultT, typename GetAttrT>
-ResultT GetDeep_attr(
+template <typename T, typename GetAttrT>
+Result<T> GetDeep_attr(
         const ::google::protobuf::Message *message,
         const std::string &field_path,
-        const std::string &err_fname
-        GetAttrT get_attr) {
+        const std::string &err_fname,
+        GetAttrT get_attr,
+        T ignored) {
 
   auto prefix_attr = GetPrefixAttr(field_path);
   auto maybe_message = GetDeep_msg(message, prefix_attr.first);
@@ -292,8 +300,8 @@ ResultT GetDeep_attr(
           field_path,
           message->GetTypeName(),
           prefix_attr.first,
-          maybe_msg.error)
-      }
+          maybe_message.error)
+      };
   }
 
   return get_attr(*maybe_message.value, prefix_attr.second);
@@ -304,42 +312,42 @@ Result<int32_t> GetDeep_int32(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_int32", &GetAttr_int32);
+  return GetDeep_attr(message, field_path, "GetDeep_int32", &GetAttr_int32, int32_t());
 }
 
 Result<int64_t> GetDeep_int64(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_int64", &GetAttr_int64);
+  return GetDeep_attr(message, field_path, "GetDeep_int64", &GetAttr_int64, int64_t());
 }
 
 Result<float> GetDeep_float(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_float", &GetAttr_float);
+  return GetDeep_attr(message, field_path, "GetDeep_float", &GetAttr_float, float());
 }
 
 Result<double> GetDeep_double(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_double", &GetAttr_double);
+  return GetDeep_attr(message, field_path, "GetDeep_double", &GetAttr_double, double());
 }
 
 Result<bool> GetDeep_bool(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_bool", &GetAttr_bool);
+  return GetDeep_attr(message, field_path, "GetDeep_bool", &GetAttr_bool, bool());
 }
 
 Result<std::string> GetDeep_string(
     const ::google::protobuf::Message *message,
     const std::string &field_path) {
 
-  return GetDeep_attr(message, field_path, "GetDeep_string", &GetAttr_string);
+  return GetDeep_attr(message, field_path, "GetDeep_string", &GetAttr_string, std::string());
 }
 
 
