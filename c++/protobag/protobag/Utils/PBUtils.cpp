@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <list>
+#include <string>
 #include <vector>
 
 #include <google/protobuf/descriptor.h>
@@ -66,7 +67,7 @@ DynamicMsgFactory::MsgPtrOrErr DynamicMsgFactory::LoadFromArray(
   const ::google::protobuf::Descriptor *mt = nullptr;
   mt = impl.pool->FindMessageTypeByName(GetMessageTypeName(type_url));
   if (!mt) {
-    return { .error = fmt::format("Could not resolve type {}" , type_url) };
+    return {.error = fmt::format("Could not resolve type {}" , type_url)};
   }
 
   const ::google::protobuf::Message* prototype = impl.factory.GetPrototype(mt);
@@ -83,7 +84,7 @@ DynamicMsgFactory::MsgPtrOrErr DynamicMsgFactory::LoadFromArray(
     return {.error = res.error};
   }
 
-  return {.value = mp};
+  return {.value = std::move(mp)};
 }
 
 std::string DynamicMsgFactory::ToString() const {
@@ -91,7 +92,7 @@ std::string DynamicMsgFactory::ToString() const {
   ss << "DynamicMsgFactory" << std::endl;
 
   if (_impl) {
-    const Impl &impl = *_impl;
+    Impl &impl = *_impl;
 
     // message types
     {
@@ -103,6 +104,8 @@ std::string DynamicMsgFactory::ToString() const {
       for (const auto &tn : typenames) {
         ss << tn << std::endl;
       }
+
+      ss << std::endl;
     }
 
     // filenames
@@ -116,6 +119,8 @@ std::string DynamicMsgFactory::ToString() const {
           ss << fname << std::endl;
         }
       }
+      
+      ss << std::endl;
     }
   } else {
     ss << "(no registered types)" << std::endl;

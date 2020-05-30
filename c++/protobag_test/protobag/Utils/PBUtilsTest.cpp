@@ -38,7 +38,7 @@ TEST(PBUtilsTest, TestPBFactoryBasicSerialization) {
     EXPECT_TRUE(!maybe_msg.IsOk());
     EXPECT_EQ(
       maybe_msg.error,
-      "Failed to read a type.googleapis.com/protobag.StdMsg.Int");
+      "Failed to read a protobag.StdMsg.Int");
   }
 
   {
@@ -47,46 +47,83 @@ TEST(PBUtilsTest, TestPBFactoryBasicSerialization) {
     EXPECT_TRUE(!maybe_msg.IsOk());
     EXPECT_EQ(
       maybe_msg.error,
-      "Failed to read a type.googleapis.com/protobag.StdMsg.String");
+      "Failed to read a protobag.StdMsg.String");
   }
 
 }
 
 // TODO MORE TEST PBFACTORY
 
-static const std::string kTestDynamicMsgFactoryBasicExpectedStr = (
-"basdgasg"
-);
+
+
+/******************************************************************************
+
+The test TestDynamicMsgFactoryBasic below uses a type `Moof` for which we
+do NOT generate protobuf-generated-C++ code in order to exercise purely
+dynamic message creation.
+
+To re-generate the fixture data below, use the `print_fd.py` script
+and see other artifacts included at
+c++/protobag_test/fixtures/PBUtilsTest.TestDynamicMsgFactoryBasic
+
+The fixtures below include:
+ * A message instance in protobuf text format
+ * The FileDescriptorProto instance for the message, in protobuf text format
+ * The expected state of a DynamicMsgFactory after registering the message type
+
+******************************************************************************/
+
+static const std::string kTestDynamicMsgFactoryBasic_Msg_Prototxt = 
+R"(x: "i am a dogcow" )";
+
+static const std::string kTestDynamicMsgFactoryBasic_FileDescriptorProto_Prototxt = 
+R"(name: "moof.proto"
+package: "my_package"
+message_type {
+  name: "Moof"
+  field {
+    name: "x"
+    number: 1
+    label: LABEL_OPTIONAL
+    type: TYPE_STRING
+  }
+}
+syntax: "proto3")";
+
+static const std::string kTestDynamicMsgFactoryBasicExpectedStr = 
+R"(DynamicMsgFactory
+Factory known types:
+my_package.Moof
+
+DB known filenames:
+moof.proto
+
+)";
 
 TEST(PBUtilsTest, TestDynamicMsgFactoryBasic) {
-  StdMsg_String msg;
-  msg.set_value("foo");
-  auto msg_text_format = PBToString(msg);
-
-  static const std::string kMsgPrototxt = "value: \"foo\"\n";
-  ASSERT_EQ(msg_text_format, kMsgPrototxt);
+  DynamicMsgFactory factory;
 
   {
-    DynamicMsgFactory factory;
-
-    {
-      ::google::protobuf::FileDescriptorProto fd_proto;
-      msg.GetDescriptor()->file()->CopyTo(&fd_proto);
-      factory.RegisterType(fd_proto);
-    }
-
-    EXPECT_EQ(factory.ToString(), kTestDynamicMsgFactoryBasicExpectedStr);
-
-    {
-      auto maybe_msgp = factory.LoadFromContainer(
-            GetTypeURL<StdMsg_String>(),
-            msg_text_format);
-      ASSERT_TRUE(maybe_msgp.IsOk()) << maybe_msgp.error;
-
-      auto msgp = std::move(*maybe_msgp.value);
-      ASSERT_TRUE(msgp);
-
-      EXPECT_EQ(msgp->GetTypeName(), "moof");
-    }
+    auto maybe_fd_msg = 
+      PBFactory::LoadFromContainer<::google::protobuf::FileDescriptorProto>(
+        kTestDynamicMsgFactoryBasic_FileDescriptorProto_Prototxt);
+    ASSERT_TRUE(maybe_fd_msg.IsOk()) << maybe_fd_msg.error;
+    factory.RegisterType(*maybe_fd_msg.value);
   }
+
+  EXPECT_EQ(factory.ToString(), kTestDynamicMsgFactoryBasicExpectedStr);
+
+  {
+    auto maybe_msgp = factory.LoadFromContainer(
+          "my_package.Moof",
+          kTestDynamicMsgFactoryBasic_Msg_Prototxt);
+    ASSERT_TRUE(maybe_msgp.IsOk()) << maybe_msgp.error;
+
+    auto msgp = std::move(*maybe_msgp.value);
+    ASSERT_TRUE(msgp);
+
+    EXPECT_EQ(msgp->GetTypeName(), "my_package.Moof");
+    EXPECT_EQ(msgp->DebugString(), "x: \"i am a dogcow\"\n");
+  }
+
 }
