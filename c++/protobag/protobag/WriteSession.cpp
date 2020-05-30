@@ -36,25 +36,27 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry, bool use_text_format) {
   std::string entryname = entry.entryname;
   if (entryname.empty()) {
     // Derive entryname from topic & time
-    const auto &topic = entry.GetTopic();
-    if (topic.empty()) {
+    const auto &maybe_tt = entry.GetTopicTime();
+    if (!maybe_tt.has_value()) {
+      return {.error = fmt::format(
+        "Invalid entry; needs entryname or topic/timestamp. {}", 
+        entry.ToString())
+      };
+    }
+    const TopicTime &tt = *maybe_tt;
+
+    if (tt.topic().empty()) {
       return {.error = fmt::format(
         "Entry must have an entryname or a topic.  Got {}",
         entry.ToString())
       };
     }
 
-    if (!entry.ctx.has_value()) {
-      return {.error = fmt::format(
-        "Invalid stamped entry; needs timestamp. {}", entry.ToString())
-      };
-    }
-
     entryname = fmt::format(
         "{}/{}.{}.stampedmsg",
-        topic,
-        entry.ctx->stamp.seconds(),
-        entry.ctx->stamp.nanos());
+        tt.topic(),
+        tt.timestamp().seconds(),
+        tt.timestamp().nanos());
 
     entryname = 
       use_text_format ? 

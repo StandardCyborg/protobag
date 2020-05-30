@@ -167,13 +167,13 @@ protected:
     }
 
     std::string out;
-    size_t entry_size = archive_entry_size(entry);
+    la_int64_t entry_size = archive_entry_size(entry);
     out.resize(entry_size);
     
     // libarchive only supports streaming out chunks
     {
       int ret = ARCHIVE_OK;
-      size_t pos = 0;
+      la_int64_t pos = 0;
       while (pos < entry_size) {
         ret = archive_read_data(
                     _archive,

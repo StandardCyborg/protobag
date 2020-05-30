@@ -1,5 +1,6 @@
 #include "protobag/Entry.hpp"
 
+#include <filesystem>
 #include <sstream>
 
 #include <google/protobuf/util/time_util.h>
@@ -54,6 +55,10 @@ std::string Entry::ToString() const {
 
 bool MaybeEntry::IsNotFound() const {
   return error == archive::Archive::ReadStatus::EntryNotFound().error;
+}
+
+std::string GetTopicFromEntryname(const std::string &entryname) {
+  return std::filesystem::path(entryname).parent_path().u8string();
 }
 
 } // namespace protobag
