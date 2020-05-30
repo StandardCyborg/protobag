@@ -2,6 +2,7 @@
 
 #include "protobag/Utils/Result.hpp"
 
+#include <memory>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -16,8 +17,15 @@
 #include <google/protobuf/io/coded_stream.h>
 
 
+namespace google {
+namespace protobuf {
+class FileDescriptorSet;
+} // protobuf
+} // google
+
 
 namespace protobag {
+
 
 // See "Syntactic Sugar" and other utils at end of file
 
@@ -28,7 +36,7 @@ namespace protobag {
 
 // Get the type URL for mesage type `MT`. Similar to 
 // protobuf::interal::GetTypeUrl() except everything outside Google
-// internal appears to default to the URL prefix `type.googleapis.com/`
+// internal appears to default to the URL prefix "type.googleapis.com/"
 // (kTypeGoogleApisComPrefix), so we just default to that.
 template <typename MT>
 inline std::string GetTypeURL() {
@@ -39,11 +47,24 @@ inline std::string GetTypeURL() {
       // https://github.com/protocolbuffers/protobuf/blob/39d730dd96c81196893734ee1e075c34567e59ae/src/google/protobuf/any.cc#L44
 }
 
+// Similar to protobuf interal ParseTypeUrl(), except that we ignore the 
+// leading url prefix, if any, because it's usually "type.googleapis.com/"
+// (kTypeGoogleApisComPrefix).  The token returned is equivalent to the
+// "full name" of a message (i.e. `MT::descriptor()->full_name()`).  See also:
+// https://github.com/protocolbuffers/protobuf/blob/e492e5a4ef16f59010283befbde6112f1995fa0f/src/google/protobuf/util/type_resolver_util.cc#L308
+inline std::string GetMessageTypeName(const std::string type_url) {
+  size_t delim_pos = type_url.find("/");
+  if (delim_pos == std::string::npos) {
+    return type_url;
+  } else {
+    return type_url.substr(delim_pos + 1);
+  }
+}
+
 
 // ============================================================================
-// PBFactory: =================================================================
+// PBFactory ==================================================================
 // ============================================================================
-
 
 // PBFactory: factory I/O methods for protobuf messages <=> strings & other
 // Based upon OarphKit https://github.com/pwais/oarphkit/blob/e799e7904d5b374cb6b58cd06a42d05506e83d94/oarphkit/ok/SerializationUtils/PBUtils-inl.hpp#L1
@@ -93,14 +114,15 @@ public:
     /// First, try reading Binary
     ///
     if (large_message_support) {
+      MT message;
       google::protobuf::io::IstreamInputStream pb_iis(&in);
-      auto maybe_message = LoadLargeFromPbInputStream<MT>(pb_iis);
-      if (maybe_message.IsOk()) { return maybe_message; }
+      auto res = LoadLargeFromPbInputStream(pb_iis, &message);
+      if (res.IsOk()) { return {.value = std::move(message)}; }
     } else {
       // Use protobuf's built-in limits
       MT message;
       const bool success = message.ParseFromIStream(&in);
-      if (success) { return {.value = message }; }
+      if (success) { return {.value = std::move(message) }; }
     }
 
     ///
@@ -127,9 +149,16 @@ public:
 
   template <typename MT>
   static Result<MT> LoadFromString(const std::string &text_format_str) {
-    return LoadTextFormatFromArray<MT>(
-              (const std::byte *)text_format_str.data(),
-              text_format_str.size());
+    MT message;
+    auto res = LoadTextFormatFromArray(
+                (const std::byte *)text_format_str.data(),
+                text_format_str.size(),
+                &message);
+    if (res.IsOk()) {
+      return {.value = std::move(message)};
+    } else {
+      return {.error = res.error};
+    }
   }
 
   template <typename MT, typename ContainerT>
@@ -137,10 +166,36 @@ public:
     return LoadFromArray<MT>((const std::byte *) c.data(), c.size());
   }
 
+  template <typename ContainerT>
+  static OkOrErr LoadFromContainer(
+                        const ContainerT &c,
+                        ::google::protobuf::Message *message) {
+    return LoadFromArray((const std::byte *) c.data(), c.size(), message);
+  }
+
   template <typename MT>
   static Result<MT> LoadFromArray(const std::byte *data, size_t size) {
+    MT message;
+    auto res = LoadFromArray(data, size, &message);
+    if (res.IsOk()) {
+      return {.value = std::move(message)};
+    } else {
+      return {.error = res.error};
+    }
+  }
+  
+  static OkOrErr LoadFromArray(
+                    const std::byte *data,
+                    size_t size,
+                    ::google::protobuf::Message *message) {
+    
+    if (!message) {
+      return OkOrErr::Err(
+        "Programming error: need user-allocated output message");
+    }
+    
     if ((data == nullptr) || (size == 0)) {
-      return {.error = "Bad array"};
+      return OkOrErr::Err("Bad array");
     }
 
     VerifyProfobuf();
@@ -148,19 +203,18 @@ public:
     /// First, try reading Binary
     {
       google::protobuf::io::ArrayInputStream pb_ais(data, size);
-      Result<MT> maybe_msg = LoadLargeFromPbInputStream<MT>(pb_ais);
-      if (maybe_msg.IsOk()) { return maybe_msg; }
+      auto res = LoadLargeFromPbInputStream(pb_ais, message);
+      if (res.IsOk()) { return kOK; }
     }
 
     /// Didn't read & return? Try TextFormat
     {
-      Result<MT> maybe_msg = LoadTextFormatFromArray<MT>(data, size);
-      if (maybe_msg.IsOk()) { return maybe_msg; }
+      auto res = LoadTextFormatFromArray(data, size, message);
+      if (res.IsOk()) { return kOK; }
     }
 
-    return {
-      .error = fmt::format("Failed to read a {}", GetTypeURL<MT>())
-    };
+    return OkOrErr::Err(
+      fmt::format("Failed to read a {}", message->GetTypeName()));
   }
 
 
@@ -231,8 +285,15 @@ protected:
     GOOGLE_PROTOBUF_VERIFY_VERSION;
   }
 
-  template <typename MT, typename PBInputStreamT>
-  static Result<MT> LoadLargeFromPbInputStream(PBInputStreamT &pb_iis) {
+  template <typename PBInputStreamT>
+  static OkOrErr LoadLargeFromPbInputStream(
+                    PBInputStreamT &pb_iis,
+                    ::google::protobuf::Message *message) {
+    if (!message) {
+      return OkOrErr::Err(
+        "Programming error: need user-allocated output message");
+    }
+
     try {
       /**
        * Support reading arbitrarily large messages. This feature is a
@@ -244,15 +305,14 @@ protected:
       cis.SetTotalBytesLimit(std::numeric_limits<int>::max());
         // Use all the RAM
 
-      MT message;
-      const bool success = message.ParseFromCodedStream(&cis);
-      if (success) {
-        return {.value = message};
-      }
+      const bool success = message->ParseFromCodedStream(&cis);
+      if (success) { return kOK; }
     } catch (std::exception &ex) {
       // These can be false positives b/c e.g. the message is in TextFormat
       return {.error = fmt::format(
-        "Exception while trying to read protobuf message:\n {} \n(Skipping read-from-CodedInputStream)",
+        ("Exception while trying to read a {} protobuf message:\n {} \n"
+         "(Skipping read-from-CodedInputStream)"),
+        message->GetTypeName(),
         ex.what())
       };
     }
@@ -260,18 +320,25 @@ protected:
     return {.error = "Could not read large message"};
   }
 
-  template <typename MT>
-  static Result<MT> LoadTextFormatFromArray(const std::byte *data, size_t size) {
-    MT message;
+  static OkOrErr LoadTextFormatFromArray(
+                      const std::byte *data,
+                      size_t size,
+                      ::google::protobuf::Message *message) {
+    if (!message) {
+      return OkOrErr::Err(
+        "Programming error: need user-allocated output message");
+    }
+
     google::protobuf::io::ArrayInputStream pb_ais(data, size);
-    const bool success = ::google::protobuf::TextFormat::Parse(&pb_ais, &message);
+    const bool success = 
+      ::google::protobuf::TextFormat::Parse(&pb_ais, message);
     if (success) {
-      return {.value = message};
+      return kOK;
     } else {
       return {
         .error = fmt::format(
           "Failed to read a {} in text format from an array",
-          GetTypeURL<MT>())
+          message->GetTypeName())
       };
     }
   }
@@ -293,6 +360,61 @@ std::string PBToString(const MT &pb_msg) {
   }
   return *maybe_pb_txt.value;
 }
+
+
+// ============================================================================
+// DynamicMessageFactory ======================================================
+// ============================================================================
+
+// Given a set of (serialized) protobuf Descriptors, `DynamicMsgFactory` will 
+// help you decode messages using those descriptors **without** using protoc-
+// generated headers and sources for those message types.  This utility wraps
+// a ::google::protobuf::DynamicMessageFactory with a 
+// ::google::protobuf::SimpleDescriptorDatabase to help implement the "Self-
+// Describing Message Technique":
+// https://developers.google.com/protocol-buffers/docs/techniques#self-description
+// Protobuf has all the tools but only puts them together in their 
+// `util.json_util` module.
+class DynamicMsgFactory {
+public:
+  typedef std::shared_ptr<DynamicMsgFactory> Ptr;
+
+  typedef Result<std::unique_ptr<::google::protobuf::Message>> MsgPtrOrErr;
+
+  // Create and return a Message (actually a DynamicMessage) of type `type_url`
+  // from the given buffer.  
+  // NOTE: As per ::google::protobuf::DynamicMessageFactory, the returned
+  // message has lifetime tied to this `DynamicMsgFactory` instance.  You
+  // need to keep both in scope, or serialize and dump the message elsewhere.
+  // To get your message's `type_url`, use either `GetTypeURL()` or 
+  // `my_message_instance.GetDescriptor()->full_name()` will work too (we 
+  // allow ignoring the url prefix / namespace, which is almost always 
+  // "type.googleapis.com/"). See also:
+  // https://github.com/protocolbuffers/protobuf/blob/e492e5a4ef16f59010283befbde6112f1995fa0f/src/google/protobuf/dynamic_message.cc#L632
+  MsgPtrOrErr LoadFromArray(
+                const std::string &type_url,
+                const std::byte *data,
+                size_t size);
+
+  template <typename ContainerT>
+  MsgPtrOrErr LoadFromContainer(
+                  const std::string &type_url,
+                  const ContainerT &c) {
+    return LoadFromArray(type_url, (const std::byte *) c.data(), c.size());
+  }
+
+  // Register the given Protobuf type(s) with this factory by providing their
+  // (serializable) message definition FileDescriptor(s)
+  void RegisterTypes(const ::google::protobuf::FileDescriptorSet &fds);
+  void RegisterType(const ::google::protobuf::FileDescriptorProto &fd);
+
+  std::string ToString() const;
+
+protected:
+  struct Impl;
+  std::shared_ptr<Impl> _impl;
+  void LazyInitImpl();
+};
 
 
 } /* namespace protobag */

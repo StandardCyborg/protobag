@@ -51,3 +51,42 @@ TEST(PBUtilsTest, TestPBFactoryBasicSerialization) {
   }
 
 }
+
+// TODO MORE TEST PBFACTORY
+
+static const std::string kTestDynamicMsgFactoryBasicExpectedStr = (
+"basdgasg"
+);
+
+TEST(PBUtilsTest, TestDynamicMsgFactoryBasic) {
+  StdMsg_String msg;
+  msg.set_value("foo");
+  auto msg_text_format = PBToString(msg);
+
+  static const std::string kMsgPrototxt = "value: \"foo\"\n";
+  ASSERT_EQ(msg_text_format, kMsgPrototxt);
+
+  {
+    DynamicMsgFactory factory;
+
+    {
+      ::google::protobuf::FileDescriptorProto fd_proto;
+      msg.GetDescriptor()->file()->CopyTo(&fd_proto);
+      factory.RegisterType(fd_proto);
+    }
+
+    EXPECT_EQ(factory.ToString(), kTestDynamicMsgFactoryBasicExpectedStr);
+
+    {
+      auto maybe_msgp = factory.LoadFromContainer(
+            GetTypeURL<StdMsg_String>(),
+            msg_text_format);
+      ASSERT_TRUE(maybe_msgp.IsOk()) << maybe_msgp.error;
+
+      auto msgp = std::move(*maybe_msgp.value);
+      ASSERT_TRUE(msgp);
+
+      EXPECT_EQ(msgp->GetTypeName(), "moof");
+    }
+  }
+}
