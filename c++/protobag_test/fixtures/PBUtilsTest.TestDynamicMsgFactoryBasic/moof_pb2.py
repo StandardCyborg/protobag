@@ -18,23 +18,23 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='my_package',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\nmoof.proto\x12\nmy_package\"\x11\n\x04Moof\x12\t\n\x01x\x18\x01 \x01(\tb\x06proto3'
+  serialized_pb=b'\n\nmoof.proto\x12\nmy_package\"Z\n\x04Moof\x12\t\n\x01x\x18\x01 \x01(\t\x12)\n\x05inner\x18\x02 \x01(\x0b\x32\x1a.my_package.Moof.InnerMoof\x1a\x1c\n\tInnerMoof\x12\x0f\n\x07inner_v\x18\x01 \x01(\x03\x62\x06proto3'
 )
 
 
 
 
-_MOOF = _descriptor.Descriptor(
-  name='Moof',
-  full_name='my_package.Moof',
+_MOOF_INNERMOOF = _descriptor.Descriptor(
+  name='InnerMoof',
+  full_name='my_package.Moof.InnerMoof',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='x', full_name='my_package.Moof.x', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      name='inner_v', full_name='my_package.Moof.InnerMoof.inner_v', index=0,
+      number=1, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -50,19 +50,66 @@ _MOOF = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=26,
-  serialized_end=43,
+  serialized_start=88,
+  serialized_end=116,
 )
 
+_MOOF = _descriptor.Descriptor(
+  name='Moof',
+  full_name='my_package.Moof',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='x', full_name='my_package.Moof.x', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='inner', full_name='my_package.Moof.inner', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_MOOF_INNERMOOF, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=26,
+  serialized_end=116,
+)
+
+_MOOF_INNERMOOF.containing_type = _MOOF
+_MOOF.fields_by_name['inner'].message_type = _MOOF_INNERMOOF
 DESCRIPTOR.message_types_by_name['Moof'] = _MOOF
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 Moof = _reflection.GeneratedProtocolMessageType('Moof', (_message.Message,), {
+
+  'InnerMoof' : _reflection.GeneratedProtocolMessageType('InnerMoof', (_message.Message,), {
+    'DESCRIPTOR' : _MOOF_INNERMOOF,
+    '__module__' : 'moof_pb2'
+    # @@protoc_insertion_point(class_scope:my_package.Moof.InnerMoof)
+    })
+  ,
   'DESCRIPTOR' : _MOOF,
   '__module__' : 'moof_pb2'
   # @@protoc_insertion_point(class_scope:my_package.Moof)
   })
 _sym_db.RegisterMessage(Moof)
+_sym_db.RegisterMessage(Moof.InnerMoof)
 
 
 # @@protoc_insertion_point(module_scope)

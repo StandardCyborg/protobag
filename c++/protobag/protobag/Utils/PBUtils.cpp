@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <list>
+#include <pair>
 #include <string>
 #include <vector>
 
@@ -10,7 +11,344 @@
 #include <google/protobuf/descriptor_database.h>
 #include <google/protobuf/dynamic_message.h>
 
+
 namespace protobag {
+
+
+// ============================================================================
+// Reflection Utils ===========================================================
+// ============================================================================
+
+// Based upon https://github.com/protocolbuffers/protobuf/blob/15d0cd714dc24d7c460c70d469ce10a45d6c6c02/src/google/protobuf/descriptor.cc#L174
+static const size_t kPBNumCPPTypes = 18;
+static const char* const kPBCppTypeToName[kPBNumCPPTypes + 1] = {
+  "UNKNOWN",
+  "double",    // TYPE_DOUBLE
+  "float",     // TYPE_FLOAT
+  "int64",     // TYPE_INT64
+  "uint64",    // TYPE_UINT64
+  "int32",     // TYPE_INT32
+  "fixed64",   // TYPE_FIXED64
+  "fixed32",   // TYPE_FIXED32
+  "bool",      // TYPE_BOOL
+  "string",    // TYPE_STRING
+  "group",     // TYPE_GROUP
+  "message",   // TYPE_MESSAGE
+  "bytes",     // TYPE_BYTES
+  "uint32",    // TYPE_UINT32
+  "enum",      // TYPE_ENUM
+  "sfixed32",  // TYPE_SFIXED32
+  "sfixed64",  // TYPE_SFIXED64
+  "sint32",    // TYPE_SINT32
+  "sint64",    // TYPE_SINT64
+};
+const char * const GetPBCPPTypeName(
+  ::google::protobuf::FieldDescriptor::CppType type_id) {
+  if (type_id < kPBNumCPPTypes + 1) {
+    return kPBCppTypeToName[type_id];
+  } else {
+    return "OUT_OF_BOUNDS_UPDATE_kPBCppTypeToName";
+  }
+}
+
+
+template <typename PBCPPType>
+Result<const ::google::protobuf::FieldDescriptor*> 
+GetField(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname) {
+
+  if (!message) {
+    return {.error = "Programming error: need user-allocated output message"};
+  }
+
+  using namespace ::google::protobuf;
+  const Descriptor* descriptor = message->GetDescriptor();
+  if (!descriptor) {
+    return {
+      .error = fmt::format("Msg {} has no descriptor", message->GetTypeName())
+    };
+  }
+
+  const FieldDescriptor* field = descriptor->FindFieldByName(fieldname);
+  if (!field) {
+    return {
+      .error = fmt::format(
+        "Msg {} has no field {}", message->GetTypeName(), fieldname)
+    };
+  }
+
+  if (field->cpp_type() != PBCPPType) {
+    return {
+      .error = fmt::format(
+        "Wanted field {} on msg {} to be type {}, but {}.{} is of type {}",
+        fieldname,
+        message->GetTypeName(),
+        GetPBCPPTypeName(PBCPPType),
+        message->GetTypeName(), fieldname,
+        GetPBCPPTypeName(field->cpp_type()))
+    };
+  }
+
+  return {.value = field};
+}
+
+struct ctx {
+  const ::google::protobuf::Reflection* reflection;
+  const ::google::protobuf::FieldDescriptor* field;
+};
+template <typename PBCPPType>
+Result<ctx> GetCTX(
+      const ::google::protobuf::Message *message,
+      const std::string &fieldname) {
+
+  auto maybe_field = GetField<PBCPPType>(message, fieldname);
+  if (!maybe_field.IsOk()) { return {.error = maybe_field.error}; }
+
+  const ::google::protobuf::Reflection* reflection = message->GetReflection();
+  if (!reflection) {
+    return {
+      .error =
+        fmt::format("Message {} has no reflection", message->GetTypeName())
+    };
+  }
+
+  return {.value = {.reflection = reflection, field = *maybe_field.value}};
+}
+
+
+////
+//// GetAttr Impl
+////
+
+Result<int32_t> GetAttr_int32(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname) {
+
+  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_INT32>(
+    message, fieldname);
+  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  return {
+    .value = maybe_ctx.value->reflection->GetInt32(
+      message,
+      maybe_ctx.value->field)
+  };
+}
+
+Result<int64_t> GetAttr_int64(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname) {
+
+  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_INT64>(
+    message, fieldname);
+  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  return {
+    .value = maybe_ctx.value->reflection->GetInt64(
+      message,
+      maybe_ctx.value->field)
+  };
+}
+
+Result<float> GetAttr_float(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname) {
+
+  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_FLOAT>(
+    message, fieldname);
+  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  return {
+    .value = maybe_ctx.value->reflection->GetFloat(
+      message,
+      maybe_ctx.value->field)
+  };
+}
+
+Result<double> GetAttr_double(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname) {
+
+  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_DOUBLE>(
+    message, fieldname);
+  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  return {
+    .value = maybe_ctx.value->reflection->GetDouble(
+      message,
+      maybe_ctx.value->field)
+  };
+}
+
+Result<bool> GetAttr_bool(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname) {
+
+  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_BOOL>(
+    message, fieldname);
+  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  return {
+    .value = maybe_ctx.value->reflection->GetBool(
+      message,
+      maybe_ctx.value->field)
+  };
+}
+
+
+Result<std::string> GetAttr_string(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname) {
+
+  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_STRING>(
+    message, fieldname);
+  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  return {
+    .value = maybe_ctx.value->reflection->GetString(
+      message,
+      maybe_ctx.value->field)
+  };
+}
+
+Result<const ::google::protobuf::Message *> GetAttr_msg(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname) {
+
+  auto maybe_ctx = GetCTX<::google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE>(
+    message, fieldname);
+  if (!maybe_ctx) { return {.error = maybe_ctx.error }; }
+  return {
+    .value = maybe_ctx.value->reflection->GetMessage(
+      message,
+      maybe_ctx.value->field)
+  };
+}
+
+
+////
+//// GetDeep Impl
+////
+
+// "first.second.third" -> "first", "second.third"
+std::pair<std::string, std::string> SplitHeadTail(
+    const std::string &field_path) {
+  size_t pos = field_path.find_first_of(".");
+  std::string head = field_path.substr(pos);
+  std::string tail;
+  if (pos != std::string npos) {
+    tail = field_path.substr(pos + 1);
+  }
+  return std::make_pair(head, tail);
+}
+
+// "first.second.third" -> "first.second", "third"
+std::pair<std::string, std::string> GetPrefixAttr(
+    const std::string &field_path) {
+  size_t pos = field_path.find_last_of(".");
+  std::string prefix;
+  std::string attr = field_path;
+  if (pos != std::string npos) {
+    prefix = field_path.substr(pos);
+    attr = field_path.substr(pos + 1);
+  }
+  return std::make_pair(prefix, attr);
+}
+
+
+Result<const ::google::protobuf::Message *> GetDeep_msg(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path) {
+
+  auto head_tail = SplitHeadTail(field_path);
+  while (!head_tail.first.empty()) {
+    auto maybe_member = GetAttr_msg(message, head_tail.first);
+    if (!maybe_member.IsOk()) {
+      return {
+        .error = fmt::format(
+          "Could not get member {} of {}, error: {}",
+          head_tail.first,
+          message->GetTypeName(),
+          maybe_member.error)
+      };
+    }
+
+    message = *mayeb_member.value;
+    head_tail = SplitHeadTail(head_tail.second);
+  }
+  
+  return {.value = message};
+}
+
+template <typename ResultT, typename GetAttrT>
+ResultT GetDeep_attr(
+        const ::google::protobuf::Message *message,
+        const std::string &field_path,
+        const std::string &err_fname
+        GetAttrT get_attr) {
+
+  auto prefix_attr = GetPrefixAttr(field_path);
+  auto maybe_message = GetDeep_msg(message, prefix_attr.first);
+  if (!maybe_message.IsOk()) {
+    return {
+        .error = fmt::format(
+          "{} to {} on {}.{} failed: {}",
+          err_fname,
+          field_path,
+          message->GetTypeName(),
+          prefix_attr.first,
+          maybe_msg.error)
+      }
+  }
+
+  return get_attr(*maybe_message.value, prefix_attr.second);
+}
+
+
+Result<int32_t> GetDeep_int32(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path) {
+
+  return GetDeep_attr(message, field_path, "GetDeep_int32", &GetAttr_int32);
+}
+
+Result<int64_t> GetDeep_int64(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path) {
+
+  return GetDeep_attr(message, field_path, "GetDeep_int64", &GetAttr_int64);
+}
+
+Result<float> GetDeep_float(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path) {
+
+  return GetDeep_attr(message, field_path, "GetDeep_float", &GetAttr_float);
+}
+
+Result<double> GetDeep_double(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path) {
+
+  return GetDeep_attr(message, field_path, "GetDeep_double", &GetAttr_double);
+}
+
+Result<bool> GetDeep_bool(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path) {
+
+  return GetDeep_attr(message, field_path, "GetDeep_bool", &GetAttr_bool);
+}
+
+Result<std::string> GetDeep_string(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path) {
+
+  return GetDeep_attr(message, field_path, "GetDeep_string", &GetAttr_string);
+}
+
+
+
+
+
+// ============================================================================
+// DynamicMessageFactory ======================================================
+// ============================================================================
 
 struct DynamicMsgFactory::Impl {
   ::google::protobuf::SimpleDescriptorDatabase db;

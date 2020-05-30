@@ -3,6 +3,7 @@
 from moof_pb2 import Moof
 
 m = Moof(x="i am a dogcow")
+m.inner.inner_v = 1337
 
 print("BEGIN MOOF TEXT FORMAT")
 print(m)

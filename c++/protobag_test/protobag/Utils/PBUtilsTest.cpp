@@ -74,7 +74,11 @@ The fixtures below include:
 ******************************************************************************/
 
 static const std::string kTestDynamicMsgFactoryBasic_Msg_Prototxt = 
-R"(x: "i am a dogcow" )";
+R"(x: "i am a dogcow"
+inner {
+  inner_v: 1337
+}
+)";
 
 static const std::string kTestDynamicMsgFactoryBasic_FileDescriptorProto_Prototxt = 
 R"(name: "moof.proto"
@@ -87,8 +91,26 @@ message_type {
     label: LABEL_OPTIONAL
     type: TYPE_STRING
   }
+  field {
+    name: "inner"
+    number: 2
+    label: LABEL_OPTIONAL
+    type: TYPE_MESSAGE
+    type_name: ".my_package.Moof.InnerMoof"
+  }
+  nested_type {
+    name: "InnerMoof"
+    field {
+      name: "inner_v"
+      number: 1
+      label: LABEL_OPTIONAL
+      type: TYPE_INT64
+    }
+  }
 }
-syntax: "proto3")";
+syntax: "proto3"
+
+)";
 
 static const std::string kTestDynamicMsgFactoryBasicExpectedStr = 
 R"(DynamicMsgFactory
@@ -123,7 +145,82 @@ TEST(PBUtilsTest, TestDynamicMsgFactoryBasic) {
     ASSERT_TRUE(msgp);
 
     EXPECT_EQ(msgp->GetTypeName(), "my_package.Moof");
-    EXPECT_EQ(msgp->DebugString(), "x: \"i am a dogcow\"\n");
+    
+    // Use protobuf build-in reflection API
+    {
+      using namespace ::google::protobuf;
+      const Descriptor* descriptor = msgp->GetDescriptor();
+      ASSERT_TRUE(descriptor);
+
+      const FieldDescriptor* x_field = descriptor->FindFieldByName("x");
+      ASSERT_TRUE(x_field);
+      EXPECT_EQ(x_field->type(), FieldDescriptor::TYPE_STRING);
+      
+      const Reflection* reflection = msgp->GetReflection();
+      ASSERT_TRUE(reflection);
+      EXPECT_EQ(reflection->GetString(*msgp, x_field), "i am a dogcow");
+    }
+
+    // Use Protobag Utils
+    {
+      // Hit attribute `x`
+      {
+        auto maybe_v = GetAttr_string(*msgp, "x");
+        ASSERT_TRUE(maybe_v.IsOk()) << maybe_v.error;
+        EXPECT_EQ(*maybe_v.value, "i am a dogcow");
+      }
+
+      {
+        auto maybe_v = GetDeep_string(*msgp, "x");
+        ASSERT_TRUE(maybe_v.IsOk()) << maybe_v.error;
+        EXPECT_EQ(*maybe_v.value, "i am a dogcow");
+      }
+      
+      // Error attribute `x`
+      {
+        auto maybe_v = GetAttr_string(*msgp, "does_not_exist");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(mayeb_v.error, "error 1");
+      }
+
+      {
+        auto maybe_v = GetDeep_string(*msgp, "does_not_exist");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(mayeb_v.error, "error 2");
+      }
+
+      {
+        auto maybe_v = GetDeep_string(*msgp, "");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(mayeb_v.error, "error 3");
+      }
+      
+      {
+        auto maybe_v = GetAttr_int32(*msgp, "x");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(mayeb_v.error, "error 2");
+      }
+
+      {
+        auto maybe_v = GetDeep_int32(*msgp, "x");
+        ASSERT_TRUE(!maybe_v.IsOk());
+        EXPECT_EQ(mayeb_v.error, "error 4");
+      }
+
+      // Hit nested message
+      {
+        auto maybe_v = GetAttr_msg(*msgp, "inner");
+        ASSERT_TRUE(maybe_v.IsOk()) << maybe_v.error;
+        EXPECT_EQ(*maybe_v.value->DebugString(), "need to debug string");
+      }
+
+      // Hit nested message value
+      {
+        auto maybe_v = GetDeep_int64(*msgp, "inner.inner_v");
+        ASSERT_TRUE(maybe_v.IsOk()) << maybe_v.error;
+        EXPECT_EQ(*maybe_v.value, 1337);
+      }
+    }
   }
 
 }

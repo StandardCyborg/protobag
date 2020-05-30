@@ -27,7 +27,7 @@ class FileDescriptorSet;
 namespace protobag {
 
 
-// See "Syntactic Sugar" and other utils at end of file
+// See "PBFactory: Sugar" and other utils at end of file
 
 
 // ============================================================================
@@ -348,7 +348,7 @@ protected:
 
 
 // ============================================================================
-// Sugar ======================================================================
+// PBFactory: Sugar ===========================================================
 // ============================================================================
 
 // Return a text format string, or throw on error.
@@ -363,6 +363,73 @@ std::string PBToString(const MT &pb_msg) {
 
 
 // ============================================================================
+// Reflection Utils ===========================================================
+// ============================================================================
+
+// Given a `message`, get the attribute at `fieldname`
+Result<int32_t> GetAttr_int32(
+    const ::google::protobuf::Message *message,
+    const std::string &fieldname);
+Result<int64_t> GetDeep_int64(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+Result<float> GetDeep_float(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+Result<double> GetDeep_double(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+Result<bool> GetDeep_bool(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+Result<std::string> GetDeep_string(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+// Given a `message`, get the attribute at `field_path`.  If `field_path` is
+// a field on `message`, get that field.  Otherwise if `field_path` is a
+// period (.) delimited string to a nested attribute, recursively descend
+// into children of `message` to find the field.
+Result<int32_t> GetDeep_int32(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+Result<int64_t> GetDeep_int64(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+Result<float> GetDeep_float(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+Result<double> GetDeep_double(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+Result<bool> GetDeep_bool(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+Result<std::string> GetDeep_string(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+// Special case: a field_path of "" returns the given message
+Result<const ::google::protobuf::Message *> GetDeep_msg(
+    const ::google::protobuf::Message *message,
+    const std::string &field_path);
+
+// TODO: support repeated, maps, enums, etc
+
+const char * const GetPBCPPTypeName(
+  ::google::protobuf::FieldDescriptor::CppType type_id);
+
+
+// ============================================================================
 // DynamicMessageFactory ======================================================
 // ============================================================================
 
@@ -370,10 +437,10 @@ std::string PBToString(const MT &pb_msg) {
 // help you decode messages using those descriptors **without** using protoc-
 // generated headers and sources for those message types.  This utility wraps
 // a ::google::protobuf::DynamicMessageFactory with a 
-// ::google::protobuf::SimpleDescriptorDatabase to help implement the "Self-
-// Describing Message Technique":
+// ::google::protobuf::SimpleDescriptorDatabase in order to to help implement
+// the "Self-Describing Message Technique" (w/out requiring that message def):
 // https://developers.google.com/protocol-buffers/docs/techniques#self-description
-// Protobuf has all the tools but only puts them together in their 
+// Protobuf has all the tools but only really puts them together in their 
 // `util.json_util` module.
 class DynamicMsgFactory {
 public:
@@ -382,8 +449,12 @@ public:
   typedef Result<std::unique_ptr<::google::protobuf::Message>> MsgPtrOrErr;
 
   // Create and return a Message (actually a DynamicMessage) of type `type_url`
-  // from the given buffer.  
-  // NOTE: As per ::google::protobuf::DynamicMessageFactory, the returned
+  // from the given buffer.  From there, you can use the Message reflection
+  // interface to get attributes of the Message instance; see:
+  // https://github.com/protocolbuffers/protobuf/blob/e492e5a4ef16f59010283befbde6112f1995fa0f/src/google/protobuf/message.h#L79
+  // See also the "Reflection Utils" section above.
+  //                   !!!!! NOTE !!!!!
+  // As per ::google::protobuf::DynamicMessageFactory, the returned
   // message has lifetime tied to this `DynamicMsgFactory` instance.  You
   // need to keep both in scope, or serialize and dump the message elsewhere.
   // To get your message's `type_url`, use either `GetTypeURL()` or 
