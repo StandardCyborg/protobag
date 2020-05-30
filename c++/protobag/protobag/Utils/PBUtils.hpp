@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <sstream>
+#include <string>
 
 #include <fmt/format.h>
 
@@ -20,6 +21,31 @@ namespace protobag {
 
 // See "Syntactic Sugar" and other utils at end of file
 
+
+// ============================================================================
+// Utils ======================================================================
+// ============================================================================
+
+// Get the type URL for mesage type `MT`. Similar to 
+// protobuf::interal::GetTypeUrl() except everything outside Google
+// internal appears to default to the URL prefix `type.googleapis.com/`
+// (kTypeGoogleApisComPrefix), so we just default to that.
+template <typename MT>
+inline std::string GetTypeURL() {
+  return ::google::protobuf::internal::GetTypeUrl(
+    MT::descriptor()->full_name(),
+    ::google::protobuf::internal::kTypeGoogleApisComPrefix);
+      // This prefix is what protobuf uses internally:
+      // https://github.com/protocolbuffers/protobuf/blob/39d730dd96c81196893734ee1e075c34567e59ae/src/google/protobuf/any.cc#L44
+}
+
+
+// ============================================================================
+// PBFactory: =================================================================
+// ============================================================================
+
+
+// PBFactory: factory I/O methods for protobuf messages <=> strings & other
 // Based upon OarphKit https://github.com/pwais/oarphkit/blob/e799e7904d5b374cb6b58cd06a42d05506e83d94/oarphkit/ok/SerializationUtils/PBUtils-inl.hpp#L1
 // TODO support protobuf arena allocation https://developers.google.com/protocol-buffers/docs/reference/arenas ?
 class PBFactory {
@@ -31,7 +57,7 @@ public:
   static Result<MT> UnpackFromAny(const ::google::protobuf::Any &any) {
     if (!any.Is<MT>()) {
       return {.error = fmt::format(
-        "Any is not {} but is {}", MessageTypeName<MT>(), any.type_url())
+        "Any is not {} but is {}", GetTypeURL<MT>(), any.type_url())
       };
     }
     MT msg;
@@ -41,7 +67,7 @@ public:
     }
     return {.error = fmt::format(
       "Failed to unpack a {} from Any[{}]", 
-      MessageTypeName<MT>(), any.type_url())
+      GetTypeURL<MT>(), any.type_url())
     };
   }
 
@@ -95,7 +121,7 @@ public:
     if (success) { return {.value = message}; }
 
     return {
-      .error = fmt::format("Failed to read a {}", MessageTypeName<MT>())
+      .error = fmt::format("Failed to read a {}", GetTypeURL<MT>())
     };
   }
 
@@ -133,7 +159,7 @@ public:
     }
 
     return {
-      .error = fmt::format("Failed to read a {}", MessageTypeName<MT>())
+      .error = fmt::format("Failed to read a {}", GetTypeURL<MT>())
     };
   }
 
@@ -154,7 +180,7 @@ public:
     if (!success) {
       return {.error = 
         fmt::format("Error trying to write a {} in Textformat",
-        MessageTypeName<MT>())};
+        GetTypeURL<MT>())};
     } else {
       return {.value = out};
     }
@@ -168,7 +194,7 @@ public:
     if (!success) {
       return {.error = 
         fmt::format("Error trying to write a {} in binary format",
-        MessageTypeName<MT>())};
+        GetTypeURL<MT>())};
     } else {
       return {.value = out};
     }
@@ -186,7 +212,7 @@ public:
     if (!write_success) {
       return {.error =
         fmt::format("Error trying to write a {} in binary format to {}",
-          MessageTypeName<MT>(),
+          GetTypeURL<MT>(),
           path)
       };
     }
@@ -197,11 +223,6 @@ public:
 
 
 protected:
-
-  template <typename MT>
-  static std::string MessageTypeName() {
-    return typeid(MT).name();
-  }
 
   static void VerifyProfobuf() {
     // Throws a static assert if headers & linked library don't match.  Useful
@@ -250,7 +271,7 @@ protected:
       return {
         .error = fmt::format(
           "Failed to read a {} in text format from an array",
-          MessageTypeName<MT>())
+          GetTypeURL<MT>())
       };
     }
   }
@@ -273,23 +294,5 @@ std::string PBToString(const MT &pb_msg) {
   return *maybe_pb_txt.value;
 }
 
-
-
-// ============================================================================
-// Other Utils ================================================================
-// ============================================================================
-
-// Get the type URL for mesage type `MT`. Similar to 
-// protobuf::interal::GetTypeUrl() except everything outside Google
-// internal appears to default to the URL prefix `type.googleapis.com/`
-// (kTypeGoogleApisComPrefix), so we just default to that.
-template <typename MT>
-inline std::string GetTypeURL() {
-  return ::google::protobuf::internal::GetTypeUrl(
-    MT::descriptor()->full_name(),
-    ::google::protobuf::internal::kTypeGoogleApisComPrefix);
-      // This prefix is what protobuf uses internally:
-      // https://github.com/protocolbuffers/protobuf/blob/39d730dd96c81196893734ee1e075c34567e59ae/src/google/protobuf/any.cc#L44
-}
 
 } /* namespace protobag */
