@@ -8,8 +8,6 @@
 
 namespace protobag {
 
-int foo();
-
 class Protobag final {
 public:
   Protobag() = default;

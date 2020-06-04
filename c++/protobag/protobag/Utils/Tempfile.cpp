@@ -7,6 +7,8 @@ namespace protobag {
 
 namespace fs = std::filesystem;
 
+// Create and return a random string of length `len`; we draw characters
+// from a standard ASCII set
 std::string CreateRandomString(size_t len) {
   static const char* alpha = 
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";

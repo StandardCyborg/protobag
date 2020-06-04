@@ -21,7 +21,7 @@ public:
     Selection selection;
     bool unpack_stamped_messages;
 
-    // NB: for now we *only* support time-ordered reads
+    // NB: for now we *only* support time-ordered reads for stamped entries. non-stamped are not ordered
 
     static Spec ReadAllFromPath(const std::string &path) {
       Selection sel;

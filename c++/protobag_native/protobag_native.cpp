@@ -5,7 +5,7 @@
 
 #include <fmt/format.h>
 
-#include <protobag/Protobag.hpp> // fixme ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#include <protobag/Protobag.hpp> // fixme includes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #include <protobag/ReadSession.hpp>
 #include <protobag/WriteSession.hpp>
@@ -152,8 +152,6 @@ protected:
 PYBIND11_MODULE(protobag_native, m) {
   m.doc() = 
     "protobag_native: a pybind11-based interface to the Protobag C++ back-end";
-
-  m.def("foo", &protobag::foo, "yo momma"); // fixme ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
 
   py::class_<native_entry>(m, "native_entry", "Handle to a native entry")
     .def(py::init<>())

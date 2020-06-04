@@ -1,5 +1,6 @@
 #include "protobag/BagIndexBuilder.hpp"
 
+#include <algorithm>
 #include <queue>
 #include <tuple>
 #include <unordered_set>
@@ -7,16 +8,17 @@
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/time_util.h>
 
+#include "protobag/Utils/TopicTime.hpp"
+
+#ifndef PROTOBAG_VERSION
+#define PROTOBAG_VERSION "unknown"
+#endif
 
 namespace protobag {
 
 
-struct BagIndexBuilder::TopicTimePQ {
-  std::priority_queue<
-    TopicTime, 
-    std::vector<TopicTime>, 
-    std::greater<TopicTime>> 
-      observed;
+struct BagIndexBuilder::TopicTimeOrderer {
+  std::queue<TopicTime> observed;
 
   void Observe(const TopicTime &tt) {
     observed.push(tt);
@@ -26,10 +28,11 @@ struct BagIndexBuilder::TopicTimePQ {
   void MoveOrderedTTsTo(RepeatedPtrFieldT &repeated_field) {
     repeated_field.Reserve(observed.size());
     while (!observed.empty()) {
-      auto top = observed.top();
+      auto tt = observed.front();
       observed.pop();
-      repeated_field.Add(std::move(top));
+      repeated_field.Add(std::move(tt));
     }
+    std::sort(repeated_field.begin(), repeated_field.end());
   }
 };
 
@@ -127,12 +130,12 @@ BagIndexBuilder::BagIndexBuilder() {
   end.set_seconds(::google::protobuf::util::TimeUtil::kTimestampMinSeconds);
   end.set_nanos(0);
 
-  _index.set_protobag_version("TODO"); // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
+  _index.set_protobag_version(PROTOBAG_VERSION);
 
 }
 
 BagIndexBuilder::~BagIndexBuilder() {
-  // NB: must declare here for TopicTimePQ PImpl pattern to work with unique_ptr
+  // NB: must declare here for PImpl pattern to work with unique_ptr
 }
 
 BagIndex_TopicStats &BagIndexBuilder::GetMutableStats(const std::string &topic) {
@@ -167,10 +170,10 @@ void BagIndexBuilder::Observe(
       }
 
       {
-        if (!_ttq) {
-          _ttq.reset(new TopicTimePQ());
+        if (!_tto) {
+          _tto.reset(new TopicTimeOrderer());
         }
-        _ttq->Observe(tt);
+        _tto->Observe(tt);
       }
 
       {
@@ -204,15 +207,13 @@ void BagIndexBuilder::Observe(
 BagIndex BagIndexBuilder::Complete(UPtr &&builder) {
   BagIndex index;
 
-  index.set_protobag_version("TODO GET REAL VERSION");
-
   if (!builder) { return index; }
 
   // Steal meta and time-ordered entries to avoid large copies
   index = std::move(builder->_index);
   if (builder->_do_timeseries_indexing) {
-    if (builder->_ttq) {
-      auto ttq = std::move(builder->_ttq);
+    if (builder->_tto) {
+      auto ttq = std::move(builder->_tto);
       ttq->MoveOrderedTTsTo(*index.mutable_time_ordered_entries());
     }
   }

@@ -7,10 +7,9 @@
 #include <fmt/format.h>
 #include <google/protobuf/util/time_util.h>
 
-                                                                          #include <iostream>
-
 #include "protobag/BagIndexBuilder.hpp"
 #include "protobag/Utils/PBUtils.hpp"
+#include "protobag/Utils/TopicTime.hpp"
 
 
 namespace protobag {
@@ -77,7 +76,6 @@ MaybeEntry ReadSession::ReadEntryFrom(
 }
 
 MaybeEntry ReadSession::GetNext() {
-  // TODO: make a lot faster ... 
   if (!_started) {
     auto maybe_entries_to_read = GetEntriesToRead(_archive, _spec.selection);
     if (!maybe_entries_to_read.IsOk()) {
@@ -93,9 +91,8 @@ MaybeEntry ReadSession::GetNext() {
   if (_plan.entries_to_read.empty()) {
     return MaybeEntry::EndOfSequence();
   }
-std::cout << "_entries_to_read " << _plan.entries_to_read.size() << std::endl;
+
   std::string entryname = _plan.entries_to_read.front();
-std::cout << "entryname " << entryname << std::endl;
   _plan.entries_to_read.pop();
 
   if (!_archive) {
@@ -115,26 +112,6 @@ std::cout << "entryname " << entryname << std::endl;
   }
 }
 
-
-
-
-
-//   auto maybe_stamped_msg = ReadMessageFrom(_archive, entryname);
-//   if (!maybe_stamped_msg.IsOk()) {
-//     return MaybeEntry::Err(
-//       fmt::format(
-//         "Could not decode StampedMessage from {}, error {} ", 
-//         entryname, maybe_stamped_msg.error)
-//     );
-//   }
-
-//   return MaybeEntry::Ok({
-//     .topic = GetTopicFromEntryname(entryname),
-//     .stamped_msg = *maybe_stamped_msg.value,
-//   });
-// }
-
-
 Result<BagIndex> ReadSession::GetIndex(const std::string &path) {
   auto maybe_r = ReadSession::Create(ReadSession::Spec::ReadAllFromPath(path));
   if (!maybe_r.IsOk()) {
@@ -148,49 +125,6 @@ Result<BagIndex> ReadSession::GetIndex(const std::string &path) {
 
   return ReadLatestIndex(rp->_archive);
 }
-
-// Result<std::string> ReadSession::ReadMessageFrom(
-//     archive::Archive::Ptr archive,
-//     const std::string &entryname) {
-
-//   if (!archive) {
-//     return {.error = "No archive to read"};
-//   }
-
-  
-
-//   return PBFactory::LoadFromContainer<StampedMessage>(*maybe_bytes.value);
-// }
-
-// Result<BagIndex> ReadSession::GetReindexed(archive::Archive::Ptr archive) {
-//   TODO if we bring this back, use stampedmsg in filename to key off sniffing?
-//   if (!archive) {
-//     return {.error = "No archive to read"};
-//   }
-
-//   BagIndexBuilder::UPtr builder(new BagIndexBuilder());
-//   auto namelist = archive->GetNamelist();
-//   for (const auto &name : namelist) {
-//                                                 std::cout << "name " << name << std::endl;
-//     auto maybe_stamped_msg = ReadMessageFrom(archive, name);
-//     if (!maybe_stamped_msg.IsOk()) {
-//       return {.error = 
-//         fmt::format(
-//           "Could not decode StampedMessage from {}, error {} ", 
-//           name, maybe_stamped_msg.error)
-//         };
-//     }
-
-//     builder->Observe(
-//       Entry{
-//         .topic = GetTopicFromEntryname(name),
-//         .stamped_msg = *maybe_stamped_msg.value,
-//       },
-//       name);
-//   }
-
-//   return {.value = BagIndexBuilder::Complete(std::move(builder))};
-// }
 
 Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
   if (!archive) {
@@ -358,7 +292,6 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
       if (window.has_end() && (window.end() < tt.timestamp())) {
         continue;
       }
-std::cout << "tt.entryname() " << tt.entryname() << std::endl;
       entries_to_read.push(tt.entryname());
     }
     return {.value = ReadPlan{

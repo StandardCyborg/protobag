@@ -79,52 +79,6 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry, bool use_text_format) {
   return res;
 }
 
-
-
-//   if (use_text_format) {
-//     entryname = fmt::format("{}.prototxt", entryname);
-
-//     res = _archive->Write(entryname, *maybe_m_bytes.value);
-//   } else {
-//     entryname = fmt::format("{}.protobin", entryname);
-//     res = _archive->Write(entryname, *maybe_m_bytes.value);
-//   }
-
-
-
-//   auto maybe_m_bytes = PBFactory::ToBinaryString<StampedMessage>(entry.stamped_msg);
-//   if (!maybe_m_bytes.IsOk()) {
-//     return OkOrErr::Err(maybe_m_bytes.error);
-//   }
-
-//   if (!IsProtoBagIndexTopic(entry.topic)) {
-//     if (!_indexer) {
-//       return OkOrErr::Err("Programming Error: no indexer (at least for file counter)");
-//     }
-//     auto next_filenum = _indexer->GetNextFilenum(entry.topic);
-//     std::string entryname = fmt::format(
-//       "{}/{}.protobin", entry.topic, next_filenum);
-
-//     OkOrErr res = _archive->Write(entryname, *maybe_m_bytes.value);
-//     if (res.IsOk() && _indexer) {
-//       _indexer->Observe(entry, entryname);
-//     }
-
-//     return res;
-
-//   } else {
-
-//     // The `/_protobag_index` topic gets no indexing
-//     std::string entryname = fmt::format(
-//         "{}/{}.{}.protobin",
-//         entry.topic,
-//         entry.stamped_msg.timestamp().seconds(), 
-//         entry.stamped_msg.timestamp().nanos());
-//     return _archive->Write(entryname, *maybe_m_bytes.value);
-
-//   }
-// }
-
 void WriteSession::Close() {
   if (_indexer) {
     BagIndex index = BagIndexBuilder::Complete(std::move(_indexer));

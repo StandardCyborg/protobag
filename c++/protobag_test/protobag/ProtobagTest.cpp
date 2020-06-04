@@ -6,6 +6,6 @@
 
 TEST(ProtobagTest, TestBasic) {
 
-  std::cout << protobag::foo() << std::endl;
+  // TODO
 
 }

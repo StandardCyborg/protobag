@@ -4,6 +4,11 @@
 """
 pb-dev: A CLI for Protobag development
 TODO examples
+
+## Development
+
+When creating a new version:
+ 1. Edit protobag_version.txt
 """
 
 import os

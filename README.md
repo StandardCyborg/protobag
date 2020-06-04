@@ -46,7 +46,7 @@ for the suite of tools it offers:
 
 
 
-
+TODO: bag index doc
 
 TODO: "treat as a map" API
 

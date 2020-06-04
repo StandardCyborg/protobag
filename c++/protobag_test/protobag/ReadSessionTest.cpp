@@ -78,3 +78,5 @@ TEST(ReadSessionDirectory, TestBasic) {
       "\nExpected:\n" << expected.ToString();
   }
 }
+
+// TODO: test with tar and zip

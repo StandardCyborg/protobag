@@ -2,11 +2,6 @@
 
 namespace protobag {
 
-int foo() {
-
-  return 1337;
-}
-
 BagIndex Protobag::GetIndex() const {
   auto maybe_index = ReadSession::GetIndex(path);
   if (!maybe_index.IsOk()) {

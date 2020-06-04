@@ -6,8 +6,6 @@
 
 namespace protobag {
 
-// TODO: maybe an SFINAE-based utility would be better
-
 inline StdMsg_Bool ToBoolMsg(bool v) {
   StdMsg_Bool m;
   m.set_value(v);

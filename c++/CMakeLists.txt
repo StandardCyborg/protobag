@@ -29,6 +29,12 @@ endif()
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${protobag_common_flags} -g3")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${protobag_common_flags} -O3")
 
+file(STRINGS "protobag_version.txt" PROTOBAG_VERSION)
+set(protobag_common_flags "-DPROTOBAG_VERSION=${PROTOBAG_VERSION}")
+
+###
+### Dependencies
+###
 
 # To use local install, set GTEST_ROOT=/path/to/gtest
 set(GTEST_ROOT "/opt/gtest" CACHE PATH "Path to googletest")
@@ -36,10 +42,6 @@ set(GTEST_INCLUDE_DIR "/opt/gtest/googletest/include" CACHE PATH "Path to google
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
-# To use local install, set
-#  PROTOBUF_LIBRARY=deps/protobuf/lib/libprotobuf.dylib (use file path!)
-#  PROTOBUF_INCLUDE_DIR=deps/protobuf/include
-# set(PROTOBUF_LIBRARY /opt/protobuf/lib/libprotobuf.dylib)
 find_package(Protobuf)
 include_directories(${PROTOBUF_INCLUDE_DIRS})
 
@@ -78,20 +80,7 @@ file(GLOB_RECURSE pb_srcs protobag/protobag_msg/*.pb.cc)
 set(protobag_srcs ${protobag_srcs} ${pb_srcs})
 
 set(protobag_dep_libs ${protobag_dep_libs} ${LibArchive_LIBRARIES})
-
 set(protobag_dep_libs ${protobag_dep_libs} ${PROTOBUF_LIBRARIES})
-
-# FIXME --------------------------------------------------------------------------------------------
-#protobuf_generate_cpp(
-#  PB_PROTO_SRCS PB_PROTO_HDRS
-#  protobag/protobag_msg/ProtobagMsg.proto)
-#message ("PB_PROTO_SRCS = ${PB_PROTO_SRCS}") # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-#message ("PB_PROTO_HDRS = ${PB_PROTO_HDRS}")
-#error("fixme proto location")
-#set(protobag_srcs ${protobag_srcs} ${PB_PROTO_SRCS})
-#set(protobag_headers ${protobag_headers} ${PB_PROTO_HDRS})
-
-
 set(protobag_dep_libs ${protobag_dep_libs} fmt::fmt-header-only)
 
 if(UNIX OR APPLE)
@@ -190,12 +179,6 @@ target_link_libraries(
   PRIVATE
   protobagStatic
   ${protobag_test_dep_libs})
-
-# install(
-#   TARGETS protobag_test
-#   # IMPORTANT: Add the protobag_test executable to the "export-set"
-#   EXPORT ProtobagTargets
-#   RUNTIME DESTINATION "${INSTALL_BIN_DIR}" COMPONENT bin)
 
 add_test(
     NAME test 

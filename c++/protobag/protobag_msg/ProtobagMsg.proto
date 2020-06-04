@@ -6,11 +6,15 @@ import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/descriptor.proto";
 
+// Protobag includes special handling for time series data and stores
+// such data using this mesage container
 message StampedMessage {
     google.protobuf.Timestamp timestamp = 1;
     google.protobuf.Any msg = 2;
 }
 
+// A set of basic messages that users might leverage to write generic messages
+// without having to define their own.  Typically used in Protobag tests.
 message StdMsg {
     message Bool { bool value = 1; }
     message Int { int64 value = 1; }
@@ -26,12 +30,16 @@ message TopicTime {
     string entryname = 10;
 }
 
+// A Selection is a portable way for representing a section of a Protobag
+// that a user wants to read.
 message Selection {
     message All {
         // Just select everything in the protobag
         bool all_entries_are_raw = 1; // defaults to false
     }
 
+    // Generic protobag data: just read these entries; treat the protobag
+    // like a Map<string, protobuf_binary_blob>
     message Entrynames {
         // Just read these entries
         repeated string entrynames = 1;
@@ -43,6 +51,7 @@ message Selection {
         bool entries_are_raw = 3; // defaults to false
     }
 
+    // Time series data: a time window of messages (that may be empty)
     message Window {
         // NB: An empty Window means "SELECT *"
         
@@ -57,6 +66,7 @@ message Selection {
         repeated string exclude_topics = 4;
     }
 
+    // Time series data: specific timepoints / events
     message Events {
         // A Selection may alteratively be a list of specific messages. The 
         // entryname attribute of these events is ignored; if you need

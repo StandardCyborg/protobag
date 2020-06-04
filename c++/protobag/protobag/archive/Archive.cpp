@@ -7,15 +7,6 @@
 #include "protobag/archive/DirectoryArchive.hpp"
 #include "protobag/archive/LibArchiveArchive.hpp"
 
-
-// #if PROTOBAG_HAVE_LIBARCHIVE
-
-
-
-// #else /* PROTOBAG_HAVE_LIBARCHIVE is false */
-//   #error "Currently we only support LibArchive"
-// #endif
-
 namespace fs = std::filesystem;
 
 namespace protobag {
@@ -32,7 +23,7 @@ Result<Archive::Ptr> Archive::Open(const Archive::Spec &s) {
     if (fs::is_directory(s.path)) {
       format = "directory";
     } else {
-      // TODO make this better ... ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      // TODO: support more extensions
       std::vector<std::string> exts = {"zip", "tar"};
       for (auto &ext : exts) {
         if (EndsWith(s.path, ext)) {

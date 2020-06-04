@@ -4,8 +4,6 @@
 #include <filesystem>
 #include <fstream>
 
-                                                                        #include <iostream>
-
 #include <fmt/format.h>
 
 #include "protobag/Utils/Tempfile.hpp"

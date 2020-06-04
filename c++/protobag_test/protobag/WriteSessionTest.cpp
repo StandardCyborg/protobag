@@ -5,6 +5,7 @@
 
 #include "protobag/Utils/PBUtils.hpp"
 #include "protobag/Utils/StdMsgUtils.hpp"
+#include "protobag/Utils/TopicTime.hpp"
 #include "protobag/WriteSession.hpp"
 
 #include "protobag_test/Utils.hpp"

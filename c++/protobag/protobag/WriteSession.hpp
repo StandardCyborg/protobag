@@ -35,6 +35,8 @@ public:
 
   OkOrErr WriteEntry(const Entry &entry, bool use_text_format=false);
 
+  // Explicitly close this session, which writes an index, flushes all data,
+  // to disk, and invalidates this WriteSession.
   void Close();
 
 protected:
