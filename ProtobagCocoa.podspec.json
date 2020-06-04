@@ -10,7 +10,7 @@
   "cocoapods_version": ">= 1.0",
   "source": {
     "git": "git@github.com:StandardCyborg/protobag.git",
-    "tag": "v0.0.1"
+    "tag": "v0.0.2"
   },
   "public_header_files": [
     "c++/protobag/**/*.{hpp,h}"
@@ -24,7 +24,7 @@
     "osx": "10.15"
   },
   "dependencies": {
-    "Protobuf-C++": "~> 3.11",
+    "Protobuf-C++": "~> 3.11.4",
     "FMTCocoa": "~> 6.2.0",
     "LibArchiveCocoa": "~> 3.4.2"
   },
