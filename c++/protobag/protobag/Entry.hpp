@@ -235,7 +235,10 @@ struct Entry {
   }
 
   bool IsStampedMessage() const {
-    return IsA<StampedMessage>();
+    return 
+      IsA<StampedMessage>() || (
+        // An unpacked StampedDatum is OK too
+        GetTopicTime().has_value());
   }
 
   bool IsRaw() const {
@@ -243,14 +246,21 @@ struct Entry {
   }
 
   std::optional<TopicTime> GetTopicTime() const {
-    if (!ctx.has_value()) {
+    if (ctx.has_value()) {
+      TopicTime tt;
+      tt.set_topic(ctx->topic);
+      *tt.mutable_timestamp() = ctx->stamp;
+      return tt;
+    } else if (IsA<StampedMessage>()) {
+      const auto &maybebUnpacked = UnpackFromStamped();
+      if (maybebUnpacked.IsOk()) {
+        return maybebUnpacked.value->GetTopictime();
+      } else {
+        return std::nullopt;  
+      }
+    } else {
       return std::nullopt;
     }
-
-    TopicTime tt;
-    tt.set_topic(ctx->topic);
-    *tt.mutable_timestamp() = ctx->stamp;
-    return tt;
   }
 
   template <typename MT>

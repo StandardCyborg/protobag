@@ -12,6 +12,7 @@
 #include <google/protobuf/any.h>
 #include <google/protobuf/any.pb.h>
 #include <google/protobuf/stubs/common.h>
+#include <google/protobuf/time_util.h>
 #include <google/protobuf/text_format.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -60,6 +61,31 @@ inline std::string GetMessageTypeName(const std::string type_url) {
     return type_url.substr(delim_pos + 1);
   }
 }
+
+inline ::google::protobuf::Duration SecondsToDuration(double d_seconds) {
+  // For a good time: https://github.com/ros/roscpp_core/pull/50
+  int64_t sec = floor(d_seconds);
+  int32_t nanos = round((d_seconds - sec) * 1e9);
+  sec += (nanos / 1000000000ul);
+  nanos %= 1000000000ul;
+  ::google::protobuf::Duration d;
+  d.set_seconds(sec);
+  d.set_nanos(nanos);
+  return d;
+}
+
+inline ::google::protobuf::Timestamp SecondsToTimestamp(double t_seconds) {
+  // For a good time: https://github.com/ros/roscpp_core/pull/50
+  int64_t sec = floor(t_seconds);
+  int32_t nanos = round((t_seconds - sec) * 1e9);
+  sec += (nanos / 1000000000ul);
+  nanos %= 1000000000ul;
+  ::google::protobuf::Timestamp t;
+  t.set_seconds(sec);
+  t.set_nanos(nanos);
+  return t;
+}
+
 
 
 // ============================================================================
@@ -426,6 +452,7 @@ Result<const ::google::protobuf::Message *> GetDeep_msg(
 
 const char * const GetPBCPPTypeName(
   ::google::protobuf::FieldDescriptor::CppType type_id);
+
 
 
 // ============================================================================
