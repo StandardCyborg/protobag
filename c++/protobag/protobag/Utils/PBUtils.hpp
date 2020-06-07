@@ -11,9 +11,10 @@
 
 #include <google/protobuf/any.h>
 #include <google/protobuf/any.pb.h>
+#include <google/protobuf/duration.pb.h>
 #include <google/protobuf/stubs/common.h>
-#include <google/protobuf/time_util.h>
 #include <google/protobuf/text_format.h>
+#include <google/protobuf/timestamp.pb.h>
 #include <google/protobuf/io/zero_copy_stream_impl.h>
 #include <google/protobuf/io/coded_stream.h>
 

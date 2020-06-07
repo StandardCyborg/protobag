@@ -245,23 +245,7 @@ struct Entry {
     return msg.type_url().empty();
   }
 
-  std::optional<TopicTime> GetTopicTime() const {
-    if (ctx.has_value()) {
-      TopicTime tt;
-      tt.set_topic(ctx->topic);
-      *tt.mutable_timestamp() = ctx->stamp;
-      return tt;
-    } else if (IsA<StampedMessage>()) {
-      const auto &maybebUnpacked = UnpackFromStamped();
-      if (maybebUnpacked.IsOk()) {
-        return maybebUnpacked.value->GetTopictime();
-      } else {
-        return std::nullopt;  
-      }
-    } else {
-      return std::nullopt;
-    }
-  }
+  std::optional<TopicTime> GetTopicTime() const;
 
   template <typename MT>
   Result<MT> GetAs(bool validate_type_url = true) const {
@@ -348,5 +332,22 @@ inline MaybeEntry Entry::UnpackFromStamped() const {
   return MaybeEntry::Ok(std::move(entry));
 }
 
+inline std::optional<TopicTime> Entry::GetTopicTime() const {
+  if (ctx.has_value()) {
+    TopicTime tt;
+    tt.set_topic(ctx->topic);
+    *tt.mutable_timestamp() = ctx->stamp;
+    return tt;
+  } else if (IsA<StampedMessage>()) {
+    const auto &maybebUnpacked = UnpackFromStamped();
+    if (maybebUnpacked.IsOk()) {
+      return maybebUnpacked.value->GetTopicTime();
+    } else {
+      return std::nullopt;
+    }
+  } else {
+    return std::nullopt;
+  }
+}
 
 } /* namespace protobag */

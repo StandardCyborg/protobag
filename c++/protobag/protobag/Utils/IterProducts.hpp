@@ -39,15 +39,33 @@ protected:
   
   size_t NumPools() const { return _pool_sizes.size(); }
 
+  bool HaveEmptyPool() const {
+    bool have_empty_pool = false;
+    for (const auto &pool_size : _pool_sizes) {
+      have_empty_pool |= (pool_size == 0);
+    }
+    return have_empty_pool;
+  }
+
 };
 
-inline const MaybeProduct &IterProducts::GetNext() {
+
+
+inline const IterProducts::MaybeProduct &IterProducts::GetNext() {
   // Return EndOfSequence forever or init
   if (NoMoreProducts()) {
-    return MaybeProduct::EndOfSequence();
+    static const auto eos = MaybeProduct::EndOfSequence();
+    return eos;
   } else if (_next.IsEndOfSequence()) {
-    _next = MaybeProduct::First(NumPools());
-    return _next;
+    // Can we init?
+    if (HaveEmptyPool()) {
+      SetNoMoreProducts();
+      static const auto eos = MaybeProduct::EndOfSequence();
+      return eos;
+    } else {
+      _next = MaybeProduct::First(NumPools());
+      return _next;
+    }
   }
 
   // Compute next

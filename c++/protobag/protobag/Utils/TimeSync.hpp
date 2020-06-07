@@ -48,7 +48,7 @@ public:
 
 protected:
   ReadSession::Ptr _read_sess;
-}
+};
 
 
 // Approximately synchronizes messages from given topics as follows:
@@ -74,7 +74,7 @@ public:
     //   s.max_queue_size = size_t(-1);
     //   return s;
     // }
-  }
+  };
 
   static Result<TimeSync::Ptr> Create(
     const ReadSession::Ptr &rs,
