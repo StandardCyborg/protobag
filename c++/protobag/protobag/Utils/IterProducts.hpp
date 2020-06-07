@@ -52,10 +52,12 @@ inline const MaybeProduct &IterProducts::GetNext() {
 
   // Compute next
   bool carry = true;
+    // To start, we need to carry an increment into the first pool
   for (size_t p = 0; p < NumPools(); ++p) {
     if (carry) {
-      { _next.indices[p] += 1; carry = false; }
+      { _next.indices[p] += 1; carry = false; } // do the carry
       if (_next.indices[p] == _pool_sizes[p]) {
+        // Reset this pool, carry the increment into next pool
         _next.indices[p] = 0;
         carry = true;
       } else {
@@ -67,7 +69,9 @@ inline const MaybeProduct &IterProducts::GetNext() {
   }
 
   if (carry) {
-    // Then we got back to First; there is no next
+    // If we still have to carry an increment, then _next is now First() (which
+    // we already emitted explicitly above)... so we're back to First() and
+    // there are no new products to emit.
     SetNoMoreProducts();
   }
 
