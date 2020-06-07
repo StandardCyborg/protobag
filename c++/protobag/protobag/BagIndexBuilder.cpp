@@ -121,17 +121,9 @@ struct BagIndexBuilder::DescriptorIndexer {
 
 
 BagIndexBuilder::BagIndexBuilder() {
-
-  auto &start = *_index.mutable_start();
-  start.set_seconds(::google::protobuf::util::TimeUtil::kTimestampMaxSeconds);
-  start.set_nanos(0);
-
-  auto &end = *_index.mutable_end();
-  end.set_seconds(::google::protobuf::util::TimeUtil::kTimestampMinSeconds);
-  end.set_nanos(0);
-
+  *_index.mutable_start() = MaxTimestamp();
+  *_index.mutable_end() = MinTimestamp();
   _index.set_protobag_version(PROTOBAG_VERSION);
-
 }
 
 BagIndexBuilder::~BagIndexBuilder() {

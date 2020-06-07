@@ -111,3 +111,18 @@ TEST(IterProductsTest, TestNBinaryPools) {
   IterProducts i(std::vector<size_t>(NUM_POOLS, 2));
   CheckExpectedProducts(i, expected_products);
 }
+
+TEST(IterProductsTest, Test7PoolsSize5) {
+  IterProducts i(std::vector<size_t>(7, 5));
+  static const size_t expected_num_products = 5*5*5*5*5*5*5;
+
+  size_t actual_num_products = 0;
+  
+  auto next = i.GetNext();
+  while (!next.IsEndOfSequence()) {
+    actual_num_products += 1;
+    next = i.GetNext();
+  }
+
+  EXPECT_EQ(expected_num_products, actual_num_products);
+}

@@ -11,31 +11,32 @@
 
 namespace protobag {
 
+typedef std::list<Entry> EntryBundle;
 
 // MaybeBundle is a bundle of N time-synchronized `Entry`s (or an error).  Has
 // similar error state semantics as MaybeEntry.  Typically a MaybeBundle has
 // one message per topic for a list of distinct topics requested from a 
 // `TimeSync` below.
-struct MaybeBundle : Result<std::list<Entry>> {
+struct MaybeBundle : Result<EntryBundle> {
   static MaybeBundle EndOfSequence() { return Err("EndOfSequence"); }
   bool IsEndOfSequence() const { return error == "EndOfSequence"; }
 
   // See Archive::ReadStatus
   bool IsNotFound() const;
 
-  static EntryBundle Err(const std::string &s) {
-    EntryBundle m; m.error = s; return m;
+  static MaybeBundle Err(const std::string &s) {
+    MaybeBundle m; m.error = s; return m;
   }
 
-  static EntryBundle Ok(std::list<Entry> &&v) {
-    EntryBundle m; m.value = std::move(v); return m;
+  static MaybeBundle Ok(EntryBundle &&v) {
+    MaybeBundle m; m.value = std::move(v); return m;
   }
 };
 
 class TimeSync {
 public:
   typedef std::shared_ptr<TimeSync> Ptr;
-  virtual TimeSync() { }
+  virtual ~TimeSync() { }
   
   static Result<Ptr> Create(ReadSession::Ptr rs) {
     return {.error = "Base class does nothing"};
@@ -59,6 +60,23 @@ protected:
 //    * Emit the bundle with minimal total time difference and dequeue emitted
 //        messages
 //    * Continue until source ReadSession exhausted
+// Useful for:
+//  * synchronizing topic recorded at different rates-- the closest match will
+//      be emitted each time
+//  * robustness to dropped messages-- this utility will queue up to
+//      `max_queue_size` messages per topic, so if one or more synchronized
+//      topics has a missing message (or two, or three..), bundles for those
+//      missing messages will be skipped, but other bundles with full data
+//      will be retained.
+//
+// NOTE: for each bundle of messages emitted, uses 
+//      O( 2^|topics * (max_queue_size - 1)| ) time, 
+//   since the algorithm examines all possible bundlings.  In pratice,
+//   this operation is plenty fast as long as you have no more than 5-10
+//   topics and keep `max_queue_size` of 5-ish.  See test
+//   `IterProductsTest.Test7PoolsSize5`, which takes about ~16ms on a
+//   modern Xeon.
+//
 // Based upon ROS Python Approximate Time Sync (different from C++ version):
 // https://github.com/ros/ros_comm/blob/c646e0f3a9a2d134c2550d2bf40b534611372662/utilities/message_filters/src/message_filters/__init__.py#L204
 class MaxSlopTimeSync final : public TimeSync {

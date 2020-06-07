@@ -34,5 +34,18 @@ bool operator>(const TopicTime &tt1, const TopicTime &tt2) {
     std::make_tuple(tt2.timestamp(), tt2.topic(), tt2.entryname());
 }
 
+inline ::google::protobuf::Timestamp MinTimestamp() {
+  ::google::protobuf::Timestamp t;
+  t.set_seconds(::google::protobuf::util::TimeUtil::kTimestampMinSeconds);
+  t.set_nanos(0);
+  return t;
+}
+
+inline ::google::protobuf::Timestamp MaxTimestamp() {
+  ::google::protobuf::Timestamp t;
+  t.set_seconds(::google::protobuf::util::TimeUtil::kTimestampMaxSeconds);
+  t.set_nanos(0);
+  return t;
+}
 
 } /* namespace protobag */
