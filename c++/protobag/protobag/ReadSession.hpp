@@ -12,7 +12,7 @@
 
 namespace protobag {
 
-class ReadSession {
+class ReadSession final {
 public:
   typedef std::shared_ptr<ReadSession> Ptr;
 

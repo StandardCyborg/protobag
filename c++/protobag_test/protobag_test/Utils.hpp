@@ -43,7 +43,9 @@ inline fs::path CreateTempDir(const std::string &testname, bool clean=true) {
 
 
 inline
-protobag::archive::Archive::Ptr OpenAndCheck(const protobag::archive::Archive::Spec &spec) {
+protobag::archive::Archive::Ptr OpenAndCheck(
+    protobag::archive::Archive::Spec spec) {
+  
   auto result = protobag::archive::Archive::Open(spec);
   if (!result.IsOk()) {
     throw std::runtime_error(result.error);

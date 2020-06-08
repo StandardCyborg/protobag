@@ -6,6 +6,7 @@
 
 #include "protobag/archive/DirectoryArchive.hpp"
 #include "protobag/archive/LibArchiveArchive.hpp"
+#include "protobag/archive/MemoryArchive.hpp"
 
 namespace fs = std::filesystem;
 
@@ -35,7 +36,13 @@ Result<Archive::Ptr> Archive::Open(const Archive::Spec &s) {
     }
   }
 
-  if (format == "directory") {
+  if (format == "memory") {
+    if (s.memory_archive) {
+      return {.value = s.memory_archive};
+    } else {
+      return MemoryArchive::Open(s);
+    }
+  } else if (format == "directory") {
     return DirectoryArchive::Open(s);
   } else if (LibArchiveArchive::IsSupported(format)) {
     return LibArchiveArchive::Open(s);

@@ -35,7 +35,10 @@ std::string CanonicalEntryname(const std::string &entryname) {
   // Trim leading path sep from `entryname`, or else std::filesytem
   // will throw out the `_spec.path` base directory part.
   std::string entry_path_rel = entryname;
-  if (!entry_path_rel.empty() && entry_path_rel[0] == fs::path::preferred_separator) {
+  if (
+    !entry_path_rel.empty() && entry_path_rel[0] ==
+    fs::path::preferred_separator) {
+    
     entry_path_rel = entry_path_rel.substr(1, entry_path_rel.size() - 1);
   }
   return entry_path_rel;

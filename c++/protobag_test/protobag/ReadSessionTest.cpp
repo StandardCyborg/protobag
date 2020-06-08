@@ -36,6 +36,9 @@ ReadSession::Ptr OpenReaderAndCheck(const ReadSession::Spec &spec) {
   return r;
 }
 
+// TODO need to massage out indexing and stuff ...
+// TEST(ReadSessionMemory, TestBasic) {
+// }
 
 // FIXME: add re-index support or make index fixture
 // TEST(ReadSessionDirectory, TestBasic) {

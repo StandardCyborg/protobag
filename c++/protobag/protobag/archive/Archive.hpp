@@ -9,6 +9,8 @@
 namespace protobag {
 namespace archive {
 
+class MemoryArchive;
+
 // An interface abstracting away the archive 
 class Archive {
 public:
@@ -26,8 +28,16 @@ public:
       //   "<tempfile>" - Generate a 
     std::string format;
       // Choices:
+      //   "memory" - Simply use an in-memory hashmap to store all archive
+      //     data.  Does not require a 3rd party back-end.  Most useful for
+      //     testing.
       //   "directory" - Simply use an on-disk directory as an "archive". Does
       //     not require a 3rd party back-end.
+      //   "zip", "tar" - Use a LibArchiveArchive back-end to write a
+      //     zip/tar/etc archive
+    std::shared_ptr<MemoryArchive> memory_archive;
+      // Optional: when using "memory" format, use this `memory_archive`
+      // instead of creating a new one.
     // clang-format on
     static Spec WriteToTempdir() {
       return {
