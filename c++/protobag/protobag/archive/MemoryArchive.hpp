@@ -30,7 +30,7 @@ public:
 
   // Convenience Utils
 
-  static std::shared_ptr<MemoryArchive> CreateWithData(
+  static std::shared_ptr<MemoryArchive> Create(
       const std::unordered_map<std::string, std::string> &archive_data={}) {
     
     std::shared_ptr<MemoryArchive> ma(new MemoryArchive());

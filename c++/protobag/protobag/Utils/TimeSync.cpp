@@ -12,6 +12,8 @@
 #include "protobag/Utils/IterProducts.hpp"
 #include "protobag/Utils/TopicTime.hpp"
 
+                                                                      #include <iostream>
+
 using Duration = ::google::protobuf::Duration;
 using Timestamp = ::google::protobuf::Timestamp;
 
@@ -69,6 +71,15 @@ std::vector<Timestamp> FindMinCostBundle(
     const std::vector<std::vector<Timestamp>> &all_q_stamps,
     ::google::protobuf::Duration max_slop) {
 
+std::cout << "FINDMINCOST all_q_stamps start" << std::endl;
+for (size_t q = 0; q < all_q_stamps.size(); ++q) {
+  std::cout << "q " << q << std::endl;
+  for (const auto &t : all_q_stamps[q]) {
+    std::cout << t << std::endl;
+  }
+}
+std::cout << "FINDMINCOST all_q_stamps end" << std::endl;
+
   // Compute and return the total duration of the stamps indicated at `indices`
   auto TotalDuration = [&](const std::vector<size_t> &indices) -> Duration {
     Timestamp start = MaxTimestamp();
@@ -119,6 +130,7 @@ std::vector<Timestamp> FindMinCostBundle(
     if (current_dur <= max_slop && current_dur < best_duration) {
       best_candidate = MakeCandidate(current_prod.indices);
     }
+    current_prod = iter_prods.GetNext();
   }
   
   return best_candidate;
@@ -145,7 +157,7 @@ struct MaxSlopTimeSync::Impl {
       return;
     }
     const TopicTime &tt = *maybeTT;
-
+std::cout << "tt.topic() " << tt.topic() << std::endl;
     if (topic_to_q.find(tt.topic()) != topic_to_q.end()) {
       auto &topic_q = topic_to_q[tt.topic()];
       if (topic_q.Size() >= spec.max_queue_size) {
@@ -153,6 +165,13 @@ struct MaxSlopTimeSync::Impl {
       }
       topic_q.Push(tt.timestamp(), std::move(entry));
     }
+std::cout << "enqueued" << std::endl;
+
+std::cout << "queue sizes:" << std::endl;
+for (const auto &tq : topic_to_q) {
+  std::cout << tq.first << " " << tq.second.Size() << std::endl;
+}
+
   }
 
   MaybeBundle TryGetNext() {
@@ -163,6 +182,7 @@ struct MaxSlopTimeSync::Impl {
     for (const auto &tq : topic_to_q) {
       if (tq.second.IsEmpty()) {
         return kNoBundle;
+std::cout << "queue is empty " << tq.first << std::endl;
       }
     }
     
@@ -177,8 +197,9 @@ struct MaxSlopTimeSync::Impl {
     for (const auto &topic : topics_ordered) {
       all_q_stamps.push_back(topic_to_q[topic].GetTimestamps());
     }
-
+std::cout << "start find min cost" << std::endl;
     auto maybe_bundle_ts = FindMinCostBundle(all_q_stamps, spec.max_slop);
+std::cout << "end find min cost" << std::endl;
     if (maybe_bundle_ts.empty()) {
       return kNoBundle;
     } else {
@@ -241,6 +262,7 @@ MaybeBundle MaxSlopTimeSync::GetNext() {
     bool reading = true;
     while (reading) {
       auto maybe_next_entry = rs.GetNext();
+std::cout << "maybe_next_entry: " << (maybe_next_entry.error.empty() ? maybe_next_entry.value->ToString() : maybe_next_entry.error) << std::endl;
       if (!maybe_next_entry.IsOk()) { 
         reading = false;
         return MaybeBundle::Err(maybe_next_entry.error);
@@ -248,6 +270,7 @@ MaybeBundle MaxSlopTimeSync::GetNext() {
 
       _impl->Enqueue(std::move(*maybe_next_entry.value));
       auto maybe_next_bundle = _impl->TryGetNext();
+std::cout << "maybe_next_bundle: " << maybe_next_bundle.error << std::endl;
       if (maybe_next_bundle.IsOk()) {
         return maybe_next_bundle;
       } // else continue reading; maybe we'll get a bundle next time

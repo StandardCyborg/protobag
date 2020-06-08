@@ -37,7 +37,7 @@ TEST(MemoryArchiveTest, ReadEmpty) {
 
 
 TEST(MemoryArchiveTest, TestNamelist) {
-  auto fixture = MemoryArchive::CreateWithData(
+  auto fixture = MemoryArchive::Create(
     {
       {"/foo/f1", ""},
       {"/foo/f2", ""},
@@ -57,7 +57,7 @@ TEST(MemoryArchiveTest, TestNamelist) {
 
 
 TEST(MemoryArchiveTest, TestRead) {
-  auto fixture = MemoryArchive::CreateWithData(
+  auto fixture = MemoryArchive::Create(
     {
       {"/foo/f1", "bar"},
     }
@@ -98,7 +98,7 @@ TEST(MemoryArchiveTest, TestRead) {
 
 
 TEST(MemoryArchiveTest, TestWriteAndRead) {
-  auto buffer = MemoryArchive::CreateWithData();
+  auto buffer = MemoryArchive::Create();
 
   {
     auto ar = OpenAndCheck({

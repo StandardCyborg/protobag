@@ -380,8 +380,8 @@ protected:
 
 // Return a text format string, or throw on error.
 template <typename MT>
-std::string PBToString(const MT &pb_msg) {
-  auto maybe_pb_txt = PBFactory::ToTextFormatString(pb_msg);
+std::string PBToString(const MT &pb_msg, bool newlines=true) {
+  auto maybe_pb_txt = PBFactory::ToTextFormatString(pb_msg, newlines);
   if (!maybe_pb_txt.IsOk()) {
     throw std::runtime_error(maybe_pb_txt.error);
   }

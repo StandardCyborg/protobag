@@ -8,7 +8,6 @@
 #include "protobag/Entry.hpp"
 #include "protobag/ReadSession.hpp"
 
-
 namespace protobag {
 
 typedef std::list<Entry> EntryBundle;

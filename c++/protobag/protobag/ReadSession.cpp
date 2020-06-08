@@ -188,7 +188,6 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
   }
 
   const BagIndex &index = *maybe_index.value;
-        std::cout << " index " << *PBFactory::ToTextFormatString(index).value << std::endl;
 
   if (sel.has_select_all()) {
 
@@ -292,6 +291,7 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
       if (window.has_end() && (window.end() < tt.timestamp())) {
         continue;
       }
+std::cout << "entries_to_read: " << tt.entryname() << std::endl;
       entries_to_read.push(tt.entryname());
     }
     return {.value = ReadPlan{
@@ -311,7 +311,7 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
       }
     }
     return {.error = 
-      fmt::format("Unsupported selection {}", sel_txt)
+      fmt::format("Unsupported selection: {}", sel_txt)
     };
 
   }

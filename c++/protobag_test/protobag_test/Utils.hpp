@@ -9,10 +9,14 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <filesystem>
 
 #include "protobag/archive/Archive.hpp"
+#include "protobag/archive/MemoryArchive.hpp"
+#include "protobag/ReadSession.hpp"
+#include "protobag/WriteSession.hpp"
 
 namespace protobag_test {
 
@@ -57,6 +61,64 @@ protobag::archive::Archive::Ptr OpenAndCheck(
   }
 
   return ar;
+}
+
+template <typename EntryContainerT>
+std::shared_ptr<protobag::archive::MemoryArchive> CreateMemoryArchive(
+    const EntryContainerT &entries) {
+
+  auto buffer = protobag::archive::MemoryArchive::Create();
+  
+  {
+    auto maybe_ws = protobag::WriteSession::Create({
+      .archive_spec = {
+        .mode="write",
+        .format="memory",
+        .memory_archive=buffer,
+      },
+    });
+    if (!maybe_ws.IsOk()) {
+      throw std::runtime_error(maybe_ws.error);
+    }
+    auto &writer = **maybe_ws.value;
+
+    for (const auto &entry : entries) {
+      auto status = writer.WriteEntry(entry);
+      if (!status.IsOk()) {
+        throw std::runtime_error(status.error);
+      }
+    }
+    writer.Close();
+  }
+
+  return buffer;
+}
+
+template <typename EntryContainerT>
+protobag::ReadSession::Ptr CreateInMemoryReadSession(
+    const protobag::Selection &sel,
+    const EntryContainerT &entries) {
+
+  auto fixture = CreateMemoryArchive(entries);
+  
+  auto result = protobag::ReadSession::Create({
+    .archive_spec = {
+      .mode="read",
+      .format="memory",
+      .memory_archive=fixture,
+    },
+    .selection = sel,
+  });
+  if (!result.IsOk()) {
+    throw std::runtime_error(result.error);
+  }
+
+  auto rs = *result.value;
+  if (!rs) {
+    throw std::runtime_error("Null pointer exception: bad result object");
+  }
+
+  return rs;
 }
 
 

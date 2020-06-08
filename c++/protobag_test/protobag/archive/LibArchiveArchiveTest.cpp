@@ -54,12 +54,6 @@ TEST(LibArchiveArchiveTest, TestRead) {
   auto actual = ar->GetNamelist();
   std::vector<std::string> expected = {"foo", "bar/bar"};
 
-  std::cout << "TestRead" << std::endl;
-  for (auto &a : actual) {
-    std::cout << a << std::endl;
-  }
-  std::cout << "TestRead" << std::endl;
-
   EXPECT_SORTED_SEQUENCES_EQUAL(expected, actual);
 
   {
