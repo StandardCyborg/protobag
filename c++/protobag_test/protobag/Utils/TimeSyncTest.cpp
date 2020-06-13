@@ -21,9 +21,10 @@ bool operator==(const Entry &lhs, const Entry &rhs) {
   const auto rhstt = rhs.GetTopicTime();
   return 
     lhstt.has_value() == rhstt.has_value() &&
-    lhstt->topic() == rhstt->topic() &&
-    lhstt->timestamp().seconds() == rhstt->timestamp().seconds() &&
-    lhstt->timestamp().nanos() == rhstt->timestamp().nanos();
+    (lhstt.has_value() || (
+      lhstt->topic() == rhstt->topic() &&
+      lhstt->timestamp().seconds() == rhstt->timestamp().seconds() &&
+      lhstt->timestamp().nanos() == rhstt->timestamp().nanos()));
 }
 
 inline

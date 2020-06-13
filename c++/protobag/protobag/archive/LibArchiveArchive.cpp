@@ -13,7 +13,7 @@
 
 namespace protobag {
 namespace archive {
-  
+
 namespace fs = std::filesystem;
 
 bool LibArchiveArchive::IsSupported(const std::string &format) {
@@ -169,7 +169,7 @@ protected:
     
     // libarchive only supports streaming out chunks
     {
-      int ret = ARCHIVE_OK;
+      la_ssize_t ret = ARCHIVE_OK;
       la_int64_t pos = 0;
       while (pos < entry_size) {
         ret = archive_read_data(

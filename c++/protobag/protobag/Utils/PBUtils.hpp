@@ -349,7 +349,7 @@ protected:
 
   static OkOrErr LoadTextFormatFromArray(
                       const std::byte *data,
-                      size_t size,
+                      int size,
                       ::google::protobuf::Message *message) {
     if (!message) {
       return OkOrErr::Err(

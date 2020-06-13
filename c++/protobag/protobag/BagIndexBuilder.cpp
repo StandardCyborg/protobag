@@ -26,7 +26,7 @@ struct BagIndexBuilder::TopicTimeOrderer {
 
   template <typename RepeatedPtrFieldT>
   void MoveOrderedTTsTo(RepeatedPtrFieldT &repeated_field) {
-    repeated_field.Reserve(observed.size());
+    repeated_field.Reserve(int(observed.size()));
     while (!observed.empty()) {
       auto tt = observed.front();
       observed.pop();
