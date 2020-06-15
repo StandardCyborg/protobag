@@ -292,7 +292,7 @@ struct MaybeEntry : public Result<Entry> {
   static MaybeEntry EndOfSequence() { return Err("EndOfSequence"); }
   bool IsEndOfSequence() const { return error == "EndOfSequence"; }
 
-  // See Archive::ReadStatus
+  // See Archive::ReadStatus for definition; this can be an acceptible error
   bool IsNotFound() const;
 
   static MaybeEntry Err(const std::string &s) {
