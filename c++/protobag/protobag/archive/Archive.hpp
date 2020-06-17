@@ -55,7 +55,8 @@ public:
 
 
   // A Result<string> with special status codes for "entry not found" (which
-  // sometimes is an acceptable error) as well as "end of archive."
+  // sometimes is an acceptable error) as well as "end of archive."  The
+  // string value is the payload data read.
   struct ReadStatus : public Result<std::string> {
     static ReadStatus EntryNotFound() { return Err("EntryNotFound"); }
     bool IsEntryNotFound() const { return error == "EntryNotFound"; }

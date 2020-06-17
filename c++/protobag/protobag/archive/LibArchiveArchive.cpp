@@ -154,6 +154,72 @@ public:
     return result;
   }
 
+  OkOrErr StreamingUnpackEntryTo(
+    const std::string &entryname,
+    const std::string &dest_dir) {
+
+    archive_entry *entry = nullptr;
+    OkOrErr result =
+      OkOrErr::Err(fmt::format("Entry {} not found", entryname));
+    while (archive_read_next_header(_archive, &entry) == ARCHIVE_OK) {
+      std::string cur = archive_entry_pathname_utf8(entry);
+      if (cur == entryname) {
+        
+        // Based upon https://github.com/libarchive/libarchive/blob/c400064a1c63d122340d09d8ce3f671d4cf24b6e/examples/untar.c#L139
+        struct archive *ext = archive_write_disk_new();
+	      archive_write_disk_set_options(
+          ext,
+          (ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM |
+            ARCHIVE_EXTRACT_ACL | ARCHIVE_EXTRACT_FFLAGS));
+        archive_write_disk_set_standard_lookup(ext);
+
+        // Set extraction destination https://stackoverflow.com/a/25991813
+        const char* entrypath = archive_entry_pathname(entry);
+        const std::string output_path = fs::path(dest_dir) / entrypath;
+        archive_entry_set_pathname(entry, output_path.c_str());
+
+        int r = archive_write_header(ext, entry);
+        if (r != ARCHIVE_OK) {
+          return OkOrErr::Err(
+            fmt::format(
+              "Libarchive failed to write file header for {}. Error: {}",
+              entryname, 
+              archive_error_string(ext)));
+        } else {
+
+          auto status = StreamingCopyData(a, ext);
+          if (!status.IsOK()) {
+            return OkOrErr::Err(
+              fmt::format(
+                "Libarchive failed while trying to write to {}: {}",
+                entryname,
+                status.error));
+          } else {
+            r = archive_write_finish_entry(ext);
+            if (r != ARCHIVE_OK) {
+              return OkOrErr::Err(
+                fmt::format(
+                  "Libarchive failed to finish extracting {}. Error: {}",
+                  entryname, 
+                  archive_error_string(ext)));
+            }
+          }
+
+        }
+        
+        result = kOK;
+        break;
+      } else {
+        std::string maybe_err = CheckOrError(archive_read_data_skip(_archive));
+        if (!maybe_err.empty()) {
+          result = OkOrErr::Err(maybe_err);
+        }
+      }
+    }
+
+    return result;
+  }
+
 protected:
   Archive::ReadStatus ReadEntry(archive_entry *entry) {
     if (!_archive) {
@@ -188,6 +254,32 @@ protected:
     }
 
     return Archive::ReadStatus::OK(std::move(out));
+  }
+
+  OkOrErr StreamingCopyData(struct archive *ar, struct archive *aw) {
+	  int r;
+	  const void *buff;
+	  size_t size;
+	  int64_t offset;
+
+    for (;;) {
+      r = archive_read_data_block(ar, &buff, &size, &offset);
+      if (r == ARCHIVE_EOF) {
+        return kOK;
+      }
+      if (r != ARCHIVE_OK) {
+        return OkOrErr::Err(
+          fmt::format("Read error: {}", archive_error_string(ar)));
+      }
+      r = archive_write_data_block(aw, buff, size, offset);
+      if (r != ARCHIVE_OK) {
+        return OkOrErr::Err(
+          fmt::format("Write error: archive_write_data_block {}",
+          archive_error_string(aw)));
+      }
+    }
+
+    return kOK;
   }
 };
 
@@ -324,6 +416,30 @@ OkOrErr LibArchiveArchive::Write(
 
   return writer->Write(entryname, data);
 }
+
+
+// ============================================================================
+// Streaming Unpack / Add API
+
+OkOrErr LibArchiveArchive::StreamingUnpackEntryTo(
+    const std::string &entryname,
+    const std::string &dest_dir) {
+
+  Reader reader;
+  OkOrErr r = reader.Open(GetSpec());
+  if (!r.IsOk()) {
+    return OkOrErr::Err(r.error);
+  }
+
+  return reader.StreamingUnpackEntryTo(entryname, dest_dir);
+}
+
+OkOrErr LibArchiveArchive::StreamingAddFile(
+    const std::string &src_file,
+    const std::string &entryname) {
+
+}
+
 
 } /* namespace archive */
 } /* namespace protobag */

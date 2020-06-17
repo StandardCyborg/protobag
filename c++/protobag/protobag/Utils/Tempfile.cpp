@@ -1,5 +1,7 @@
 #include "protobag/Utils/Tempfile.hpp"
 
+#include <fmt/format.h>
+
 #include <fstream>
 #include <random>
 
@@ -27,10 +29,16 @@ std::string CreateRandomString(size_t len) {
 Result<fs::path> CreateTempfile(const std::string &suffix, size_t max_attempts) {
   for (size_t attempt = 0; attempt < max_attempts; ++attempt) {
     std::string fname = CreateRandomString(12) + suffix;
-    fs::path p = std::filesystem::temp_directory_path() / fname;
+    fs::path p = fs::temp_directory_path() / fname;
     if (!fs::exists(p)) {
-      std::ofstream{p};  // Create the file
-      return {.value = p};
+      std::ofstream f{p};  // Create the file
+      if (!f.good()) {
+        return {
+          .error = fmt::format("Failed to create {}", p)
+        };
+      } else {
+        return {.value = p};
+      }
     }
   }
   return {.error = "Cannot create a tempfile"};
@@ -39,10 +47,17 @@ Result<fs::path> CreateTempfile(const std::string &suffix, size_t max_attempts) 
 Result<fs::path> CreateTempdir(const std::string &suffix,size_t max_attempts) {
   for (size_t attempt = 0; attempt < max_attempts; ++attempt) {
     std::string dirname = CreateRandomString(12) + suffix;
-    fs::path p = std::filesystem::temp_directory_path() / dirname;
+    fs::path p = fs::temp_directory_path() / dirname;
     if (!fs::exists(p)) {
-      fs::create_directories(p);
-      return {.value = p};
+      std::error_code err;
+      fs::create_directories(p, &err);
+      if (err) {
+        return {.error = 
+          fmt::format("Error creating directory {}: {}", p, err.message)
+        };
+      } else {
+        return {.value = p};
+      }
     }
   }
   return {.error = "Cannot create a temp directory"};
