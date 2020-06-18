@@ -2,10 +2,12 @@
 
 #include <filesystem>
 
+#include <fmt/format.h>
+
 #include "protobag/archive/LibArchiveArchive.hpp"
 
 
-using fs = std::filesystem;
+namespace fs = std::filesystem;
 
 namespace protobag {
 
@@ -13,7 +15,7 @@ Result<bool> IsDirectory(const std::string &path) {
   std::error_code err;
   bool is_dir = fs::exists(path, err) && fs::is_directory(path, err);
   if (err) {
-    return {.error = fmt::format("{}: {}", path, err.message};
+    return {.error = fmt::format("{}: {}", path, err.message())};
   } else{
     return {.value = is_dir};
   }
@@ -21,7 +23,7 @@ Result<bool> IsDirectory(const std::string &path) {
 
 Result<std::vector<std::string>> GetAllFilesRecursive(const std::string &dir) {
   auto maybeIsDir = IsDirectory(dir);
-  if (!maybeIsDir.IsOK()) {
+  if (!maybeIsDir.IsOk()) {
     return {.error = maybeIsDir.error};
   } else if (!*maybeIsDir.value) {
     return {.error = fmt::format("{} is not a directory", dir)};
@@ -33,18 +35,20 @@ Result<std::vector<std::string>> GetAllFilesRecursive(const std::string &dir) {
     auto it = fs::recursive_directory_iterator(dir, err);
     if (err) { 
       return {.error = 
-        fmt::format("Failed to get list for {}: {}", dir, err.message)
+        fmt::format("Failed to get list for {}: {}", dir, err.message())
       };
     }
 
-    for (const auto &p : it) {
-      if (fs::is_regular_file(p, &err)) {
-        files.push_back(p.absolute_path());
+    for (const auto &entry : it) {
+      if (fs::is_regular_file(entry, err)) {
+        files.push_back(fs::absolute(entry));
       }
 
       if (err) {
         return {.error = fmt::format(
-          "Could not get status for path {} in {}", p, dir)
+          "Could not get status for path {} in {}",
+          entry.path().u8string(),
+          dir)
         };
       }
     }
@@ -60,36 +64,43 @@ OkOrErr UnpackArchiveToDir(
 
 
   // Open the archive
-  auto maybeAr = LibArchiveArchive::Open({
+  auto maybeAr = archive::LibArchiveArchive::Open({
     .mode = "read",
     .path = archive_path,
   });
-  if (!mayebAr.IsOk()) { return OkOrErr::Err(mayebAr.error); }
+  if (!maybeAr.IsOk()) { return OkOrErr::Err(maybeAr.error); }
 
-  auto &ar = **maybeAr.value;
+  archive::LibArchiveArchive *reader = 
+    dynamic_cast<archive::LibArchiveArchive *>(maybeAr.value->get());
+  if (!reader) {
+    return OkOrErr::Err(
+      fmt::format(
+        "Programming error: could not get libarchive api for {}",
+        archive_path));
+  }
 
   // Create dest
   std::error_code err;
-  if (!fs::exists(dest_dir, &err)) {
-    if (err) { return {.error = err.message}; }
+  if (!fs::exists(dest_dir, err)) {
+    if (err) { return {.error = err.message()}; }
 
-    fs::create_directories(dest_dir, &err);
+    fs::create_directories(dest_dir, err);
     if (err) {
       return {.error = fmt::format(
-        "Could not create root directory {}: {}", dest_dir, err.message)
+        "Could not create root directory {}: {}", dest_dir, err.message())
       };
     }
   }
 
   // Unpack
-  for (const auto &entryname : ar.GetNamelist()) {
-    auto maybeOk = ar.StreamingUnpackEntryto(
+  for (const auto &entryname : reader->GetNamelist()) {
+    auto status = reader->StreamingUnpackEntryTo(
       entryname,
       dest_dir);
-    if (!maybeOk) {
+    if (!status.IsOk()) {
       return {.error = fmt::format(
         "Failed to unpack entry {} to {}: {}",
-        entryname, dest_dir, maybeOk.error)
+        entryname, dest_dir, status.error)
       };
     }
   }
@@ -100,9 +111,10 @@ OkOrErr UnpackArchiveToDir(
 OkOrErr CreateArchiveAtPath(
     const std::vector<std::string> &file_list,
     const std::string &destination,
-    const std::string &format) {
+    const std::string &format,
+    const std::string &base_dir) {
 
-  auto maybeWriter = LibArchiveArchive::Open({
+  auto maybeWriter = archive::LibArchiveArchive::Open({
     .mode = "write",
     .path = destination,
     .format = format,
@@ -114,8 +126,8 @@ OkOrErr CreateArchiveAtPath(
   }
   auto writerP = *maybeWriter.value;
 
-  LibArchiveArchive *writer = 
-    std::dynamic_pointer_cast<LibArchiveArchive *>(writerP.get());
+  archive::LibArchiveArchive *writer = 
+    dynamic_cast<archive::LibArchiveArchive *>(writerP.get());
   if (!writer) {
     return OkOrErr::Err(
       fmt::format(
@@ -155,7 +167,7 @@ OkOrErr CreateArchiveAtPathFromFiles(
   if (!maybeFiles.IsOk()) {
     return OkOrErr::Err(
       fmt::format(
-        "Failed to create archive at {}: {}", destination, mayebFiles.error));
+        "Failed to create archive at {}: {}", destination, maybeFiles.error));
   } else {
     return CreateArchiveAtPath(
               *maybeFiles.value,

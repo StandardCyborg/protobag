@@ -155,8 +155,12 @@ public:
   }
 
   OkOrErr StreamingUnpackEntryTo(
-    const std::string &entryname,
-    const std::string &dest_dir) {
+            const std::string &entryname,
+            const std::string &dest_dir) {
+
+    if (!_archive) {
+      return OkOrErr::Err("Archive not open for reading");
+    }
 
     archive_entry *entry = nullptr;
     OkOrErr result =
@@ -187,8 +191,8 @@ public:
               archive_error_string(ext)));
         } else {
 
-          auto status = StreamingCopyData(a, ext);
-          if (!status.IsOK()) {
+          auto status = StreamingCopyData(_archive, ext);
+          if (!status.IsOk()) {
             return OkOrErr::Err(
               fmt::format(
                 "Libarchive failed while trying to write to {}: {}",
@@ -343,6 +347,57 @@ public:
 
     return result;
   }
+  
+  OkOrErr WriteUsingBufferedReads(
+              const std::string &entryname,
+              const std::string &path) {
+      
+    if (!_archive) { return OkOrErr::Err("ReadEntry: archive not open"); }
+
+    
+
+    OkOrErr result = OkOrErr::Err("unknown failure");
+    archive_entry *entry = nullptr;
+    try {
+      entry = archive_entry_new();
+      entry = archive_entry_clear(entry);
+      archive_entry_set_pathname(entry, entryname.c_str());
+      archive_entry_set_filetype(entry, AE_IFREG);
+      archive_entry_set_perm(entry, 0644);
+
+      // NB: http://0x80.pl/notesen/2019-01-07-cpp-read-file.html
+      // We use C++ Filesystem POSIX-backed API because it's the fastest
+      std::FILE* f = std::fopen(path.c_str(), "r");
+      if (!f) {
+        return result = OkOrErr::Err(fmt::format("Failed to read {}", path));
+      } else {
+        // Based upon minitar: 
+        // https://github.com/libarchive/libarchive/blob/c400064a1c63d122340d09d8ce3f671d4cf24b6e/examples/minitar/minitar.c#L309
+        
+        const auto f_size = fs::file_size(path);
+        archive_entry_set_size(entry, f_size);
+        CheckOrThrow(archive_write_header(_archive, entry));
+
+        thread_local static char buff[16384];
+        size_t len = std::fread(buff, 1, sizeof(buff), f);
+        while (len > 0) {
+          archive_write_data(_archive, buff, len);
+          len = std::fread(buff, 1, sizeof(buff), f);
+        }
+        std::fclose(f);
+        result = kOK;
+      }
+    } catch (std::exception &e) {
+      result = OkOrErr::Err(
+        fmt::format("Failed to write {} : {}", entryname, e.what()));
+    }
+
+    if (entry) {
+      archive_entry_free(entry);
+    }
+
+    return result;
+  }
 };
 
 Result<Archive::Ptr> LibArchiveArchive::Open(Archive::Spec s) {
@@ -438,6 +493,13 @@ OkOrErr LibArchiveArchive::StreamingAddFile(
     const std::string &src_file,
     const std::string &entryname) {
 
+  if (!_impl) { return {.error = "programming error: no writer"}; }
+  auto writer = std::dynamic_pointer_cast<Writer>(_impl);
+  if (!writer) { 
+    return {.error = "Archive not set up for writing.  Did you Open()?"};
+  }
+
+  return writer->WriteUsingBufferedReads(entryname, src_file);
 }
 
 

@@ -34,7 +34,7 @@ Result<fs::path> CreateTempfile(const std::string &suffix, size_t max_attempts) 
       std::ofstream f{p};  // Create the file
       if (!f.good()) {
         return {
-          .error = fmt::format("Failed to create {}", p)
+          .error = fmt::format("Failed to create {}", p.u8string())
         };
       } else {
         return {.value = p};
@@ -50,10 +50,13 @@ Result<fs::path> CreateTempdir(const std::string &suffix,size_t max_attempts) {
     fs::path p = fs::temp_directory_path() / dirname;
     if (!fs::exists(p)) {
       std::error_code err;
-      fs::create_directories(p, &err);
+      fs::create_directories(p, err);
       if (err) {
         return {.error = 
-          fmt::format("Error creating directory {}: {}", p, err.message)
+          fmt::format(
+            "Error creating directory {}: {}",
+            p.u8string(),
+            err.message())
         };
       } else {
         return {.value = p};
