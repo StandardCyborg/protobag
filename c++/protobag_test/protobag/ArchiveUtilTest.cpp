@@ -13,6 +13,16 @@ namespace fs = std::filesystem;
 using namespace protobag;
 using namespace protobag_test;
 
+
+void FullWithFoo12Fixture(const fs::path &testdir) {
+  fs::create_directories(testdir / "foo");
+  fs::create_directories(testdir / "empty_dir");
+  { std::ofstream f(testdir / "foo" / "f1"); f << "f1"; }
+  { std::ofstream f(testdir / "foo" / "f2"); f << "f2"; }
+  { std::ofstream f(testdir / "bar"); f << "bar"; }
+}
+
+
 // ============================================================================
 // ReadFile
 
@@ -109,10 +119,7 @@ TEST(ArchiveUtilTest, GetAllFilesRecursiveEmpty) {
 TEST(ArchiveUtilTest, GetAllFilesRecursiveSomeFiles) {
   auto testdir =
     CreateTestTempdir("ArchiveUtilTest.GetAllFilesRecursiveEmpty");
-  fs::create_directories(testdir / "foo");
-  fs::create_directories(testdir / "empty_dir");
-  std::ofstream(testdir / "foo" / "f1");
-  std::ofstream(testdir / "foo" / "f2");
+  FullWithFoo12Fixture(testdir);
 
   auto maybeFiles = GetAllFilesRecursive(testdir); 
   EXPECT_TRUE(maybeFiles.IsOk()) << maybeFiles.error;
@@ -120,6 +127,7 @@ TEST(ArchiveUtilTest, GetAllFilesRecursiveSomeFiles) {
   std::sort(files.begin(), files.end());
 
   decltype(files) expected = {
+    testdir / "bar",
     testdir / "foo/f1",
     testdir / "foo/f2",
   };
@@ -175,6 +183,30 @@ TEST(ArchiveUtilTest, UnpackArchiveToDirUnpackZip) {
 // ============================================================================
 // CreateArchiveAtPath
 
+void CheckArchiveHasFooAndOnlyFoo(const std::string &path) {
+  auto ar = OpenAndCheck({
+      .mode="read",
+      .path=path,
+    });
+  
+  auto actual = ar->GetNamelist();
+  for (auto &a : actual) {
+    a = fs::path(a).filename();
+  }
+  std::vector<std::string> expected = {"foo"};
+
+  EXPECT_SORTED_SEQUENCES_EQUAL(expected, actual);
+
+  {
+    auto foo_entryname = ar->GetNamelist()[0];
+    auto res = ar->ReadAsStr(foo_entryname);
+    ASSERT_TRUE(res.IsOk()) << res.error << " " << foo_entryname;
+    auto value = *res.value;
+    EXPECT_EQ(value, "foo");
+  }
+}
+
+
 TEST(ArchiveUtilTest, CreateArchiveAtPathEmptyTar) {
   auto tempdir =
     CreateTestTempdir("ArchiveUtilTest.CreateArchiveAtPathEmptyTar");
@@ -188,6 +220,32 @@ TEST(ArchiveUtilTest, CreateArchiveAtPathEmptyTar) {
     "tar --list --verbose --file={} | wc -l",
     outpath.u8string());
   RunCMDAndCheckOutput(cmd, "0");
+}
+
+TEST(ArchiveUtilTest, CreateArchiveAtPathHasDataTar) {
+  auto testdir =
+    CreateTestTempdir("ArchiveUtilTest.CreateArchiveAtPathHasDataTar");
+  auto archive_input = testdir / "foo";
+  { std::ofstream f(archive_input); f << "foo"; }
+  ASSERT_EQ(ReadFile(archive_input), "foo");
+  
+  auto outpath = testdir / "output.tar";
+  auto status = CreateArchiveAtPath(
+    {archive_input},
+    outpath.u8string());
+  ASSERT_TRUE(status.IsOk()) << status.error;
+  ASSERT_TRUE(fs::exists(outpath)) << outpath;
+
+  CheckArchiveHasFooAndOnlyFoo(outpath);
+
+  // Make sure tar can read
+  {
+    CheckHasCommand("tar");
+    std::string cmd = fmt::format(
+      "tar --list --verbose --file={} | grep foo | wc -l",
+      outpath.u8string());
+    RunCMDAndCheckOutput(cmd, "1");
+  }
 }
 
 TEST(ArchiveUtilTest, CreateArchiveAtPathEmptyZip) {
@@ -206,6 +264,50 @@ TEST(ArchiveUtilTest, CreateArchiveAtPathEmptyZip) {
   RunCMDAndCheckOutput(cmd, "1");
 }
 
+TEST(ArchiveUtilTest, CreateArchiveAtPathHasDataZip) {
+  auto testdir =
+    CreateTestTempdir("ArchiveUtilTest.CreateArchiveAtPathHasDataZip");
+  auto archive_input = testdir / "foo";
+  { std::ofstream f(archive_input); f << "foo"; }
+  ASSERT_EQ(ReadFile(archive_input), "foo");
+  
+  auto outpath = testdir / "output.zip";
+  auto status = CreateArchiveAtPath(
+    {archive_input},
+    outpath.u8string());
+  ASSERT_TRUE(status.IsOk()) << status.error;
+  ASSERT_TRUE(fs::exists(outpath)) << outpath;
+
+  CheckArchiveHasFooAndOnlyFoo(outpath);
+
+  // Make sure unzip can read
+  {
+    CheckHasCommand("unzip");
+    std::string cmd = fmt::format(
+      "unzip -l {} | grep foo | wc -l",
+      outpath.u8string());
+    RunCMDAndCheckOutput(cmd, "1");
+  }
+}
 
 // ============================================================================
 // CreateArchiveAtPathFromFiles
+
+// TEST(ArchiveUtilTest, CreateArchiveAtPathHasDataTar) {
+//   auto tempdir =
+//     CreateTestTempdir("ArchiveUtilTest.CreateArchiveAtPathHasDataTar");
+//   auto archive_input = testdir / "archive_input/foo";
+//   FullWithFoo12Fixture(archive_input);
+
+//   auto outpath = tempdir / "output.tar";
+//   auto status = CreateArchiveAtPath({}, outpath.u8string());
+//   ASSERT_TRUE(status.IsOk()) << status.error;
+//   ASSERT_TRUE(fs::exists(outpath)) << outpath;
+
+//   CheckHasCommand("tar");
+//   std::string cmd = fmt::format(
+//     "tar --list --verbose --file={} | wc -l",
+//     outpath.u8string());
+//   RunCMDAndCheckOutput(cmd, "0");
+// }
+
