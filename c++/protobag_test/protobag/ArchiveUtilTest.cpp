@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -24,6 +25,41 @@ TEST(ArchiveUtilTest, IsDirectoryNotExists) {
   EXPECT_FALSE(*status.value);
 }
 
+TEST(ArchiveUtilTest, IsDirectoryNotADirectory) {
+  auto tempdir =
+    CreateTestTempdir("ArchiveUtilTest.IsDirectoryNotADirectory");
+  fs::path plain_file = tempdir / "foo.txt";
+  { std::ofstream f(plain_file); }
+  fs::path symlink = tempdir / "foo-link";
+  { 
+    auto ret = std::system(
+      fmt::format(
+        "ln -s {} {}", plain_file.string(), symlink.string()).c_str());
+    ASSERT_EQ(ret, 0);
+  }
+
+  {
+    auto status = IsDirectory(plain_file); 
+    EXPECT_TRUE(status.IsOk()) << status.error;
+    EXPECT_FALSE(*status.value);
+  }
+
+  {
+    auto status = IsDirectory(symlink); 
+    EXPECT_TRUE(status.IsOk()) << status.error;
+    EXPECT_FALSE(*status.value);
+  }
+}
+
+TEST(ArchiveUtilTest, IsDirectoryIsADirectory) {
+  auto tempdir =
+    CreateTestTempdir("ArchiveUtilTest.IsDirectoryIsADirectory");
+  
+  auto status = IsDirectory(tempdir); 
+  EXPECT_TRUE(status.IsOk()) << status.error;
+  EXPECT_TRUE(*status.value);
+}
+
 
 // ============================================================================
 // GetAllFilesRecursive
@@ -36,6 +72,35 @@ TEST(ArchiveUtilTest, GetAllFilesRecursiveNotExists) {
   EXPECT_FALSE(maybeFiles.IsOk()) << maybeFiles.error;
 }
 
+TEST(ArchiveUtilTest, GetAllFilesRecursiveEmpty) {
+  auto tempdir =
+    CreateTestTempdir("ArchiveUtilTest.GetAllFilesRecursiveEmpty");
+
+  auto maybeFiles = GetAllFilesRecursive(tempdir); 
+  EXPECT_TRUE(maybeFiles.IsOk()) << maybeFiles.error;
+  EXPECT_TRUE(maybeFiles.value->empty());
+}
+
+TEST(ArchiveUtilTest, GetAllFilesRecursiveSomeFiles) {
+  auto testdir =
+    CreateTestTempdir("ArchiveUtilTest.GetAllFilesRecursiveEmpty");
+  fs::create_directories(testdir / "foo");
+  fs::create_directories(testdir / "empty_dir");
+  std::ofstream(testdir / "foo" / "f1");
+  std::ofstream(testdir / "foo" / "f2");
+
+  auto maybeFiles = GetAllFilesRecursive(testdir); 
+  EXPECT_TRUE(maybeFiles.IsOk()) << maybeFiles.error;
+  auto files = *maybeFiles.value;
+  std::sort(files.begin(), files.end());
+
+  decltype(files) expected = {
+    testdir / "foo/f1",
+    testdir / "foo/f2",
+  };
+
+  EXPECT_EQ(files, expected);
+}
 
 // ============================================================================
 // UnpackArchiveToDir
