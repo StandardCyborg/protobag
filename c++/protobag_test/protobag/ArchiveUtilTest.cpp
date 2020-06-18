@@ -14,12 +14,47 @@ using namespace protobag;
 using namespace protobag_test;
 
 
-void FullWithFoo12Fixture(const fs::path &testdir) {
-  fs::create_directories(testdir / "foo");
-  fs::create_directories(testdir / "empty_dir");
-  { std::ofstream f(testdir / "foo" / "f1"); f << "f1"; }
-  { std::ofstream f(testdir / "foo" / "f2"); f << "f2"; }
-  { std::ofstream f(testdir / "bar"); f << "bar"; }
+void FullWithFoo12Fixture(const fs::path &basedir) {
+  fs::create_directories(basedir);
+  fs::create_directories(basedir / "foo");
+  fs::create_directories(basedir / "empty_dir");
+  { std::ofstream f(basedir / "foo" / "f1"); f << "f1"; }
+  { std::ofstream f(basedir / "foo" / "f2"); f << "f2"; }
+  { std::ofstream f(basedir / "bar"); f << "bar"; }
+}
+
+void CheckArchiveHasFoo12Data(const std::string &path) {
+  auto ar = OpenAndCheck({
+      .mode="read",
+      .path=path,
+    });
+  
+  auto actual = ar->GetNamelist();
+  std::vector<std::string> expected = {
+    "bar",
+    "foo/f1",
+    "foo/f2",
+  };
+  EXPECT_SORTED_SEQUENCES_EQUAL(expected, actual);
+
+  {
+    auto res = ar->ReadAsStr("bar");
+    ASSERT_TRUE(res.IsOk()) << res.error;
+    auto value = *res.value;
+    EXPECT_EQ(value, "bar");
+  }
+  {
+    auto res = ar->ReadAsStr("foo/f1");
+    ASSERT_TRUE(res.IsOk()) << res.error;
+    auto value = *res.value;
+    EXPECT_EQ(value, "f1");
+  }
+  {
+    auto res = ar->ReadAsStr("foo/f2");
+    ASSERT_TRUE(res.IsOk()) << res.error;
+    auto value = *res.value;
+    EXPECT_EQ(value, "f2");
+  }
 }
 
 
@@ -46,6 +81,7 @@ TEST(ArchiveUtilTest, ReadFileSomeData) {
   auto result = ReadFile(plain_file);
   EXPECT_EQ(result, "foo");
 }
+
 
 
 // ============================================================================
@@ -96,6 +132,7 @@ TEST(ArchiveUtilTest, IsDirectoryIsADirectory) {
 }
 
 
+
 // ============================================================================
 // GetAllFilesRecursive
 
@@ -134,6 +171,7 @@ TEST(ArchiveUtilTest, GetAllFilesRecursiveSomeFiles) {
 
   EXPECT_EQ(files, expected);
 }
+
 
 
 // ============================================================================
@@ -290,24 +328,61 @@ TEST(ArchiveUtilTest, CreateArchiveAtPathHasDataZip) {
   }
 }
 
+
+
 // ============================================================================
 // CreateArchiveAtPathFromFiles
 
-// TEST(ArchiveUtilTest, CreateArchiveAtPathHasDataTar) {
-//   auto tempdir =
-//     CreateTestTempdir("ArchiveUtilTest.CreateArchiveAtPathHasDataTar");
-//   auto archive_input = testdir / "archive_input/foo";
-//   FullWithFoo12Fixture(archive_input);
+TEST(ArchiveUtilTest, CreateArchiveAtPathFromFilesTar) {
+  auto testdir =
+    CreateTestTempdir("ArchiveUtilTest.CreateArchiveAtPathHasDataTar");
+  auto archive_input = testdir / "archive_input";
+  FullWithFoo12Fixture(archive_input);
 
-//   auto outpath = tempdir / "output.tar";
-//   auto status = CreateArchiveAtPath({}, outpath.u8string());
-//   ASSERT_TRUE(status.IsOk()) << status.error;
-//   ASSERT_TRUE(fs::exists(outpath)) << outpath;
+  auto outpath = testdir / "output.tar";
+  auto status = CreateArchiveAtPathFromDir(archive_input, outpath.u8string());
+  ASSERT_TRUE(status.IsOk()) << status.error;
+  ASSERT_TRUE(fs::exists(outpath)) << outpath;
 
-//   CheckHasCommand("tar");
-//   std::string cmd = fmt::format(
-//     "tar --list --verbose --file={} | wc -l",
-//     outpath.u8string());
-//   RunCMDAndCheckOutput(cmd, "0");
-// }
+  CheckArchiveHasFoo12Data(outpath);
 
+  // Make sure tar can read
+  {
+    CheckHasCommand("tar");
+    std::string cmd = fmt::format(
+      "tar --list --verbose --file={} | wc -l",
+      outpath.u8string());
+    RunCMDAndCheckOutput(cmd, "3");
+  }
+}
+
+TEST(ArchiveUtilTest, CreateArchiveAtPathFromFilesZip) {
+  auto testdir =
+    CreateTestTempdir("ArchiveUtilTest.CreateArchiveAtPathHasDataZip");
+  auto archive_input = testdir / "archive_input";
+  FullWithFoo12Fixture(archive_input);
+
+  auto outpath = testdir / "output.zip";
+  auto status = CreateArchiveAtPathFromDir(archive_input, outpath.u8string());
+  ASSERT_TRUE(status.IsOk()) << status.error;
+  ASSERT_TRUE(fs::exists(outpath)) << outpath;
+
+  CheckArchiveHasFoo12Data(outpath);
+
+  // Make sure unzip can read
+  {
+    CheckHasCommand("unzip");
+    {
+      std::string cmd = fmt::format(
+        "unzip -l {} | grep foo | wc -l",
+        outpath.u8string());
+      RunCMDAndCheckOutput(cmd, "2");
+    }
+    {
+      std::string cmd = fmt::format(
+        "unzip -l {} | grep bar | wc -l",
+        outpath.u8string());
+      RunCMDAndCheckOutput(cmd, "1");
+    }
+  }
+}

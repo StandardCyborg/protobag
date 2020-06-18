@@ -185,7 +185,7 @@ OkOrErr CreateArchiveAtPath(
   return kOK;
 }
 
-OkOrErr CreateArchiveAtPathFromFiles(
+OkOrErr CreateArchiveAtPathFromDir(
     const std::string &src_dir,
     const std::string &destination,
     const std::string &format) {

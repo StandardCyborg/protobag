@@ -35,7 +35,7 @@ OkOrErr CreateArchiveAtPath(
 // Like `CreateArchiveAtPath()`, except we scan `src_dir` recursively and
 // use that for our `file_list`.  (Ignores symlinks, empty directories, etc;
 // includes only `is_regular_file()` entries).
-OkOrErr CreateArchiveAtPathFromFiles(
+OkOrErr CreateArchiveAtPathFromDir(
   const std::string &src_dir,
   const std::string &destination,
   const std::string &format="");
