@@ -39,7 +39,8 @@ RUN \
         less \
         unzip \
         wget \
-        vim
+        vim \
+		zip
 
 # Gtest
 RUN \

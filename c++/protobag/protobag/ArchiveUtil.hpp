@@ -46,4 +46,8 @@ Result<std::vector<std::string>> GetAllFilesRecursive(const std::string &dir);
 // Return true if `path` exists and is a directory, or return an error
 Result<bool> IsDirectory(const std::string &path);
 
+// Read the file at `path` into a string using the C++ Filesystem
+// POSIX-backed API.  On error, return "".
+std::string ReadFile(const std::string &path);
+
 } /* namespace protobag */

@@ -6,30 +6,13 @@
 
 #include <fmt/format.h>
 
+#include "protobag/ArchiveUtil.hpp"
 #include "protobag/Utils/Tempfile.hpp"
 
 namespace protobag {
 namespace archive {
   
 namespace fs = std::filesystem;
-
-// NB: http://0x80.pl/notesen/2019-01-07-cpp-read-file.html
-// We use C++ Filesystem POSIX-backed API because it's the fastest
-std::string ReadFile(const fs::path &path) {
-  std::FILE* f = std::fopen(path.string().c_str(), "r");
-  if (!f) {
-    return "";
-  }
-
-  const auto f_size = fs::file_size(path);
-  std::string res;
-  res.resize(f_size);
-
-  std::fread(&res[0], 1, f_size, f);
-
-  std::fclose(f);
-  return res;
-}
 
 std::string CanonicalEntryname(const std::string &entryname) {
   // Trim leading path sep from `entryname`, or else std::filesytem

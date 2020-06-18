@@ -14,6 +14,31 @@ using namespace protobag;
 using namespace protobag_test;
 
 // ============================================================================
+// ReadFile
+
+TEST(ArchiveUtilTest, ReadFileNotExists) {
+  static const std::string kPathNoExists = "/path-no-exists";
+  ASSERT_FALSE(fs::exists(kPathNoExists));
+
+  auto result = ReadFile(kPathNoExists);
+  EXPECT_EQ(result, "");
+}
+
+TEST(ArchiveUtilTest, ReadFileSomeData) {
+  auto tempdir =
+    CreateTestTempdir("ArchiveUtilTest.IsDirectoryNotADirectory");
+  fs::path plain_file = tempdir / "foo.txt";
+  { 
+    std::ofstream f(plain_file);
+    f << "foo";
+  }
+
+  auto result = ReadFile(plain_file);
+  EXPECT_EQ(result, "foo");
+}
+
+
+// ============================================================================
 // IsDirectory
 
 TEST(ArchiveUtilTest, IsDirectoryNotExists) {
@@ -102,6 +127,7 @@ TEST(ArchiveUtilTest, GetAllFilesRecursiveSomeFiles) {
   EXPECT_EQ(files, expected);
 }
 
+
 // ============================================================================
 // UnpackArchiveToDir
 
@@ -111,6 +137,38 @@ TEST(ArchiveUtilTest, UnpackArchiveToDirNotExists) {
 
   auto status = UnpackArchiveToDir(kPathNoExists, kPathNoExists); 
   EXPECT_FALSE(status.IsOk()) << status.error;
+}
+
+TEST(ArchiveUtilTest, UnpackArchiveToDirUnpackTar) {
+  auto testdir =
+    CreateTestTempdir("ArchiveUtilTest.UnpackArchiveToDirUnpackTar");
+
+  auto status = UnpackArchiveToDir(GetFixture("test.tar"), testdir); 
+  EXPECT_TRUE(status.IsOk()) << status.error;
+
+  EXPECT_EQ(ReadFile(testdir / "foo"), "foo");
+  EXPECT_EQ(ReadFile(testdir / "bar/bar"), "bar");
+  CheckHasCommand("ls");
+  std::string cmd = fmt::format(
+    "ls {} | wc -l",
+    testdir.u8string());
+  RunCMDAndCheckOutput(cmd, "2");
+}
+
+TEST(ArchiveUtilTest, UnpackArchiveToDirUnpackZip) {
+  auto testdir =
+    CreateTestTempdir("ArchiveUtilTest.UnpackArchiveToDirUnpackZip");
+
+  auto status = UnpackArchiveToDir(GetFixture("test.zip"), testdir); 
+  EXPECT_TRUE(status.IsOk()) << status.error;
+
+  EXPECT_EQ(ReadFile(testdir / "foo"), "foo");
+  EXPECT_EQ(ReadFile(testdir / "bar/bar"), "bar");
+  CheckHasCommand("ls");
+  std::string cmd = fmt::format(
+    "ls {} | wc -l",
+    testdir.u8string());
+  RunCMDAndCheckOutput(cmd, "2");
 }
 
 

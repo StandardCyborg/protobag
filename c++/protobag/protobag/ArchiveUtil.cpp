@@ -12,6 +12,24 @@ namespace fs = std::filesystem;
 
 namespace protobag {
 
+// NB: http://0x80.pl/notesen/2019-01-07-cpp-read-file.html
+// We use C++ Filesystem POSIX-backed API because it's the fastest
+std::string ReadFile(const std::string &path) {
+  std::FILE* f = std::fopen(path.c_str(), "r");
+  if (!f) {
+    return "";
+  }
+
+  const auto f_size = fs::file_size(path);
+  std::string res;
+  res.resize(f_size);
+
+  std::fread(&res[0], 1, f_size, f);
+
+  std::fclose(f);
+  return res;
+}
+
 Result<bool> IsDirectory(const std::string &path) {
   std::error_code err;
   bool is_dir = fs::exists(path, err) && fs::is_directory(path, err);
