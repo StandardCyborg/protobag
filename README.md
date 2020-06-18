@@ -44,7 +44,24 @@ for the suite of tools it offers:
      [LCM](https://lcm-proj.github.io/log_file_format.html), respectively.
 
 
+## Batteries Included
 
+`Protobag` uses [libarchive](https://www.libarchive.org/) as an archive
+back-end to interoperate with `zip`, `tar`, and other archive formats.  We
+chose `libarchive` because it's highly portable and has minimal dependencies--
+just `libz` for `zip` and nothing for `tar`.  `Protobag` also includes vanilla
+[DirectoryArchive](c++/protobag/protobag/archive/DirectoryArchive.hpp) and
+[MemoryArchive](c++/protobag/protobag/archive/MemoryArchive.hpp) back-ends for
+testing and adhoc use.
+
+If you want a simple "zip and unzip" utility, `Protobag` also includes those as
+wrappers over `libarchive`.  See 
+[ArchiveUtil](c++/protobag/protobag/ArchiveUtil.hpp).
+
+
+
+
+TODO: quickstart and stuff
 
 TODO: bag index doc
 

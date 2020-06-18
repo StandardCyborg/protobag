@@ -152,11 +152,12 @@ void RunCMDAndCheckOutput(
     outpath = (tempdir / "RunCMDAndCheckOutput_out.txt").u8string();
   }
 
-  auto ret = std::system(fmt::format("{} > {}", cmd, outpath).c_str());
+  std::string full_cmd = fmt::format("{} > {}", cmd, outpath);
+  auto ret = std::system(full_cmd.c_str());
   if (ret != 0) {
     throw std::runtime_error(fmt::format(
       "RunCMDAndCheckOutput: command {} returned {}",
-      cmd,
+      full_cmd,
       ret));
   }
 
@@ -166,7 +167,8 @@ void RunCMDAndCheckOutput(
     fin >> contents;
     if (contents != expected_output) {
       throw std::runtime_error(fmt::format(
-        "RunCMDAndCheckOutput:\n\nexpected:\n{}\n\nactual:\n{}",
+        "RunCMDAndCheckOutput:\n\ncmd:\n\n{}\nexpected:\n{}\n\nactual:\n{}",
+        full_cmd,
         expected_output,
         contents));
     }
