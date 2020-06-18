@@ -45,7 +45,7 @@ void ExpectWriteOk(WriteSession &w, const Entry &entry) {
 }
 
 TEST(WriteSessionDirectory, TestBasic) {
-  auto testdir = CreateTempDir("WriteSessionDirectory.TestBasic");
+  auto testdir = CreateTestTempdir("WriteSessionDirectory.TestBasic");
 
   {
     auto wp = OpenWriterAndCheck({

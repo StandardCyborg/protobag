@@ -12,7 +12,7 @@ using namespace protobag_test;
 
 
 TEST(DirectoryArchiveTest, ReadDoesNotExist) {
-  auto tempdir = CreateTempDir("DirectoryArchiveTest.ReadDoesNotExist");
+  auto tempdir = CreateTestTempdir("DirectoryArchiveTest.ReadDoesNotExist");
   fs::remove_all(tempdir);
   auto result = Archive::Open({
     .mode="read",
@@ -27,7 +27,7 @@ TEST(DirectoryArchiveTest, ReadDoesNotExist) {
 TEST(DirectoryArchiveTest, ReadEmpty) {
   auto ar = OpenAndCheck({
     .mode="read",
-    .path=CreateTempDir("DirectoryArchiveTest.ReadEmpty").string(),
+    .path=CreateTestTempdir("DirectoryArchiveTest.ReadEmpty").string(),
     .format="directory",
   });
   
@@ -41,7 +41,7 @@ TEST(DirectoryArchiveTest, ReadEmpty) {
 
 
 TEST(DirectoryArchiveTest, TestNamelist) {
-  auto testdir = CreateTempDir("DirectoryArchiveTest.TestNamelist");
+  auto testdir = CreateTestTempdir("DirectoryArchiveTest.TestNamelist");
   fs::create_directories(testdir / "foo");
   fs::create_directories(testdir / "empty_dir");
   std::ofstream(testdir / "foo" / "f1");
@@ -60,7 +60,7 @@ TEST(DirectoryArchiveTest, TestNamelist) {
 
 
 TEST(DirectoryArchiveTest, TestRead) {
-  auto testdir = CreateTempDir("DirectoryArchiveTest.TestRead");
+  auto testdir = CreateTestTempdir("DirectoryArchiveTest.TestRead");
   fs::create_directories(testdir / "foo");
   std::ofstream f(testdir / "foo" / "f1");
   f << "bar";
@@ -102,7 +102,7 @@ TEST(DirectoryArchiveTest, TestRead) {
 
 
 TEST(DirectoryArchiveTest, TestWriteAndRead) {
-  auto testdir = CreateTempDir("DirectoryArchiveTest.TestWriteAndRead");
+  auto testdir = CreateTestTempdir("DirectoryArchiveTest.TestWriteAndRead");
 
   {
     auto ar = OpenAndCheck({

@@ -11,7 +11,7 @@ using namespace protobag::archive;
 using namespace protobag_test;
 
 TEST(LibArchiveArchiveTest, ReadDoesNotExist) {
-  auto tempdir = CreateTempDir("LibArchiveArchive.ReadDoesNotExist");
+  auto tempdir = CreateTestTempdir("LibArchiveArchive.ReadDoesNotExist");
   fs::remove_all(tempdir);
   auto result = Archive::Open({
     .mode="read",
@@ -24,7 +24,7 @@ TEST(LibArchiveArchiveTest, ReadDoesNotExist) {
 
 
 TEST(LibArchiveArchiveTest, TestWrite) {
-  auto testdir = CreateTempDir("LibArchiveArchiveTest.TestWrite");
+  auto testdir = CreateTestTempdir("LibArchiveArchiveTest.TestWrite");
   auto test_file = testdir / "test.tar";
   {
     auto ar = OpenAndCheck({

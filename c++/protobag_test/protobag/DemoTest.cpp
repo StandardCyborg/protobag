@@ -68,7 +68,7 @@ std::string UnpackedToPBTxt(const StampedMessage &s) {
 
 TEST(DemoTest, TestDemo) {
   // We'll put our demo protobag here:
-  auto protobag_path = CreateTempDir("DemoTest") / "demo.zip";
+  auto protobag_path = CreateTestTempdir("DemoTest") / "demo.zip";
   LOG("Writing ==============================================================");
   LOG("Writing protobag to: " << protobag_path);
 

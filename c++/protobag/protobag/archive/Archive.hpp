@@ -11,6 +11,11 @@ namespace archive {
 
 class MemoryArchive;
 
+// Try to return a valid value for `Spec.format` below given a file `path`
+// based on the path's filename extension (or if `path` is an existing
+// directory).  May return "" -- no format detected.
+std::string InferFormat(const std::string &path);
+
 // An interface abstracting away the archive 
 class Archive {
 public:

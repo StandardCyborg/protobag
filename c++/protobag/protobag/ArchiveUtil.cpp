@@ -4,6 +4,7 @@
 
 #include <fmt/format.h>
 
+#include "protobag/archive/Archive.hpp"
 #include "protobag/archive/LibArchiveArchive.hpp"
 
 
@@ -114,10 +115,19 @@ OkOrErr CreateArchiveAtPath(
     const std::string &format,
     const std::string &base_dir) {
 
+  std::string inferred_format = format;
+  if (inferred_format.empty()) {
+    inferred_format = archive::InferFormat(destination);
+    if (inferred_format.empty()) {
+      return OkOrErr::Err(
+        fmt::format("Could not infer format for {}", destination));
+    }
+  }
+
   auto maybeWriter = archive::LibArchiveArchive::Open({
     .mode = "write",
     .path = destination,
-    .format = format,
+    .format = inferred_format,
   });
   if (!maybeWriter.IsOk()) {
     return OkOrErr::Err(
