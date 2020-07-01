@@ -7,9 +7,9 @@ jobs:
      - checkout
      - run:
           name: "Build dockerized environment locally"
-          command: ./pbdev --build-env
+          command: ./pb-dev --build-env
      - run:
           name: "Run tests"
-          command: ./pbdev --test-in-container
+          command: ./pb-dev --test-in-container
 
 
