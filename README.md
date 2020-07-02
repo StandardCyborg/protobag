@@ -1,7 +1,7 @@
 # Protobag: A bag o' String-serialized Protobuf Messages
 _With built-in support for time-series data_
 
-[![Build Status](https://circleci.com/gh/StandardCyborg/protobag.svg?style=svg&circle-token=4445e2549ec4541bf7d69c6a430f5cb5948cdc34)](https://app.circleci.com/pipelines/github/StandardCyborg/protobag)
+[![Build Status](https://circleci.com/gh/StandardCyborg/protobag.svg?style=svg&circle-token=ed56e2ec32789fa3e5f664bc8ea73c55e119de4b)](https://app.circleci.com/pipelines/github/StandardCyborg/protobag)
 
 ## Summary 
 
