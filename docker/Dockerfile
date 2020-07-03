@@ -123,14 +123,12 @@ RUN \
         make install
 
 
-## Include a build of protobag
-#COPY . /opt/protobag
-#WORKDIR /opt/protobag
-#RUN \
-#    cd c++ && \
-#    mkdir -p build && cd build && \
-#    cmake .. && \
-#    make -j `nproc` && \
-#    make test && \
-#    make install
-
+# Include a build of protobag
+COPY . /opt/protobag
+WORKDIR /opt/protobag
+RUN \
+   cd c++ && \
+   mkdir -p build && cd build && \
+   cmake .. && \
+   make -j `nproc` && \
+   make test

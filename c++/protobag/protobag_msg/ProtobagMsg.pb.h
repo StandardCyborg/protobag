@@ -53,7 +53,7 @@ struct TableStruct_ProtobagMsg_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[19]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[21]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -112,6 +112,12 @@ extern StdMsg_FloatDefaultTypeInternal _StdMsg_Float_default_instance_;
 class StdMsg_Int;
 class StdMsg_IntDefaultTypeInternal;
 extern StdMsg_IntDefaultTypeInternal _StdMsg_Int_default_instance_;
+class StdMsg_SSMap;
+class StdMsg_SSMapDefaultTypeInternal;
+extern StdMsg_SSMapDefaultTypeInternal _StdMsg_SSMap_default_instance_;
+class StdMsg_SSMap_ValueEntry_DoNotUse;
+class StdMsg_SSMap_ValueEntry_DoNotUseDefaultTypeInternal;
+extern StdMsg_SSMap_ValueEntry_DoNotUseDefaultTypeInternal _StdMsg_SSMap_ValueEntry_DoNotUse_default_instance_;
 class StdMsg_String;
 class StdMsg_StringDefaultTypeInternal;
 extern StdMsg_StringDefaultTypeInternal _StdMsg_String_default_instance_;
@@ -137,6 +143,8 @@ template<> ::protobag::StdMsg_Bool* Arena::CreateMaybeMessage<::protobag::StdMsg
 template<> ::protobag::StdMsg_Bytes* Arena::CreateMaybeMessage<::protobag::StdMsg_Bytes>(Arena*);
 template<> ::protobag::StdMsg_Float* Arena::CreateMaybeMessage<::protobag::StdMsg_Float>(Arena*);
 template<> ::protobag::StdMsg_Int* Arena::CreateMaybeMessage<::protobag::StdMsg_Int>(Arena*);
+template<> ::protobag::StdMsg_SSMap* Arena::CreateMaybeMessage<::protobag::StdMsg_SSMap>(Arena*);
+template<> ::protobag::StdMsg_SSMap_ValueEntry_DoNotUse* Arena::CreateMaybeMessage<::protobag::StdMsg_SSMap_ValueEntry_DoNotUse>(Arena*);
 template<> ::protobag::StdMsg_String* Arena::CreateMaybeMessage<::protobag::StdMsg_String>(Arena*);
 template<> ::protobag::TopicTime* Arena::CreateMaybeMessage<::protobag::TopicTime>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
@@ -949,6 +957,182 @@ class StdMsg_Bytes :
 };
 // -------------------------------------------------------------------
 
+class StdMsg_SSMap_ValueEntry_DoNotUse : public ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<StdMsg_SSMap_ValueEntry_DoNotUse, 
+    std::string, std::string,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    0 > {
+public:
+  typedef ::PROTOBUF_NAMESPACE_ID::internal::MapEntry<StdMsg_SSMap_ValueEntry_DoNotUse, 
+    std::string, std::string,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+    0 > SuperType;
+  StdMsg_SSMap_ValueEntry_DoNotUse();
+  StdMsg_SSMap_ValueEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena);
+  void MergeFrom(const StdMsg_SSMap_ValueEntry_DoNotUse& other);
+  static const StdMsg_SSMap_ValueEntry_DoNotUse* internal_default_instance() { return reinterpret_cast<const StdMsg_SSMap_ValueEntry_DoNotUse*>(&_StdMsg_SSMap_ValueEntry_DoNotUse_default_instance_); }
+  static bool ValidateKey(std::string* s) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "protobag.StdMsg.SSMap.ValueEntry.key");
+ }
+  static bool ValidateValue(std::string* s) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(s->data(), static_cast<int>(s->size()), ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::PARSE, "protobag.StdMsg.SSMap.ValueEntry.value");
+ }
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& other) final;
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_ProtobagMsg_2eproto);
+    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[6];
+  }
+
+  public:
+};
+
+// -------------------------------------------------------------------
+
+class StdMsg_SSMap :
+    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:protobag.StdMsg.SSMap) */ {
+ public:
+  StdMsg_SSMap();
+  virtual ~StdMsg_SSMap();
+
+  StdMsg_SSMap(const StdMsg_SSMap& from);
+  StdMsg_SSMap(StdMsg_SSMap&& from) noexcept
+    : StdMsg_SSMap() {
+    *this = ::std::move(from);
+  }
+
+  inline StdMsg_SSMap& operator=(const StdMsg_SSMap& from) {
+    CopyFrom(from);
+    return *this;
+  }
+  inline StdMsg_SSMap& operator=(StdMsg_SSMap&& from) noexcept {
+    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
+      if (this != &from) InternalSwap(&from);
+    } else {
+      CopyFrom(from);
+    }
+    return *this;
+  }
+
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
+    return GetDescriptor();
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
+    return GetMetadataStatic().descriptor;
+  }
+  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
+    return GetMetadataStatic().reflection;
+  }
+  static const StdMsg_SSMap& default_instance();
+
+  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
+  static inline const StdMsg_SSMap* internal_default_instance() {
+    return reinterpret_cast<const StdMsg_SSMap*>(
+               &_StdMsg_SSMap_default_instance_);
+  }
+  static constexpr int kIndexInFileMessages =
+    7;
+
+  friend void swap(StdMsg_SSMap& a, StdMsg_SSMap& b) {
+    a.Swap(&b);
+  }
+  inline void Swap(StdMsg_SSMap* other) {
+    if (other == this) return;
+    InternalSwap(other);
+  }
+
+  // implements Message ----------------------------------------------
+
+  inline StdMsg_SSMap* New() const final {
+    return CreateMaybeMessage<StdMsg_SSMap>(nullptr);
+  }
+
+  StdMsg_SSMap* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
+    return CreateMaybeMessage<StdMsg_SSMap>(arena);
+  }
+  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
+  void CopyFrom(const StdMsg_SSMap& from);
+  void MergeFrom(const StdMsg_SSMap& from);
+  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
+  bool IsInitialized() const final;
+
+  size_t ByteSizeLong() const final;
+  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
+  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
+      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
+  int GetCachedSize() const final { return _cached_size_.Get(); }
+
+  private:
+  inline void SharedCtor();
+  inline void SharedDtor();
+  void SetCachedSize(int size) const final;
+  void InternalSwap(StdMsg_SSMap* other);
+  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
+  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
+    return "protobag.StdMsg.SSMap";
+  }
+  private:
+  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
+    return nullptr;
+  }
+  inline void* MaybeArenaPtr() const {
+    return nullptr;
+  }
+  public:
+
+  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
+  private:
+  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
+    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_ProtobagMsg_2eproto);
+    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[kIndexInFileMessages];
+  }
+
+  public:
+
+  // nested types ----------------------------------------------------
+
+
+  // accessors -------------------------------------------------------
+
+  enum : int {
+    kValueFieldNumber = 1,
+  };
+  // map<string, string> value = 1;
+  int value_size() const;
+  private:
+  int _internal_value_size() const;
+  public:
+  void clear_value();
+  private:
+  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
+      _internal_value() const;
+  ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
+      _internal_mutable_value();
+  public:
+  const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
+      value() const;
+  ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
+      mutable_value();
+
+  // @@protoc_insertion_point(class_scope:protobag.StdMsg.SSMap)
+ private:
+  class _Internal;
+
+  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
+  ::PROTOBUF_NAMESPACE_ID::internal::MapField<
+      StdMsg_SSMap_ValueEntry_DoNotUse,
+      std::string, std::string,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::TYPE_STRING,
+      0 > value_;
+  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
+  friend struct ::TableStruct_ProtobagMsg_2eproto;
+};
+// -------------------------------------------------------------------
+
 class StdMsg :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:protobag.StdMsg) */ {
  public:
@@ -991,7 +1175,7 @@ class StdMsg :
                &_StdMsg_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    6;
+    8;
 
   friend void swap(StdMsg& a, StdMsg& b) {
     a.Swap(&b);
@@ -1057,6 +1241,7 @@ class StdMsg :
   typedef StdMsg_Float Float;
   typedef StdMsg_String String;
   typedef StdMsg_Bytes Bytes;
+  typedef StdMsg_SSMap SSMap;
 
   // accessors -------------------------------------------------------
 
@@ -1112,7 +1297,7 @@ class TopicTime :
                &_TopicTime_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    7;
+    9;
 
   friend void swap(TopicTime& a, TopicTime& b) {
     a.Swap(&b);
@@ -1282,7 +1467,7 @@ class Selection_All :
                &_Selection_All_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    8;
+    10;
 
   friend void swap(Selection_All& a, Selection_All& b) {
     a.Swap(&b);
@@ -1410,7 +1595,7 @@ class Selection_Entrynames :
                &_Selection_Entrynames_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    9;
+    11;
 
   friend void swap(Selection_Entrynames& a, Selection_Entrynames& b) {
     a.Swap(&b);
@@ -1575,7 +1760,7 @@ class Selection_Window :
                &_Selection_Window_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    10;
+    12;
 
   friend void swap(Selection_Window& a, Selection_Window& b) {
     a.Swap(&b);
@@ -1778,7 +1963,7 @@ class Selection_Events :
                &_Selection_Events_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    11;
+    13;
 
   friend void swap(Selection_Events& a, Selection_Events& b) {
     a.Swap(&b);
@@ -1934,7 +2119,7 @@ class Selection :
                &_Selection_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    12;
+    14;
 
   friend void swap(Selection& a, Selection& b) {
     a.Swap(&b);
@@ -2120,7 +2305,7 @@ public:
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_ProtobagMsg_2eproto);
-    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[13];
+    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[15];
   }
 
   public:
@@ -2154,7 +2339,7 @@ public:
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_ProtobagMsg_2eproto);
-    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[14];
+    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[16];
   }
 
   public:
@@ -2204,7 +2389,7 @@ class BagIndex_DescriptorPoolData :
                &_BagIndex_DescriptorPoolData_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    15;
+    17;
 
   friend void swap(BagIndex_DescriptorPoolData& a, BagIndex_DescriptorPoolData& b) {
     a.Swap(&b);
@@ -2370,7 +2555,7 @@ class BagIndex_TopicStats :
                &_BagIndex_TopicStats_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    16;
+    18;
 
   friend void swap(BagIndex_TopicStats& a, BagIndex_TopicStats& b) {
     a.Swap(&b);
@@ -2480,7 +2665,7 @@ public:
   private:
   static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
     ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_ProtobagMsg_2eproto);
-    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[17];
+    return ::descriptor_table_ProtobagMsg_2eproto.file_level_metadata[19];
   }
 
   public:
@@ -2530,7 +2715,7 @@ class BagIndex :
                &_BagIndex_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    18;
+    20;
 
   friend void swap(BagIndex& a, BagIndex& b) {
     a.Swap(&b);
@@ -3055,6 +3240,41 @@ inline void StdMsg_Bytes::set_allocated_value(std::string* value) {
   }
   value_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set_allocated:protobag.StdMsg.Bytes.value)
+}
+
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
+// StdMsg_SSMap
+
+// map<string, string> value = 1;
+inline int StdMsg_SSMap::_internal_value_size() const {
+  return value_.size();
+}
+inline int StdMsg_SSMap::value_size() const {
+  return _internal_value_size();
+}
+inline void StdMsg_SSMap::clear_value() {
+  value_.Clear();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
+StdMsg_SSMap::_internal_value() const {
+  return value_.GetMap();
+}
+inline const ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >&
+StdMsg_SSMap::value() const {
+  // @@protoc_insertion_point(field_map:protobag.StdMsg.SSMap.value)
+  return _internal_value();
+}
+inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
+StdMsg_SSMap::_internal_mutable_value() {
+  return value_.MutableMap();
+}
+inline ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >*
+StdMsg_SSMap::mutable_value() {
+  // @@protoc_insertion_point(field_mutable_map:protobag.StdMsg.SSMap.value)
+  return _internal_mutable_value();
 }
 
 // -------------------------------------------------------------------
@@ -4374,6 +4594,10 @@ BagIndex::time_ordered_entries() const {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
+// -------------------------------------------------------------------
+
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

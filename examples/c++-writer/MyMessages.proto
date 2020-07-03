@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package my_messages;
+
+message DinoHunter {
+  string first_name = 1;
+  int32 id = 2;
+  map<string, string> attribs = 3;
+
+  enum DinoType {
+    VEGGIESAURUS = 0;
+    MEATIESAURUS = 1;
+    PEOPLEEATINGSAURUS = 2;
+  }
+
+  message Dino {
+    string name = 1;
+    DinoType type = 2;
+  }
+
+  repeated Dino dinos = 4;
+}
+
+message Position {
+  float x = 1;
+  float y = 2;
+}

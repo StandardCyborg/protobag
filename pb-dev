@@ -209,11 +209,10 @@ def build_env(args):
 
 
 def post_release(args):
-  print('todo get_version')
-  version = 'v0.0.1' # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  version = get_version(args.root)
   
   # Tag for cocoapods release
-  print('todo: podspec version matches version')
+  print('todo: podspec version needs to match version')
   CMD = """
     git tag -f {version} && git push -f origin {version}
   """.format(version=version)
@@ -295,12 +294,14 @@ def main(args=None):
     run_cmd(CMD)
   elif args.run_protoc:
     CMD = """
-      docker exec -it {container_name} bash -c "
-        cd /opt/protobag/c++/protobag/protobag_msg &&
-        protoc ProtobagMsg.proto --python_out=../../../python/protobag/ &&
-        protoc ProtobagMsg.proto --cpp_out=../../../c++/protobag/protobag_msg/
-        "
-    """.format(container_name=container_name)
+      cd /opt/protobag/c++/protobag/protobag_msg &&
+      protoc ProtobagMsg.proto --cpp_out=../../../c++/protobag/protobag_msg/ &&
+      protoc ProtobagMsg.proto --python_out=../../../python/protobag/ &&
+
+      cd /opt/protobag/examples/c++-writer &&
+      protoc MyMessages.proto --cpp_out=. &&
+      protoc MyMessages.proto --python_out=../../examples/python-reader
+    """
     run_in_container(
       CMD,
       args.root,

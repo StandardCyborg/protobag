@@ -26,6 +26,7 @@ extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::int
 extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Selection_Entrynames_ProtobagMsg_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Selection_Events_ProtobagMsg_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_Selection_Window_ProtobagMsg_2eproto;
+extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_StdMsg_SSMap_ValueEntry_DoNotUse_ProtobagMsg_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_ProtobagMsg_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_TopicTime_ProtobagMsg_2eproto;
 namespace protobag {
 class StampedMessageDefaultTypeInternal {
@@ -52,6 +53,14 @@ class StdMsg_BytesDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<StdMsg_Bytes> _instance;
 } _StdMsg_Bytes_default_instance_;
+class StdMsg_SSMap_ValueEntry_DoNotUseDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<StdMsg_SSMap_ValueEntry_DoNotUse> _instance;
+} _StdMsg_SSMap_ValueEntry_DoNotUse_default_instance_;
+class StdMsg_SSMapDefaultTypeInternal {
+ public:
+  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<StdMsg_SSMap> _instance;
+} _StdMsg_SSMap_default_instance_;
 class StdMsgDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<StdMsg> _instance;
@@ -360,6 +369,34 @@ static void InitDefaultsscc_info_StdMsg_Int_ProtobagMsg_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_StdMsg_Int_ProtobagMsg_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_StdMsg_Int_ProtobagMsg_2eproto}, {}};
 
+static void InitDefaultsscc_info_StdMsg_SSMap_ProtobagMsg_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::protobag::_StdMsg_SSMap_default_instance_;
+    new (ptr) ::protobag::StdMsg_SSMap();
+    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
+  }
+  ::protobag::StdMsg_SSMap::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_StdMsg_SSMap_ProtobagMsg_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_StdMsg_SSMap_ProtobagMsg_2eproto}, {
+      &scc_info_StdMsg_SSMap_ValueEntry_DoNotUse_ProtobagMsg_2eproto.base,}};
+
+static void InitDefaultsscc_info_StdMsg_SSMap_ValueEntry_DoNotUse_ProtobagMsg_2eproto() {
+  GOOGLE_PROTOBUF_VERIFY_VERSION;
+
+  {
+    void* ptr = &::protobag::_StdMsg_SSMap_ValueEntry_DoNotUse_default_instance_;
+    new (ptr) ::protobag::StdMsg_SSMap_ValueEntry_DoNotUse();
+  }
+  ::protobag::StdMsg_SSMap_ValueEntry_DoNotUse::InitAsDefaultInstance();
+}
+
+::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_StdMsg_SSMap_ValueEntry_DoNotUse_ProtobagMsg_2eproto =
+    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_StdMsg_SSMap_ValueEntry_DoNotUse_ProtobagMsg_2eproto}, {}};
+
 static void InitDefaultsscc_info_StdMsg_String_ProtobagMsg_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -389,7 +426,7 @@ static void InitDefaultsscc_info_TopicTime_ProtobagMsg_2eproto() {
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_TopicTime_ProtobagMsg_2eproto}, {
       &scc_info_Timestamp_google_2fprotobuf_2ftimestamp_2eproto.base,}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_ProtobagMsg_2eproto[19];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_ProtobagMsg_2eproto[21];
 static constexpr ::PROTOBUF_NAMESPACE_ID::EnumDescriptor const** file_level_enum_descriptors_ProtobagMsg_2eproto = nullptr;
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_ProtobagMsg_2eproto = nullptr;
 
@@ -431,6 +468,21 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_ProtobagMsg_2eproto::offsets[]
   ~0u,  // no _oneof_case_
   ~0u,  // no _weak_field_map_
   PROTOBUF_FIELD_OFFSET(::protobag::StdMsg_Bytes, value_),
+  PROTOBUF_FIELD_OFFSET(::protobag::StdMsg_SSMap_ValueEntry_DoNotUse, _has_bits_),
+  PROTOBUF_FIELD_OFFSET(::protobag::StdMsg_SSMap_ValueEntry_DoNotUse, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::protobag::StdMsg_SSMap_ValueEntry_DoNotUse, key_),
+  PROTOBUF_FIELD_OFFSET(::protobag::StdMsg_SSMap_ValueEntry_DoNotUse, value_),
+  0,
+  1,
+  ~0u,  // no _has_bits_
+  PROTOBUF_FIELD_OFFSET(::protobag::StdMsg_SSMap, _internal_metadata_),
+  ~0u,  // no _extensions_
+  ~0u,  // no _oneof_case_
+  ~0u,  // no _weak_field_map_
+  PROTOBUF_FIELD_OFFSET(::protobag::StdMsg_SSMap, value_),
   ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::protobag::StdMsg, _internal_metadata_),
   ~0u,  // no _extensions_
@@ -544,19 +596,21 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 19, -1, sizeof(::protobag::StdMsg_Float)},
   { 25, -1, sizeof(::protobag::StdMsg_String)},
   { 31, -1, sizeof(::protobag::StdMsg_Bytes)},
-  { 37, -1, sizeof(::protobag::StdMsg)},
-  { 42, -1, sizeof(::protobag::TopicTime)},
-  { 50, -1, sizeof(::protobag::Selection_All)},
-  { 56, -1, sizeof(::protobag::Selection_Entrynames)},
-  { 64, -1, sizeof(::protobag::Selection_Window)},
-  { 73, -1, sizeof(::protobag::Selection_Events)},
-  { 80, -1, sizeof(::protobag::Selection)},
-  { 90, 97, sizeof(::protobag::BagIndex_DescriptorPoolData_TypeUrlToDescriptorEntry_DoNotUse)},
-  { 99, 106, sizeof(::protobag::BagIndex_DescriptorPoolData_EntrynameToTypeUrlEntry_DoNotUse)},
-  { 108, -1, sizeof(::protobag::BagIndex_DescriptorPoolData)},
-  { 115, -1, sizeof(::protobag::BagIndex_TopicStats)},
-  { 121, 128, sizeof(::protobag::BagIndex_TopicToStatsEntry_DoNotUse)},
-  { 130, -1, sizeof(::protobag::BagIndex)},
+  { 37, 44, sizeof(::protobag::StdMsg_SSMap_ValueEntry_DoNotUse)},
+  { 46, -1, sizeof(::protobag::StdMsg_SSMap)},
+  { 52, -1, sizeof(::protobag::StdMsg)},
+  { 57, -1, sizeof(::protobag::TopicTime)},
+  { 65, -1, sizeof(::protobag::Selection_All)},
+  { 71, -1, sizeof(::protobag::Selection_Entrynames)},
+  { 79, -1, sizeof(::protobag::Selection_Window)},
+  { 88, -1, sizeof(::protobag::Selection_Events)},
+  { 95, -1, sizeof(::protobag::Selection)},
+  { 105, 112, sizeof(::protobag::BagIndex_DescriptorPoolData_TypeUrlToDescriptorEntry_DoNotUse)},
+  { 114, 121, sizeof(::protobag::BagIndex_DescriptorPoolData_EntrynameToTypeUrlEntry_DoNotUse)},
+  { 123, -1, sizeof(::protobag::BagIndex_DescriptorPoolData)},
+  { 130, -1, sizeof(::protobag::BagIndex_TopicStats)},
+  { 136, 143, sizeof(::protobag::BagIndex_TopicToStatsEntry_DoNotUse)},
+  { 145, -1, sizeof(::protobag::BagIndex)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
@@ -566,6 +620,8 @@ static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] =
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_StdMsg_Float_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_StdMsg_String_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_StdMsg_Bytes_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_StdMsg_SSMap_ValueEntry_DoNotUse_default_instance_),
+  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_StdMsg_SSMap_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_StdMsg_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_TopicTime_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::protobag::_Selection_All_default_instance_),
@@ -587,54 +643,57 @@ const char descriptor_table_protodef_ProtobagMsg_2eproto[] PROTOBUF_SECTION_VARI
   "amp.proto\032 google/protobuf/descriptor.pr"
   "oto\"b\n\016StampedMessage\022-\n\ttimestamp\030\001 \001(\013"
   "2\032.google.protobuf.Timestamp\022!\n\003msg\030\002 \001("
-  "\0132\024.google.protobuf.Any\"~\n\006StdMsg\032\025\n\004Boo"
-  "l\022\r\n\005value\030\001 \001(\010\032\024\n\003Int\022\r\n\005value\030\001 \001(\003\032\026"
-  "\n\005Float\022\r\n\005value\030\001 \001(\002\032\027\n\006String\022\r\n\005valu"
-  "e\030\001 \001(\t\032\026\n\005Bytes\022\r\n\005value\030\001 \001(\014\"\\\n\tTopic"
-  "Time\022\r\n\005topic\030\001 \001(\t\022-\n\ttimestamp\030\002 \001(\0132\032"
-  ".google.protobuf.Timestamp\022\021\n\tentryname\030"
-  "\n \001(\t\"\242\004\n\tSelection\022-\n\nselect_all\030\001 \001(\0132"
-  "\027.protobag.Selection.AllH\000\0224\n\nentrynames"
-  "\030\002 \001(\0132\036.protobag.Selection.EntrynamesH\000"
-  "\022,\n\006window\030\003 \001(\0132\032.protobag.Selection.Wi"
-  "ndowH\000\022,\n\006events\030\004 \001(\0132\032.protobag.Select"
-  "ion.EventsH\000\032\"\n\003All\022\033\n\023all_entries_are_r"
-  "aw\030\001 \001(\010\032Y\n\nEntrynames\022\022\n\nentrynames\030\001 \003"
-  "(\t\022\036\n\026ignore_missing_entries\030\002 \001(\010\022\027\n\017en"
-  "tries_are_raw\030\003 \001(\010\032\204\001\n\006Window\022\016\n\006topics"
-  "\030\001 \003(\t\022)\n\005start\030\002 \001(\0132\032.google.protobuf."
-  "Timestamp\022\'\n\003end\030\003 \001(\0132\032.google.protobuf"
-  ".Timestamp\022\026\n\016exclude_topics\030\004 \003(\t\032B\n\006Ev"
-  "ents\022#\n\006events\030\n \003(\0132\023.protobag.TopicTim"
-  "e\022\023\n\013require_all\030\002 \001(\010B\n\n\010criteria\"\260\006\n\010B"
-  "agIndex\022\025\n\rbag_namespace\030\001 \001(\t\022\030\n\020protob"
-  "ag_version\030\002 \001(\t\022D\n\024descriptor_pool_data"
-  "\030\350\007 \001(\0132%.protobag.BagIndex.DescriptorPo"
-  "olData\022*\n\005start\030\320\017 \001(\0132\032.google.protobuf"
-  ".Timestamp\022(\n\003end\030\321\017 \001(\0132\032.google.protob"
-  "uf.Timestamp\022=\n\016topic_to_stats\030\344\017 \003(\0132$."
-  "protobag.BagIndex.TopicToStatsEntry\0222\n\024t"
-  "ime_ordered_entries\030\356\017 \003(\0132\023.protobag.To"
-  "picTime\032\355\002\n\022DescriptorPoolData\022^\n\026type_u"
-  "rl_to_descriptor\030\001 \003(\0132>.protobag.BagInd"
-  "ex.DescriptorPoolData.TypeUrlToDescripto"
-  "rEntry\022\\\n\025entryname_to_type_url\030\002 \003(\0132=."
-  "protobag.BagIndex.DescriptorPoolData.Ent"
-  "rynameToTypeUrlEntry\032^\n\030TypeUrlToDescrip"
-  "torEntry\022\013\n\003key\030\001 \001(\t\0221\n\005value\030\002 \001(\0132\".g"
-  "oogle.protobuf.FileDescriptorSet:\0028\001\0329\n\027"
-  "EntrynameToTypeUrlEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005"
-  "value\030\002 \001(\t:\0028\001\032 \n\nTopicStats\022\022\n\nn_messa"
-  "ges\030\001 \001(\003\032R\n\021TopicToStatsEntry\022\013\n\003key\030\001 "
-  "\001(\t\022,\n\005value\030\002 \001(\0132\035.protobag.BagIndex.T"
-  "opicStats:\0028\001b\006proto3"
+  "\0132\024.google.protobuf.Any\"\347\001\n\006StdMsg\032\025\n\004Bo"
+  "ol\022\r\n\005value\030\001 \001(\010\032\024\n\003Int\022\r\n\005value\030\001 \001(\003\032"
+  "\026\n\005Float\022\r\n\005value\030\001 \001(\002\032\027\n\006String\022\r\n\005val"
+  "ue\030\001 \001(\t\032\026\n\005Bytes\022\r\n\005value\030\001 \001(\014\032g\n\005SSMa"
+  "p\0220\n\005value\030\001 \003(\0132!.protobag.StdMsg.SSMap"
+  ".ValueEntry\032,\n\nValueEntry\022\013\n\003key\030\001 \001(\t\022\r"
+  "\n\005value\030\002 \001(\t:\0028\001\"\\\n\tTopicTime\022\r\n\005topic\030"
+  "\001 \001(\t\022-\n\ttimestamp\030\002 \001(\0132\032.google.protob"
+  "uf.Timestamp\022\021\n\tentryname\030\n \001(\t\"\242\004\n\tSele"
+  "ction\022-\n\nselect_all\030\001 \001(\0132\027.protobag.Sel"
+  "ection.AllH\000\0224\n\nentrynames\030\002 \001(\0132\036.proto"
+  "bag.Selection.EntrynamesH\000\022,\n\006window\030\003 \001"
+  "(\0132\032.protobag.Selection.WindowH\000\022,\n\006even"
+  "ts\030\004 \001(\0132\032.protobag.Selection.EventsH\000\032\""
+  "\n\003All\022\033\n\023all_entries_are_raw\030\001 \001(\010\032Y\n\nEn"
+  "trynames\022\022\n\nentrynames\030\001 \003(\t\022\036\n\026ignore_m"
+  "issing_entries\030\002 \001(\010\022\027\n\017entries_are_raw\030"
+  "\003 \001(\010\032\204\001\n\006Window\022\016\n\006topics\030\001 \003(\t\022)\n\005star"
+  "t\030\002 \001(\0132\032.google.protobuf.Timestamp\022\'\n\003e"
+  "nd\030\003 \001(\0132\032.google.protobuf.Timestamp\022\026\n\016"
+  "exclude_topics\030\004 \003(\t\032B\n\006Events\022#\n\006events"
+  "\030\n \003(\0132\023.protobag.TopicTime\022\023\n\013require_a"
+  "ll\030\002 \001(\010B\n\n\010criteria\"\260\006\n\010BagIndex\022\025\n\rbag"
+  "_namespace\030\001 \001(\t\022\030\n\020protobag_version\030\002 \001"
+  "(\t\022D\n\024descriptor_pool_data\030\350\007 \001(\0132%.prot"
+  "obag.BagIndex.DescriptorPoolData\022*\n\005star"
+  "t\030\320\017 \001(\0132\032.google.protobuf.Timestamp\022(\n\003"
+  "end\030\321\017 \001(\0132\032.google.protobuf.Timestamp\022="
+  "\n\016topic_to_stats\030\344\017 \003(\0132$.protobag.BagIn"
+  "dex.TopicToStatsEntry\0222\n\024time_ordered_en"
+  "tries\030\356\017 \003(\0132\023.protobag.TopicTime\032\355\002\n\022De"
+  "scriptorPoolData\022^\n\026type_url_to_descript"
+  "or\030\001 \003(\0132>.protobag.BagIndex.DescriptorP"
+  "oolData.TypeUrlToDescriptorEntry\022\\\n\025entr"
+  "yname_to_type_url\030\002 \003(\0132=.protobag.BagIn"
+  "dex.DescriptorPoolData.EntrynameToTypeUr"
+  "lEntry\032^\n\030TypeUrlToDescriptorEntry\022\013\n\003ke"
+  "y\030\001 \001(\t\0221\n\005value\030\002 \001(\0132\".google.protobuf"
+  ".FileDescriptorSet:\0028\001\0329\n\027EntrynameToTyp"
+  "eUrlEntry\022\013\n\003key\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028"
+  "\001\032 \n\nTopicStats\022\022\n\nn_messages\030\001 \001(\003\032R\n\021T"
+  "opicToStatsEntry\022\013\n\003key\030\001 \001(\t\022,\n\005value\030\002"
+  " \001(\0132\035.protobag.BagIndex.TopicStats:\0028\001b"
+  "\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_ProtobagMsg_2eproto_deps[3] = {
   &::descriptor_table_google_2fprotobuf_2fany_2eproto,
   &::descriptor_table_google_2fprotobuf_2fdescriptor_2eproto,
   &::descriptor_table_google_2fprotobuf_2ftimestamp_2eproto,
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_ProtobagMsg_2eproto_sccs[19] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_ProtobagMsg_2eproto_sccs[21] = {
   &scc_info_BagIndex_ProtobagMsg_2eproto.base,
   &scc_info_BagIndex_DescriptorPoolData_ProtobagMsg_2eproto.base,
   &scc_info_BagIndex_DescriptorPoolData_EntrynameToTypeUrlEntry_DoNotUse_ProtobagMsg_2eproto.base,
@@ -652,16 +711,18 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_Pro
   &scc_info_StdMsg_Bytes_ProtobagMsg_2eproto.base,
   &scc_info_StdMsg_Float_ProtobagMsg_2eproto.base,
   &scc_info_StdMsg_Int_ProtobagMsg_2eproto.base,
+  &scc_info_StdMsg_SSMap_ProtobagMsg_2eproto.base,
+  &scc_info_StdMsg_SSMap_ValueEntry_DoNotUse_ProtobagMsg_2eproto.base,
   &scc_info_StdMsg_String_ProtobagMsg_2eproto.base,
   &scc_info_TopicTime_ProtobagMsg_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_ProtobagMsg_2eproto_once;
 static bool descriptor_table_ProtobagMsg_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_ProtobagMsg_2eproto = {
-  &descriptor_table_ProtobagMsg_2eproto_initialized, descriptor_table_protodef_ProtobagMsg_2eproto, "ProtobagMsg.proto", 1821,
-  &descriptor_table_ProtobagMsg_2eproto_once, descriptor_table_ProtobagMsg_2eproto_sccs, descriptor_table_ProtobagMsg_2eproto_deps, 19, 3,
+  &descriptor_table_ProtobagMsg_2eproto_initialized, descriptor_table_protodef_ProtobagMsg_2eproto, "ProtobagMsg.proto", 1927,
+  &descriptor_table_ProtobagMsg_2eproto_once, descriptor_table_ProtobagMsg_2eproto_sccs, descriptor_table_ProtobagMsg_2eproto_deps, 21, 3,
   schemas, file_default_instances, TableStruct_ProtobagMsg_2eproto::offsets,
-  file_level_metadata_ProtobagMsg_2eproto, 19, file_level_enum_descriptors_ProtobagMsg_2eproto, file_level_service_descriptors_ProtobagMsg_2eproto,
+  file_level_metadata_ProtobagMsg_2eproto, 21, file_level_enum_descriptors_ProtobagMsg_2eproto, file_level_service_descriptors_ProtobagMsg_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -1872,6 +1933,253 @@ void StdMsg_Bytes::InternalSwap(StdMsg_Bytes* other) {
 }
 
 ::PROTOBUF_NAMESPACE_ID::Metadata StdMsg_Bytes::GetMetadata() const {
+  return GetMetadataStatic();
+}
+
+
+// ===================================================================
+
+StdMsg_SSMap_ValueEntry_DoNotUse::StdMsg_SSMap_ValueEntry_DoNotUse() {}
+StdMsg_SSMap_ValueEntry_DoNotUse::StdMsg_SSMap_ValueEntry_DoNotUse(::PROTOBUF_NAMESPACE_ID::Arena* arena)
+    : SuperType(arena) {}
+void StdMsg_SSMap_ValueEntry_DoNotUse::MergeFrom(const StdMsg_SSMap_ValueEntry_DoNotUse& other) {
+  MergeFromInternal(other);
+}
+::PROTOBUF_NAMESPACE_ID::Metadata StdMsg_SSMap_ValueEntry_DoNotUse::GetMetadata() const {
+  return GetMetadataStatic();
+}
+void StdMsg_SSMap_ValueEntry_DoNotUse::MergeFrom(
+    const ::PROTOBUF_NAMESPACE_ID::Message& other) {
+  ::PROTOBUF_NAMESPACE_ID::Message::MergeFrom(other);
+}
+
+
+// ===================================================================
+
+void StdMsg_SSMap::InitAsDefaultInstance() {
+}
+class StdMsg_SSMap::_Internal {
+ public:
+};
+
+StdMsg_SSMap::StdMsg_SSMap()
+  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
+  SharedCtor();
+  // @@protoc_insertion_point(constructor:protobag.StdMsg.SSMap)
+}
+StdMsg_SSMap::StdMsg_SSMap(const StdMsg_SSMap& from)
+  : ::PROTOBUF_NAMESPACE_ID::Message(),
+      _internal_metadata_(nullptr) {
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  value_.MergeFrom(from.value_);
+  // @@protoc_insertion_point(copy_constructor:protobag.StdMsg.SSMap)
+}
+
+void StdMsg_SSMap::SharedCtor() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_StdMsg_SSMap_ProtobagMsg_2eproto.base);
+}
+
+StdMsg_SSMap::~StdMsg_SSMap() {
+  // @@protoc_insertion_point(destructor:protobag.StdMsg.SSMap)
+  SharedDtor();
+}
+
+void StdMsg_SSMap::SharedDtor() {
+}
+
+void StdMsg_SSMap::SetCachedSize(int size) const {
+  _cached_size_.Set(size);
+}
+const StdMsg_SSMap& StdMsg_SSMap::default_instance() {
+  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_StdMsg_SSMap_ProtobagMsg_2eproto.base);
+  return *internal_default_instance();
+}
+
+
+void StdMsg_SSMap::Clear() {
+// @@protoc_insertion_point(message_clear_start:protobag.StdMsg.SSMap)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  value_.Clear();
+  _internal_metadata_.Clear();
+}
+
+const char* StdMsg_SSMap::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
+#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
+  while (!ctx->Done(&ptr)) {
+    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
+    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
+    CHK_(ptr);
+    switch (tag >> 3) {
+      // map<string, string> value = 1;
+      case 1:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
+          ptr -= 1;
+          do {
+            ptr += 1;
+            ptr = ctx->ParseMessage(&value_, ptr);
+            CHK_(ptr);
+            if (!ctx->DataAvailable(ptr)) break;
+          } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<10>(ptr));
+        } else goto handle_unusual;
+        continue;
+      default: {
+      handle_unusual:
+        if ((tag & 7) == 4 || tag == 0) {
+          ctx->SetLastTag(tag);
+          goto success;
+        }
+        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
+        CHK_(ptr != nullptr);
+        continue;
+      }
+    }  // switch
+  }  // while
+success:
+  return ptr;
+failure:
+  ptr = nullptr;
+  goto success;
+#undef CHK_
+}
+
+::PROTOBUF_NAMESPACE_ID::uint8* StdMsg_SSMap::_InternalSerialize(
+    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
+  // @@protoc_insertion_point(serialize_to_array_start:protobag.StdMsg.SSMap)
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  // map<string, string> value = 1;
+  if (!this->_internal_value().empty()) {
+    typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::const_pointer
+        ConstPtr;
+    typedef ConstPtr SortItem;
+    typedef ::PROTOBUF_NAMESPACE_ID::internal::CompareByDerefFirst<SortItem> Less;
+    struct Utf8Check {
+      static void Check(ConstPtr p) {
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+          p->first.data(), static_cast<int>(p->first.length()),
+          ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+          "protobag.StdMsg.SSMap.ValueEntry.key");
+        ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
+          p->second.data(), static_cast<int>(p->second.length()),
+          ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
+          "protobag.StdMsg.SSMap.ValueEntry.value");
+      }
+    };
+
+    if (stream->IsSerializationDeterministic() &&
+        this->_internal_value().size() > 1) {
+      ::std::unique_ptr<SortItem[]> items(
+          new SortItem[this->_internal_value().size()]);
+      typedef ::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::size_type size_type;
+      size_type n = 0;
+      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::const_iterator
+          it = this->_internal_value().begin();
+          it != this->_internal_value().end(); ++it, ++n) {
+        items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
+      }
+      ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
+      for (size_type i = 0; i < n; i++) {
+        target = StdMsg_SSMap_ValueEntry_DoNotUse::Funcs::InternalSerialize(1, items[static_cast<ptrdiff_t>(i)]->first, items[static_cast<ptrdiff_t>(i)]->second, target, stream);
+        Utf8Check::Check(&(*items[static_cast<ptrdiff_t>(i)]));
+      }
+    } else {
+      for (::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::const_iterator
+          it = this->_internal_value().begin();
+          it != this->_internal_value().end(); ++it) {
+        target = StdMsg_SSMap_ValueEntry_DoNotUse::Funcs::InternalSerialize(1, it->first, it->second, target, stream);
+        Utf8Check::Check(&(*it));
+      }
+    }
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
+        _internal_metadata_.unknown_fields(), target, stream);
+  }
+  // @@protoc_insertion_point(serialize_to_array_end:protobag.StdMsg.SSMap)
+  return target;
+}
+
+size_t StdMsg_SSMap::ByteSizeLong() const {
+// @@protoc_insertion_point(message_byte_size_start:protobag.StdMsg.SSMap)
+  size_t total_size = 0;
+
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  // Prevent compiler warnings about cached_has_bits being unused
+  (void) cached_has_bits;
+
+  // map<string, string> value = 1;
+  total_size += 1 *
+      ::PROTOBUF_NAMESPACE_ID::internal::FromIntSize(this->_internal_value_size());
+  for (::PROTOBUF_NAMESPACE_ID::Map< std::string, std::string >::const_iterator
+      it = this->_internal_value().begin();
+      it != this->_internal_value().end(); ++it) {
+    total_size += StdMsg_SSMap_ValueEntry_DoNotUse::Funcs::ByteSizeLong(it->first, it->second);
+  }
+
+  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
+    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
+        _internal_metadata_, total_size, &_cached_size_);
+  }
+  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
+  SetCachedSize(cached_size);
+  return total_size;
+}
+
+void StdMsg_SSMap::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_merge_from_start:protobag.StdMsg.SSMap)
+  GOOGLE_DCHECK_NE(&from, this);
+  const StdMsg_SSMap* source =
+      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<StdMsg_SSMap>(
+          &from);
+  if (source == nullptr) {
+  // @@protoc_insertion_point(generalized_merge_from_cast_fail:protobag.StdMsg.SSMap)
+    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
+  } else {
+  // @@protoc_insertion_point(generalized_merge_from_cast_success:protobag.StdMsg.SSMap)
+    MergeFrom(*source);
+  }
+}
+
+void StdMsg_SSMap::MergeFrom(const StdMsg_SSMap& from) {
+// @@protoc_insertion_point(class_specific_merge_from_start:protobag.StdMsg.SSMap)
+  GOOGLE_DCHECK_NE(&from, this);
+  _internal_metadata_.MergeFrom(from._internal_metadata_);
+  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
+  (void) cached_has_bits;
+
+  value_.MergeFrom(from.value_);
+}
+
+void StdMsg_SSMap::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
+// @@protoc_insertion_point(generalized_copy_from_start:protobag.StdMsg.SSMap)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+void StdMsg_SSMap::CopyFrom(const StdMsg_SSMap& from) {
+// @@protoc_insertion_point(class_specific_copy_from_start:protobag.StdMsg.SSMap)
+  if (&from == this) return;
+  Clear();
+  MergeFrom(from);
+}
+
+bool StdMsg_SSMap::IsInitialized() const {
+  return true;
+}
+
+void StdMsg_SSMap::InternalSwap(StdMsg_SSMap* other) {
+  using std::swap;
+  _internal_metadata_.Swap(&other->_internal_metadata_);
+  value_.Swap(&other->value_);
+}
+
+::PROTOBUF_NAMESPACE_ID::Metadata StdMsg_SSMap::GetMetadata() const {
   return GetMetadataStatic();
 }
 
@@ -4753,6 +5061,12 @@ template<> PROTOBUF_NOINLINE ::protobag::StdMsg_String* Arena::CreateMaybeMessag
 }
 template<> PROTOBUF_NOINLINE ::protobag::StdMsg_Bytes* Arena::CreateMaybeMessage< ::protobag::StdMsg_Bytes >(Arena* arena) {
   return Arena::CreateInternal< ::protobag::StdMsg_Bytes >(arena);
+}
+template<> PROTOBUF_NOINLINE ::protobag::StdMsg_SSMap_ValueEntry_DoNotUse* Arena::CreateMaybeMessage< ::protobag::StdMsg_SSMap_ValueEntry_DoNotUse >(Arena* arena) {
+  return Arena::CreateInternal< ::protobag::StdMsg_SSMap_ValueEntry_DoNotUse >(arena);
+}
+template<> PROTOBUF_NOINLINE ::protobag::StdMsg_SSMap* Arena::CreateMaybeMessage< ::protobag::StdMsg_SSMap >(Arena* arena) {
+  return Arena::CreateInternal< ::protobag::StdMsg_SSMap >(arena);
 }
 template<> PROTOBUF_NOINLINE ::protobag::StdMsg* Arena::CreateMaybeMessage< ::protobag::StdMsg >(Arena* arena) {
   return Arena::CreateInternal< ::protobag::StdMsg >(arena);

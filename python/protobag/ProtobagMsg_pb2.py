@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='protobag',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x11ProtobagMsg.proto\x12\x08protobag\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/descriptor.proto\"b\n\x0eStampedMessage\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\x03msg\x18\x02 \x01(\x0b\x32\x14.google.protobuf.Any\"~\n\x06StdMsg\x1a\x15\n\x04\x42ool\x12\r\n\x05value\x18\x01 \x01(\x08\x1a\x14\n\x03Int\x12\r\n\x05value\x18\x01 \x01(\x03\x1a\x16\n\x05\x46loat\x12\r\n\x05value\x18\x01 \x01(\x02\x1a\x17\n\x06String\x12\r\n\x05value\x18\x01 \x01(\t\x1a\x16\n\x05\x42ytes\x12\r\n\x05value\x18\x01 \x01(\x0c\"\\\n\tTopicTime\x12\r\n\x05topic\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tentryname\x18\n \x01(\t\"\xa2\x04\n\tSelection\x12-\n\nselect_all\x18\x01 \x01(\x0b\x32\x17.protobag.Selection.AllH\x00\x12\x34\n\nentrynames\x18\x02 \x01(\x0b\x32\x1e.protobag.Selection.EntrynamesH\x00\x12,\n\x06window\x18\x03 \x01(\x0b\x32\x1a.protobag.Selection.WindowH\x00\x12,\n\x06\x65vents\x18\x04 \x01(\x0b\x32\x1a.protobag.Selection.EventsH\x00\x1a\"\n\x03\x41ll\x12\x1b\n\x13\x61ll_entries_are_raw\x18\x01 \x01(\x08\x1aY\n\nEntrynames\x12\x12\n\nentrynames\x18\x01 \x03(\t\x12\x1e\n\x16ignore_missing_entries\x18\x02 \x01(\x08\x12\x17\n\x0f\x65ntries_are_raw\x18\x03 \x01(\x08\x1a\x84\x01\n\x06Window\x12\x0e\n\x06topics\x18\x01 \x03(\t\x12)\n\x05start\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\'\n\x03\x65nd\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x16\n\x0e\x65xclude_topics\x18\x04 \x03(\t\x1a\x42\n\x06\x45vents\x12#\n\x06\x65vents\x18\n \x03(\x0b\x32\x13.protobag.TopicTime\x12\x13\n\x0brequire_all\x18\x02 \x01(\x08\x42\n\n\x08\x63riteria\"\xb0\x06\n\x08\x42\x61gIndex\x12\x15\n\rbag_namespace\x18\x01 \x01(\t\x12\x18\n\x10protobag_version\x18\x02 \x01(\t\x12\x44\n\x14\x64\x65scriptor_pool_data\x18\xe8\x07 \x01(\x0b\x32%.protobag.BagIndex.DescriptorPoolData\x12*\n\x05start\x18\xd0\x0f \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12(\n\x03\x65nd\x18\xd1\x0f \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12=\n\x0etopic_to_stats\x18\xe4\x0f \x03(\x0b\x32$.protobag.BagIndex.TopicToStatsEntry\x12\x32\n\x14time_ordered_entries\x18\xee\x0f \x03(\x0b\x32\x13.protobag.TopicTime\x1a\xed\x02\n\x12\x44\x65scriptorPoolData\x12^\n\x16type_url_to_descriptor\x18\x01 \x03(\x0b\x32>.protobag.BagIndex.DescriptorPoolData.TypeUrlToDescriptorEntry\x12\\\n\x15\x65ntryname_to_type_url\x18\x02 \x03(\x0b\x32=.protobag.BagIndex.DescriptorPoolData.EntrynameToTypeUrlEntry\x1a^\n\x18TypeUrlToDescriptorEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".google.protobuf.FileDescriptorSet:\x02\x38\x01\x1a\x39\n\x17\x45ntrynameToTypeUrlEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a \n\nTopicStats\x12\x12\n\nn_messages\x18\x01 \x01(\x03\x1aR\n\x11TopicToStatsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12,\n\x05value\x18\x02 \x01(\x0b\x32\x1d.protobag.BagIndex.TopicStats:\x02\x38\x01\x62\x06proto3'
+  serialized_pb=b'\n\x11ProtobagMsg.proto\x12\x08protobag\x1a\x19google/protobuf/any.proto\x1a\x1fgoogle/protobuf/timestamp.proto\x1a google/protobuf/descriptor.proto\"b\n\x0eStampedMessage\x12-\n\ttimestamp\x18\x01 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12!\n\x03msg\x18\x02 \x01(\x0b\x32\x14.google.protobuf.Any\"\xe7\x01\n\x06StdMsg\x1a\x15\n\x04\x42ool\x12\r\n\x05value\x18\x01 \x01(\x08\x1a\x14\n\x03Int\x12\r\n\x05value\x18\x01 \x01(\x03\x1a\x16\n\x05\x46loat\x12\r\n\x05value\x18\x01 \x01(\x02\x1a\x17\n\x06String\x12\r\n\x05value\x18\x01 \x01(\t\x1a\x16\n\x05\x42ytes\x12\r\n\x05value\x18\x01 \x01(\x0c\x1ag\n\x05SSMap\x12\x30\n\x05value\x18\x01 \x03(\x0b\x32!.protobag.StdMsg.SSMap.ValueEntry\x1a,\n\nValueEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"\\\n\tTopicTime\x12\r\n\x05topic\x18\x01 \x01(\t\x12-\n\ttimestamp\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x11\n\tentryname\x18\n \x01(\t\"\xa2\x04\n\tSelection\x12-\n\nselect_all\x18\x01 \x01(\x0b\x32\x17.protobag.Selection.AllH\x00\x12\x34\n\nentrynames\x18\x02 \x01(\x0b\x32\x1e.protobag.Selection.EntrynamesH\x00\x12,\n\x06window\x18\x03 \x01(\x0b\x32\x1a.protobag.Selection.WindowH\x00\x12,\n\x06\x65vents\x18\x04 \x01(\x0b\x32\x1a.protobag.Selection.EventsH\x00\x1a\"\n\x03\x41ll\x12\x1b\n\x13\x61ll_entries_are_raw\x18\x01 \x01(\x08\x1aY\n\nEntrynames\x12\x12\n\nentrynames\x18\x01 \x03(\t\x12\x1e\n\x16ignore_missing_entries\x18\x02 \x01(\x08\x12\x17\n\x0f\x65ntries_are_raw\x18\x03 \x01(\x08\x1a\x84\x01\n\x06Window\x12\x0e\n\x06topics\x18\x01 \x03(\t\x12)\n\x05start\x18\x02 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\'\n\x03\x65nd\x18\x03 \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12\x16\n\x0e\x65xclude_topics\x18\x04 \x03(\t\x1a\x42\n\x06\x45vents\x12#\n\x06\x65vents\x18\n \x03(\x0b\x32\x13.protobag.TopicTime\x12\x13\n\x0brequire_all\x18\x02 \x01(\x08\x42\n\n\x08\x63riteria\"\xb0\x06\n\x08\x42\x61gIndex\x12\x15\n\rbag_namespace\x18\x01 \x01(\t\x12\x18\n\x10protobag_version\x18\x02 \x01(\t\x12\x44\n\x14\x64\x65scriptor_pool_data\x18\xe8\x07 \x01(\x0b\x32%.protobag.BagIndex.DescriptorPoolData\x12*\n\x05start\x18\xd0\x0f \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12(\n\x03\x65nd\x18\xd1\x0f \x01(\x0b\x32\x1a.google.protobuf.Timestamp\x12=\n\x0etopic_to_stats\x18\xe4\x0f \x03(\x0b\x32$.protobag.BagIndex.TopicToStatsEntry\x12\x32\n\x14time_ordered_entries\x18\xee\x0f \x03(\x0b\x32\x13.protobag.TopicTime\x1a\xed\x02\n\x12\x44\x65scriptorPoolData\x12^\n\x16type_url_to_descriptor\x18\x01 \x03(\x0b\x32>.protobag.BagIndex.DescriptorPoolData.TypeUrlToDescriptorEntry\x12\\\n\x15\x65ntryname_to_type_url\x18\x02 \x03(\x0b\x32=.protobag.BagIndex.DescriptorPoolData.EntrynameToTypeUrlEntry\x1a^\n\x18TypeUrlToDescriptorEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x31\n\x05value\x18\x02 \x01(\x0b\x32\".google.protobuf.FileDescriptorSet:\x02\x38\x01\x1a\x39\n\x17\x45ntrynameToTypeUrlEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a \n\nTopicStats\x12\x12\n\nn_messages\x18\x01 \x01(\x03\x1aR\n\x11TopicToStatsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12,\n\x05value\x18\x02 \x01(\x0b\x32\x1d.protobag.BagIndex.TopicStats:\x02\x38\x01\x62\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_any__pb2.DESCRIPTOR,google_dot_protobuf_dot_timestamp__pb2.DESCRIPTOR,google_dot_protobuf_dot_descriptor__pb2.DESCRIPTOR,])
 
@@ -92,8 +92,8 @@ _STDMSG_BOOL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=235,
-  serialized_end=256,
+  serialized_start=236,
+  serialized_end=257,
 )
 
 _STDMSG_INT = _descriptor.Descriptor(
@@ -122,8 +122,8 @@ _STDMSG_INT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=258,
-  serialized_end=278,
+  serialized_start=259,
+  serialized_end=279,
 )
 
 _STDMSG_FLOAT = _descriptor.Descriptor(
@@ -152,8 +152,8 @@ _STDMSG_FLOAT = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=280,
-  serialized_end=302,
+  serialized_start=281,
+  serialized_end=303,
 )
 
 _STDMSG_STRING = _descriptor.Descriptor(
@@ -182,8 +182,8 @@ _STDMSG_STRING = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=304,
-  serialized_end=327,
+  serialized_start=305,
+  serialized_end=328,
 )
 
 _STDMSG_BYTES = _descriptor.Descriptor(
@@ -212,8 +212,75 @@ _STDMSG_BYTES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=329,
-  serialized_end=351,
+  serialized_start=330,
+  serialized_end=352,
+)
+
+_STDMSG_SSMAP_VALUEENTRY = _descriptor.Descriptor(
+  name='ValueEntry',
+  full_name='protobag.StdMsg.SSMap.ValueEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='protobag.StdMsg.SSMap.ValueEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='protobag.StdMsg.SSMap.ValueEntry.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=413,
+  serialized_end=457,
+)
+
+_STDMSG_SSMAP = _descriptor.Descriptor(
+  name='SSMap',
+  full_name='protobag.StdMsg.SSMap',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='value', full_name='protobag.StdMsg.SSMap.value', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_STDMSG_SSMAP_VALUEENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=354,
+  serialized_end=457,
 )
 
 _STDMSG = _descriptor.Descriptor(
@@ -226,7 +293,7 @@ _STDMSG = _descriptor.Descriptor(
   ],
   extensions=[
   ],
-  nested_types=[_STDMSG_BOOL, _STDMSG_INT, _STDMSG_FLOAT, _STDMSG_STRING, _STDMSG_BYTES, ],
+  nested_types=[_STDMSG_BOOL, _STDMSG_INT, _STDMSG_FLOAT, _STDMSG_STRING, _STDMSG_BYTES, _STDMSG_SSMAP, ],
   enum_types=[
   ],
   serialized_options=None,
@@ -235,8 +302,8 @@ _STDMSG = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=225,
-  serialized_end=351,
+  serialized_start=226,
+  serialized_end=457,
 )
 
 
@@ -280,8 +347,8 @@ _TOPICTIME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=353,
-  serialized_end=445,
+  serialized_start=459,
+  serialized_end=551,
 )
 
 
@@ -311,8 +378,8 @@ _SELECTION_ALL = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=654,
-  serialized_end=688,
+  serialized_start=760,
+  serialized_end=794,
 )
 
 _SELECTION_ENTRYNAMES = _descriptor.Descriptor(
@@ -355,8 +422,8 @@ _SELECTION_ENTRYNAMES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=690,
-  serialized_end=779,
+  serialized_start=796,
+  serialized_end=885,
 )
 
 _SELECTION_WINDOW = _descriptor.Descriptor(
@@ -406,8 +473,8 @@ _SELECTION_WINDOW = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=782,
-  serialized_end=914,
+  serialized_start=888,
+  serialized_end=1020,
 )
 
 _SELECTION_EVENTS = _descriptor.Descriptor(
@@ -443,8 +510,8 @@ _SELECTION_EVENTS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=916,
-  serialized_end=982,
+  serialized_start=1022,
+  serialized_end=1088,
 )
 
 _SELECTION = _descriptor.Descriptor(
@@ -497,8 +564,8 @@ _SELECTION = _descriptor.Descriptor(
       name='criteria', full_name='protobag.Selection.criteria',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=448,
-  serialized_end=994,
+  serialized_start=554,
+  serialized_end=1100,
 )
 
 
@@ -535,8 +602,8 @@ _BAGINDEX_DESCRIPTORPOOLDATA_TYPEURLTODESCRIPTORENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1542,
-  serialized_end=1636,
+  serialized_start=1648,
+  serialized_end=1742,
 )
 
 _BAGINDEX_DESCRIPTORPOOLDATA_ENTRYNAMETOTYPEURLENTRY = _descriptor.Descriptor(
@@ -572,8 +639,8 @@ _BAGINDEX_DESCRIPTORPOOLDATA_ENTRYNAMETOTYPEURLENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1638,
-  serialized_end=1695,
+  serialized_start=1744,
+  serialized_end=1801,
 )
 
 _BAGINDEX_DESCRIPTORPOOLDATA = _descriptor.Descriptor(
@@ -609,8 +676,8 @@ _BAGINDEX_DESCRIPTORPOOLDATA = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1330,
-  serialized_end=1695,
+  serialized_start=1436,
+  serialized_end=1801,
 )
 
 _BAGINDEX_TOPICSTATS = _descriptor.Descriptor(
@@ -639,8 +706,8 @@ _BAGINDEX_TOPICSTATS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1697,
-  serialized_end=1729,
+  serialized_start=1803,
+  serialized_end=1835,
 )
 
 _BAGINDEX_TOPICTOSTATSENTRY = _descriptor.Descriptor(
@@ -676,8 +743,8 @@ _BAGINDEX_TOPICTOSTATSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1731,
-  serialized_end=1813,
+  serialized_start=1837,
+  serialized_end=1919,
 )
 
 _BAGINDEX = _descriptor.Descriptor(
@@ -748,8 +815,8 @@ _BAGINDEX = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=997,
-  serialized_end=1813,
+  serialized_start=1103,
+  serialized_end=1919,
 )
 
 _STAMPEDMESSAGE.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
@@ -759,6 +826,9 @@ _STDMSG_INT.containing_type = _STDMSG
 _STDMSG_FLOAT.containing_type = _STDMSG
 _STDMSG_STRING.containing_type = _STDMSG
 _STDMSG_BYTES.containing_type = _STDMSG
+_STDMSG_SSMAP_VALUEENTRY.containing_type = _STDMSG_SSMAP
+_STDMSG_SSMAP.fields_by_name['value'].message_type = _STDMSG_SSMAP_VALUEENTRY
+_STDMSG_SSMAP.containing_type = _STDMSG
 _TOPICTIME.fields_by_name['timestamp'].message_type = google_dot_protobuf_dot_timestamp__pb2._TIMESTAMP
 _SELECTION_ALL.containing_type = _SELECTION
 _SELECTION_ENTRYNAMES.containing_type = _SELECTION
@@ -847,6 +917,20 @@ StdMsg = _reflection.GeneratedProtocolMessageType('StdMsg', (_message.Message,),
     # @@protoc_insertion_point(class_scope:protobag.StdMsg.Bytes)
     })
   ,
+
+  'SSMap' : _reflection.GeneratedProtocolMessageType('SSMap', (_message.Message,), {
+
+    'ValueEntry' : _reflection.GeneratedProtocolMessageType('ValueEntry', (_message.Message,), {
+      'DESCRIPTOR' : _STDMSG_SSMAP_VALUEENTRY,
+      '__module__' : 'ProtobagMsg_pb2'
+      # @@protoc_insertion_point(class_scope:protobag.StdMsg.SSMap.ValueEntry)
+      })
+    ,
+    'DESCRIPTOR' : _STDMSG_SSMAP,
+    '__module__' : 'ProtobagMsg_pb2'
+    # @@protoc_insertion_point(class_scope:protobag.StdMsg.SSMap)
+    })
+  ,
   'DESCRIPTOR' : _STDMSG,
   '__module__' : 'ProtobagMsg_pb2'
   # @@protoc_insertion_point(class_scope:protobag.StdMsg)
@@ -857,6 +941,8 @@ _sym_db.RegisterMessage(StdMsg.Int)
 _sym_db.RegisterMessage(StdMsg.Float)
 _sym_db.RegisterMessage(StdMsg.String)
 _sym_db.RegisterMessage(StdMsg.Bytes)
+_sym_db.RegisterMessage(StdMsg.SSMap)
+_sym_db.RegisterMessage(StdMsg.SSMap.ValueEntry)
 
 TopicTime = _reflection.GeneratedProtocolMessageType('TopicTime', (_message.Message,), {
   'DESCRIPTOR' : _TOPICTIME,
@@ -952,6 +1038,7 @@ _sym_db.RegisterMessage(BagIndex.TopicStats)
 _sym_db.RegisterMessage(BagIndex.TopicToStatsEntry)
 
 
+_STDMSG_SSMAP_VALUEENTRY._options = None
 _BAGINDEX_DESCRIPTORPOOLDATA_TYPEURLTODESCRIPTORENTRY._options = None
 _BAGINDEX_DESCRIPTORPOOLDATA_ENTRYNAMETOTYPEURLENTRY._options = None
 _BAGINDEX_TOPICTOSTATSENTRY._options = None
