@@ -8,9 +8,10 @@ message DinoHunter {
   map<string, string> attribs = 3;
 
   enum DinoType {
-    VEGGIESAURUS = 0;
-    MEATIESAURUS = 1;
-    PEOPLEEATINGSAURUS = 2;
+    IDK = 0;
+    VEGGIESAURUS = 1;
+    MEATIESAURUS = 2;
+    PEOPLEEATINGSAURUS = 3;
   }
 
   message Dino {

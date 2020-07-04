@@ -51,7 +51,7 @@ struct TableStruct_MyMessages_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[5]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[4]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -62,9 +62,6 @@ namespace my_messages {
 class DinoHunter;
 class DinoHunterDefaultTypeInternal;
 extern DinoHunterDefaultTypeInternal _DinoHunter_default_instance_;
-class DinoHunterCollection;
-class DinoHunterCollectionDefaultTypeInternal;
-extern DinoHunterCollectionDefaultTypeInternal _DinoHunterCollection_default_instance_;
 class DinoHunter_AttribsEntry_DoNotUse;
 class DinoHunter_AttribsEntry_DoNotUseDefaultTypeInternal;
 extern DinoHunter_AttribsEntry_DoNotUseDefaultTypeInternal _DinoHunter_AttribsEntry_DoNotUse_default_instance_;
@@ -77,7 +74,6 @@ extern PositionDefaultTypeInternal _Position_default_instance_;
 }  // namespace my_messages
 PROTOBUF_NAMESPACE_OPEN
 template<> ::my_messages::DinoHunter* Arena::CreateMaybeMessage<::my_messages::DinoHunter>(Arena*);
-template<> ::my_messages::DinoHunterCollection* Arena::CreateMaybeMessage<::my_messages::DinoHunterCollection>(Arena*);
 template<> ::my_messages::DinoHunter_AttribsEntry_DoNotUse* Arena::CreateMaybeMessage<::my_messages::DinoHunter_AttribsEntry_DoNotUse>(Arena*);
 template<> ::my_messages::DinoHunter_Dino* Arena::CreateMaybeMessage<::my_messages::DinoHunter_Dino>(Arena*);
 template<> ::my_messages::Position* Arena::CreateMaybeMessage<::my_messages::Position>(Arena*);
@@ -85,14 +81,15 @@ PROTOBUF_NAMESPACE_CLOSE
 namespace my_messages {
 
 enum DinoHunter_DinoType : int {
-  DinoHunter_DinoType_VEGGIESAURUS = 0,
-  DinoHunter_DinoType_MEATIESAURUS = 1,
-  DinoHunter_DinoType_PEOPLEEATINGSAURUS = 2,
+  DinoHunter_DinoType_IDK = 0,
+  DinoHunter_DinoType_VEGGIESAURUS = 1,
+  DinoHunter_DinoType_MEATIESAURUS = 2,
+  DinoHunter_DinoType_PEOPLEEATINGSAURUS = 3,
   DinoHunter_DinoType_DinoHunter_DinoType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   DinoHunter_DinoType_DinoHunter_DinoType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool DinoHunter_DinoType_IsValid(int value);
-constexpr DinoHunter_DinoType DinoHunter_DinoType_DinoType_MIN = DinoHunter_DinoType_VEGGIESAURUS;
+constexpr DinoHunter_DinoType DinoHunter_DinoType_DinoType_MIN = DinoHunter_DinoType_IDK;
 constexpr DinoHunter_DinoType DinoHunter_DinoType_DinoType_MAX = DinoHunter_DinoType_PEOPLEEATINGSAURUS;
 constexpr int DinoHunter_DinoType_DinoType_ARRAYSIZE = DinoHunter_DinoType_DinoType_MAX + 1;
 
@@ -398,6 +395,8 @@ class DinoHunter :
   typedef DinoHunter_Dino Dino;
 
   typedef DinoHunter_DinoType DinoType;
+  static constexpr DinoType IDK =
+    DinoHunter_DinoType_IDK;
   static constexpr DinoType VEGGIESAURUS =
     DinoHunter_DinoType_VEGGIESAURUS;
   static constexpr DinoType MEATIESAURUS =
@@ -516,158 +515,6 @@ class DinoHunter :
 };
 // -------------------------------------------------------------------
 
-class DinoHunterCollection :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:my_messages.DinoHunterCollection) */ {
- public:
-  DinoHunterCollection();
-  virtual ~DinoHunterCollection();
-
-  DinoHunterCollection(const DinoHunterCollection& from);
-  DinoHunterCollection(DinoHunterCollection&& from) noexcept
-    : DinoHunterCollection() {
-    *this = ::std::move(from);
-  }
-
-  inline DinoHunterCollection& operator=(const DinoHunterCollection& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline DinoHunterCollection& operator=(DinoHunterCollection&& from) noexcept {
-    if (GetArenaNoVirtual() == from.GetArenaNoVirtual()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
-  }
-  static const DinoHunterCollection& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const DinoHunterCollection* internal_default_instance() {
-    return reinterpret_cast<const DinoHunterCollection*>(
-               &_DinoHunterCollection_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    3;
-
-  friend void swap(DinoHunterCollection& a, DinoHunterCollection& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(DinoHunterCollection* other) {
-    if (other == this) return;
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline DinoHunterCollection* New() const final {
-    return CreateMaybeMessage<DinoHunterCollection>(nullptr);
-  }
-
-  DinoHunterCollection* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<DinoHunterCollection>(arena);
-  }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const DinoHunterCollection& from);
-  void MergeFrom(const DinoHunterCollection& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  inline void SharedCtor();
-  inline void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(DinoHunterCollection* other);
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "my_messages.DinoHunterCollection";
-  }
-  private:
-  inline ::PROTOBUF_NAMESPACE_ID::Arena* GetArenaNoVirtual() const {
-    return nullptr;
-  }
-  inline void* MaybeArenaPtr() const {
-    return nullptr;
-  }
-  public:
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_MyMessages_2eproto);
-    return ::descriptor_table_MyMessages_2eproto.file_level_metadata[kIndexInFileMessages];
-  }
-
-  public:
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kNameFieldNumber = 1,
-    kHuntersFieldNumber = 2,
-  };
-  // string name = 1;
-  void clear_name();
-  const std::string& name() const;
-  void set_name(const std::string& value);
-  void set_name(std::string&& value);
-  void set_name(const char* value);
-  void set_name(const char* value, size_t size);
-  std::string* mutable_name();
-  std::string* release_name();
-  void set_allocated_name(std::string* name);
-  private:
-  const std::string& _internal_name() const;
-  void _internal_set_name(const std::string& value);
-  std::string* _internal_mutable_name();
-  public:
-
-  // .my_messages.DinoHunter hunters = 2;
-  bool has_hunters() const;
-  private:
-  bool _internal_has_hunters() const;
-  public:
-  void clear_hunters();
-  const ::my_messages::DinoHunter& hunters() const;
-  ::my_messages::DinoHunter* release_hunters();
-  ::my_messages::DinoHunter* mutable_hunters();
-  void set_allocated_hunters(::my_messages::DinoHunter* hunters);
-  private:
-  const ::my_messages::DinoHunter& _internal_hunters() const;
-  ::my_messages::DinoHunter* _internal_mutable_hunters();
-  public:
-
-  // @@protoc_insertion_point(class_scope:my_messages.DinoHunterCollection)
- private:
-  class _Internal;
-
-  ::PROTOBUF_NAMESPACE_ID::internal::InternalMetadataWithArena _internal_metadata_;
-  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr name_;
-  ::my_messages::DinoHunter* hunters_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  friend struct ::TableStruct_MyMessages_2eproto;
-};
-// -------------------------------------------------------------------
-
 class Position :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:my_messages.Position) */ {
  public:
@@ -710,7 +557,7 @@ class Position :
                &_Position_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    4;
+    3;
 
   friend void swap(Position& a, Position& b) {
     a.Swap(&b);
@@ -1052,130 +899,6 @@ DinoHunter::dinos() const {
 
 // -------------------------------------------------------------------
 
-// DinoHunterCollection
-
-// string name = 1;
-inline void DinoHunterCollection::clear_name() {
-  name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline const std::string& DinoHunterCollection::name() const {
-  // @@protoc_insertion_point(field_get:my_messages.DinoHunterCollection.name)
-  return _internal_name();
-}
-inline void DinoHunterCollection::set_name(const std::string& value) {
-  _internal_set_name(value);
-  // @@protoc_insertion_point(field_set:my_messages.DinoHunterCollection.name)
-}
-inline std::string* DinoHunterCollection::mutable_name() {
-  // @@protoc_insertion_point(field_mutable:my_messages.DinoHunterCollection.name)
-  return _internal_mutable_name();
-}
-inline const std::string& DinoHunterCollection::_internal_name() const {
-  return name_.GetNoArena();
-}
-inline void DinoHunterCollection::_internal_set_name(const std::string& value) {
-  
-  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value);
-}
-inline void DinoHunterCollection::set_name(std::string&& value) {
-  
-  name_.SetNoArena(
-    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
-  // @@protoc_insertion_point(field_set_rvalue:my_messages.DinoHunterCollection.name)
-}
-inline void DinoHunterCollection::set_name(const char* value) {
-  GOOGLE_DCHECK(value != nullptr);
-  
-  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
-  // @@protoc_insertion_point(field_set_char:my_messages.DinoHunterCollection.name)
-}
-inline void DinoHunterCollection::set_name(const char* value, size_t size) {
-  
-  name_.SetNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-      ::std::string(reinterpret_cast<const char*>(value), size));
-  // @@protoc_insertion_point(field_set_pointer:my_messages.DinoHunterCollection.name)
-}
-inline std::string* DinoHunterCollection::_internal_mutable_name() {
-  
-  return name_.MutableNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline std::string* DinoHunterCollection::release_name() {
-  // @@protoc_insertion_point(field_release:my_messages.DinoHunterCollection.name)
-  
-  return name_.ReleaseNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-}
-inline void DinoHunterCollection::set_allocated_name(std::string* name) {
-  if (name != nullptr) {
-    
-  } else {
-    
-  }
-  name_.SetAllocatedNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), name);
-  // @@protoc_insertion_point(field_set_allocated:my_messages.DinoHunterCollection.name)
-}
-
-// .my_messages.DinoHunter hunters = 2;
-inline bool DinoHunterCollection::_internal_has_hunters() const {
-  return this != internal_default_instance() && hunters_ != nullptr;
-}
-inline bool DinoHunterCollection::has_hunters() const {
-  return _internal_has_hunters();
-}
-inline void DinoHunterCollection::clear_hunters() {
-  if (GetArenaNoVirtual() == nullptr && hunters_ != nullptr) {
-    delete hunters_;
-  }
-  hunters_ = nullptr;
-}
-inline const ::my_messages::DinoHunter& DinoHunterCollection::_internal_hunters() const {
-  const ::my_messages::DinoHunter* p = hunters_;
-  return p != nullptr ? *p : *reinterpret_cast<const ::my_messages::DinoHunter*>(
-      &::my_messages::_DinoHunter_default_instance_);
-}
-inline const ::my_messages::DinoHunter& DinoHunterCollection::hunters() const {
-  // @@protoc_insertion_point(field_get:my_messages.DinoHunterCollection.hunters)
-  return _internal_hunters();
-}
-inline ::my_messages::DinoHunter* DinoHunterCollection::release_hunters() {
-  // @@protoc_insertion_point(field_release:my_messages.DinoHunterCollection.hunters)
-  
-  ::my_messages::DinoHunter* temp = hunters_;
-  hunters_ = nullptr;
-  return temp;
-}
-inline ::my_messages::DinoHunter* DinoHunterCollection::_internal_mutable_hunters() {
-  
-  if (hunters_ == nullptr) {
-    auto* p = CreateMaybeMessage<::my_messages::DinoHunter>(GetArenaNoVirtual());
-    hunters_ = p;
-  }
-  return hunters_;
-}
-inline ::my_messages::DinoHunter* DinoHunterCollection::mutable_hunters() {
-  // @@protoc_insertion_point(field_mutable:my_messages.DinoHunterCollection.hunters)
-  return _internal_mutable_hunters();
-}
-inline void DinoHunterCollection::set_allocated_hunters(::my_messages::DinoHunter* hunters) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArenaNoVirtual();
-  if (message_arena == nullptr) {
-    delete hunters_;
-  }
-  if (hunters) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena = nullptr;
-    if (message_arena != submessage_arena) {
-      hunters = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, hunters, submessage_arena);
-    }
-    
-  } else {
-    
-  }
-  hunters_ = hunters;
-  // @@protoc_insertion_point(field_set_allocated:my_messages.DinoHunterCollection.hunters)
-}
-
-// -------------------------------------------------------------------
-
 // Position
 
 // float x = 1;
@@ -1221,8 +944,6 @@ inline void Position::set_y(float value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 // -------------------------------------------------------------------

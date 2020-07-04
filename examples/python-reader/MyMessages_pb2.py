@@ -18,7 +18,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='my_messages',
   syntax='proto3',
   serialized_options=None,
-  serialized_pb=b'\n\x10MyMessages.proto\x12\x0bmy_messages\"\xce\x02\n\nDinoHunter\x12\x12\n\nfirst_name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\x05\x12\x35\n\x07\x61ttribs\x18\x03 \x03(\x0b\x32$.my_messages.DinoHunter.AttribsEntry\x12+\n\x05\x64inos\x18\x04 \x03(\x0b\x32\x1c.my_messages.DinoHunter.Dino\x1a.\n\x0c\x41ttribsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\x44\n\x04\x44ino\x12\x0c\n\x04name\x18\x01 \x01(\t\x12.\n\x04type\x18\x02 \x01(\x0e\x32 .my_messages.DinoHunter.DinoType\"F\n\x08\x44inoType\x12\x10\n\x0cVEGGIESAURUS\x10\x00\x12\x10\n\x0cMEATIESAURUS\x10\x01\x12\x16\n\x12PEOPLEEATINGSAURUS\x10\x02\"N\n\x14\x44inoHunterCollection\x12\x0c\n\x04name\x18\x01 \x01(\t\x12(\n\x07hunters\x18\x02 \x01(\x0b\x32\x17.my_messages.DinoHunter\" \n\x08Position\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x62\x06proto3'
+  serialized_pb=b'\n\x10MyMessages.proto\x12\x0bmy_messages\"\xd7\x02\n\nDinoHunter\x12\x12\n\nfirst_name\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\x05\x12\x35\n\x07\x61ttribs\x18\x03 \x03(\x0b\x32$.my_messages.DinoHunter.AttribsEntry\x12+\n\x05\x64inos\x18\x04 \x03(\x0b\x32\x1c.my_messages.DinoHunter.Dino\x1a.\n\x0c\x41ttribsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a\x44\n\x04\x44ino\x12\x0c\n\x04name\x18\x01 \x01(\t\x12.\n\x04type\x18\x02 \x01(\x0e\x32 .my_messages.DinoHunter.DinoType\"O\n\x08\x44inoType\x12\x07\n\x03IDK\x10\x00\x12\x10\n\x0cVEGGIESAURUS\x10\x01\x12\x10\n\x0cMEATIESAURUS\x10\x02\x12\x16\n\x12PEOPLEEATINGSAURUS\x10\x03\" \n\x08Position\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\x62\x06proto3'
 )
 
 
@@ -30,22 +30,26 @@ _DINOHUNTER_DINOTYPE = _descriptor.EnumDescriptor(
   file=DESCRIPTOR,
   values=[
     _descriptor.EnumValueDescriptor(
-      name='VEGGIESAURUS', index=0, number=0,
+      name='IDK', index=0, number=0,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='MEATIESAURUS', index=1, number=1,
+      name='VEGGIESAURUS', index=1, number=1,
       serialized_options=None,
       type=None),
     _descriptor.EnumValueDescriptor(
-      name='PEOPLEEATINGSAURUS', index=2, number=2,
+      name='MEATIESAURUS', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='PEOPLEEATINGSAURUS', index=3, number=3,
       serialized_options=None,
       type=None),
   ],
   containing_type=None,
   serialized_options=None,
   serialized_start=298,
-  serialized_end=368,
+  serialized_end=377,
 )
 _sym_db.RegisterEnumDescriptor(_DINOHUNTER_DINOTYPE)
 
@@ -173,45 +177,7 @@ _DINOHUNTER = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=34,
-  serialized_end=368,
-)
-
-
-_DINOHUNTERCOLLECTION = _descriptor.Descriptor(
-  name='DinoHunterCollection',
-  full_name='my_messages.DinoHunterCollection',
-  filename=None,
-  file=DESCRIPTOR,
-  containing_type=None,
-  fields=[
-    _descriptor.FieldDescriptor(
-      name='name', full_name='my_messages.DinoHunterCollection.name', index=0,
-      number=1, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='hunters', full_name='my_messages.DinoHunterCollection.hunters', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-  ],
-  extensions=[
-  ],
-  nested_types=[],
-  enum_types=[
-  ],
-  serialized_options=None,
-  is_extendable=False,
-  syntax='proto3',
-  extension_ranges=[],
-  oneofs=[
-  ],
-  serialized_start=370,
-  serialized_end=448,
+  serialized_end=377,
 )
 
 
@@ -248,8 +214,8 @@ _POSITION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=450,
-  serialized_end=482,
+  serialized_start=379,
+  serialized_end=411,
 )
 
 _DINOHUNTER_ATTRIBSENTRY.containing_type = _DINOHUNTER
@@ -258,9 +224,7 @@ _DINOHUNTER_DINO.containing_type = _DINOHUNTER
 _DINOHUNTER.fields_by_name['attribs'].message_type = _DINOHUNTER_ATTRIBSENTRY
 _DINOHUNTER.fields_by_name['dinos'].message_type = _DINOHUNTER_DINO
 _DINOHUNTER_DINOTYPE.containing_type = _DINOHUNTER
-_DINOHUNTERCOLLECTION.fields_by_name['hunters'].message_type = _DINOHUNTER
 DESCRIPTOR.message_types_by_name['DinoHunter'] = _DINOHUNTER
-DESCRIPTOR.message_types_by_name['DinoHunterCollection'] = _DINOHUNTERCOLLECTION
 DESCRIPTOR.message_types_by_name['Position'] = _POSITION
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -286,13 +250,6 @@ DinoHunter = _reflection.GeneratedProtocolMessageType('DinoHunter', (_message.Me
 _sym_db.RegisterMessage(DinoHunter)
 _sym_db.RegisterMessage(DinoHunter.AttribsEntry)
 _sym_db.RegisterMessage(DinoHunter.Dino)
-
-DinoHunterCollection = _reflection.GeneratedProtocolMessageType('DinoHunterCollection', (_message.Message,), {
-  'DESCRIPTOR' : _DINOHUNTERCOLLECTION,
-  '__module__' : 'MyMessages_pb2'
-  # @@protoc_insertion_point(class_scope:my_messages.DinoHunterCollection)
-  })
-_sym_db.RegisterMessage(DinoHunterCollection)
 
 Position = _reflection.GeneratedProtocolMessageType('Position', (_message.Message,), {
   'DESCRIPTOR' : _POSITION,

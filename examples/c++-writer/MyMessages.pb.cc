@@ -14,7 +14,6 @@
 #include <google/protobuf/wire_format.h>
 // @@protoc_insertion_point(includes)
 #include <google/protobuf/port_def.inc>
-extern PROTOBUF_INTERNAL_EXPORT_MyMessages_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<2> scc_info_DinoHunter_MyMessages_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_MyMessages_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DinoHunter_AttribsEntry_DoNotUse_MyMessages_2eproto;
 extern PROTOBUF_INTERNAL_EXPORT_MyMessages_2eproto ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DinoHunter_Dino_MyMessages_2eproto;
 namespace my_messages {
@@ -30,10 +29,6 @@ class DinoHunterDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DinoHunter> _instance;
 } _DinoHunter_default_instance_;
-class DinoHunterCollectionDefaultTypeInternal {
- public:
-  ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<DinoHunterCollection> _instance;
-} _DinoHunterCollection_default_instance_;
 class PositionDefaultTypeInternal {
  public:
   ::PROTOBUF_NAMESPACE_ID::internal::ExplicitlyConstructed<Position> _instance;
@@ -82,21 +77,6 @@ static void InitDefaultsscc_info_DinoHunter_Dino_MyMessages_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_DinoHunter_Dino_MyMessages_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_DinoHunter_Dino_MyMessages_2eproto}, {}};
 
-static void InitDefaultsscc_info_DinoHunterCollection_MyMessages_2eproto() {
-  GOOGLE_PROTOBUF_VERIFY_VERSION;
-
-  {
-    void* ptr = &::my_messages::_DinoHunterCollection_default_instance_;
-    new (ptr) ::my_messages::DinoHunterCollection();
-    ::PROTOBUF_NAMESPACE_ID::internal::OnShutdownDestroyMessage(ptr);
-  }
-  ::my_messages::DinoHunterCollection::InitAsDefaultInstance();
-}
-
-::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<1> scc_info_DinoHunterCollection_MyMessages_2eproto =
-    {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 1, 0, InitDefaultsscc_info_DinoHunterCollection_MyMessages_2eproto}, {
-      &scc_info_DinoHunter_MyMessages_2eproto.base,}};
-
 static void InitDefaultsscc_info_Position_MyMessages_2eproto() {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
 
@@ -111,7 +91,7 @@ static void InitDefaultsscc_info_Position_MyMessages_2eproto() {
 ::PROTOBUF_NAMESPACE_ID::internal::SCCInfo<0> scc_info_Position_MyMessages_2eproto =
     {{ATOMIC_VAR_INIT(::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase::kUninitialized), 0, 0, InitDefaultsscc_info_Position_MyMessages_2eproto}, {}};
 
-static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_MyMessages_2eproto[5];
+static ::PROTOBUF_NAMESPACE_ID::Metadata file_level_metadata_MyMessages_2eproto[4];
 static const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* file_level_enum_descriptors_MyMessages_2eproto[1];
 static constexpr ::PROTOBUF_NAMESPACE_ID::ServiceDescriptor const** file_level_service_descriptors_MyMessages_2eproto = nullptr;
 
@@ -142,13 +122,6 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_MyMessages_2eproto::offsets[] 
   PROTOBUF_FIELD_OFFSET(::my_messages::DinoHunter, attribs_),
   PROTOBUF_FIELD_OFFSET(::my_messages::DinoHunter, dinos_),
   ~0u,  // no _has_bits_
-  PROTOBUF_FIELD_OFFSET(::my_messages::DinoHunterCollection, _internal_metadata_),
-  ~0u,  // no _extensions_
-  ~0u,  // no _oneof_case_
-  ~0u,  // no _weak_field_map_
-  PROTOBUF_FIELD_OFFSET(::my_messages::DinoHunterCollection, name_),
-  PROTOBUF_FIELD_OFFSET(::my_messages::DinoHunterCollection, hunters_),
-  ~0u,  // no _has_bits_
   PROTOBUF_FIELD_OFFSET(::my_messages::Position, _internal_metadata_),
   ~0u,  // no _extensions_
   ~0u,  // no _oneof_case_
@@ -160,49 +133,44 @@ static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOB
   { 0, 7, sizeof(::my_messages::DinoHunter_AttribsEntry_DoNotUse)},
   { 9, -1, sizeof(::my_messages::DinoHunter_Dino)},
   { 16, -1, sizeof(::my_messages::DinoHunter)},
-  { 25, -1, sizeof(::my_messages::DinoHunterCollection)},
-  { 32, -1, sizeof(::my_messages::Position)},
+  { 25, -1, sizeof(::my_messages::Position)},
 };
 
 static ::PROTOBUF_NAMESPACE_ID::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::my_messages::_DinoHunter_AttribsEntry_DoNotUse_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::my_messages::_DinoHunter_Dino_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::my_messages::_DinoHunter_default_instance_),
-  reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::my_messages::_DinoHunterCollection_default_instance_),
   reinterpret_cast<const ::PROTOBUF_NAMESPACE_ID::Message*>(&::my_messages::_Position_default_instance_),
 };
 
 const char descriptor_table_protodef_MyMessages_2eproto[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) =
-  "\n\020MyMessages.proto\022\013my_messages\"\316\002\n\nDino"
+  "\n\020MyMessages.proto\022\013my_messages\"\327\002\n\nDino"
   "Hunter\022\022\n\nfirst_name\030\001 \001(\t\022\n\n\002id\030\002 \001(\005\0225"
   "\n\007attribs\030\003 \003(\0132$.my_messages.DinoHunter"
   ".AttribsEntry\022+\n\005dinos\030\004 \003(\0132\034.my_messag"
   "es.DinoHunter.Dino\032.\n\014AttribsEntry\022\013\n\003ke"
   "y\030\001 \001(\t\022\r\n\005value\030\002 \001(\t:\0028\001\032D\n\004Dino\022\014\n\004na"
   "me\030\001 \001(\t\022.\n\004type\030\002 \001(\0162 .my_messages.Din"
-  "oHunter.DinoType\"F\n\010DinoType\022\020\n\014VEGGIESA"
-  "URUS\020\000\022\020\n\014MEATIESAURUS\020\001\022\026\n\022PEOPLEEATING"
-  "SAURUS\020\002\"N\n\024DinoHunterCollection\022\014\n\004name"
-  "\030\001 \001(\t\022(\n\007hunters\030\002 \001(\0132\027.my_messages.Di"
-  "noHunter\" \n\010Position\022\t\n\001x\030\001 \001(\002\022\t\n\001y\030\002 \001"
-  "(\002b\006proto3"
+  "oHunter.DinoType\"O\n\010DinoType\022\007\n\003IDK\020\000\022\020\n"
+  "\014VEGGIESAURUS\020\001\022\020\n\014MEATIESAURUS\020\002\022\026\n\022PEO"
+  "PLEEATINGSAURUS\020\003\" \n\010Position\022\t\n\001x\030\001 \001(\002"
+  "\022\t\n\001y\030\002 \001(\002b\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_MyMessages_2eproto_deps[1] = {
 };
-static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_MyMessages_2eproto_sccs[5] = {
+static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_MyMessages_2eproto_sccs[4] = {
   &scc_info_DinoHunter_MyMessages_2eproto.base,
   &scc_info_DinoHunter_AttribsEntry_DoNotUse_MyMessages_2eproto.base,
   &scc_info_DinoHunter_Dino_MyMessages_2eproto.base,
-  &scc_info_DinoHunterCollection_MyMessages_2eproto.base,
   &scc_info_Position_MyMessages_2eproto.base,
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_MyMessages_2eproto_once;
 static bool descriptor_table_MyMessages_2eproto_initialized = false;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_MyMessages_2eproto = {
-  &descriptor_table_MyMessages_2eproto_initialized, descriptor_table_protodef_MyMessages_2eproto, "MyMessages.proto", 490,
-  &descriptor_table_MyMessages_2eproto_once, descriptor_table_MyMessages_2eproto_sccs, descriptor_table_MyMessages_2eproto_deps, 5, 0,
+  &descriptor_table_MyMessages_2eproto_initialized, descriptor_table_protodef_MyMessages_2eproto, "MyMessages.proto", 419,
+  &descriptor_table_MyMessages_2eproto_once, descriptor_table_MyMessages_2eproto_sccs, descriptor_table_MyMessages_2eproto_deps, 4, 0,
   schemas, file_default_instances, TableStruct_MyMessages_2eproto::offsets,
-  file_level_metadata_MyMessages_2eproto, 5, file_level_enum_descriptors_MyMessages_2eproto, file_level_service_descriptors_MyMessages_2eproto,
+  file_level_metadata_MyMessages_2eproto, 4, file_level_enum_descriptors_MyMessages_2eproto, file_level_service_descriptors_MyMessages_2eproto,
 };
 
 // Force running AddDescriptors() at dynamic initialization time.
@@ -217,6 +185,7 @@ bool DinoHunter_DinoType_IsValid(int value) {
     case 0:
     case 1:
     case 2:
+    case 3:
       return true;
     default:
       return false;
@@ -224,6 +193,7 @@ bool DinoHunter_DinoType_IsValid(int value) {
 }
 
 #if (__cplusplus < 201703) && (!defined(_MSC_VER) || _MSC_VER >= 1900)
+constexpr DinoHunter_DinoType DinoHunter::IDK;
 constexpr DinoHunter_DinoType DinoHunter::VEGGIESAURUS;
 constexpr DinoHunter_DinoType DinoHunter::MEATIESAURUS;
 constexpr DinoHunter_DinoType DinoHunter::PEOPLEEATINGSAURUS;
@@ -805,249 +775,6 @@ void DinoHunter::InternalSwap(DinoHunter* other) {
 
 // ===================================================================
 
-void DinoHunterCollection::InitAsDefaultInstance() {
-  ::my_messages::_DinoHunterCollection_default_instance_._instance.get_mutable()->hunters_ = const_cast< ::my_messages::DinoHunter*>(
-      ::my_messages::DinoHunter::internal_default_instance());
-}
-class DinoHunterCollection::_Internal {
- public:
-  static const ::my_messages::DinoHunter& hunters(const DinoHunterCollection* msg);
-};
-
-const ::my_messages::DinoHunter&
-DinoHunterCollection::_Internal::hunters(const DinoHunterCollection* msg) {
-  return *msg->hunters_;
-}
-DinoHunterCollection::DinoHunterCollection()
-  : ::PROTOBUF_NAMESPACE_ID::Message(), _internal_metadata_(nullptr) {
-  SharedCtor();
-  // @@protoc_insertion_point(constructor:my_messages.DinoHunterCollection)
-}
-DinoHunterCollection::DinoHunterCollection(const DinoHunterCollection& from)
-  : ::PROTOBUF_NAMESPACE_ID::Message(),
-      _internal_metadata_(nullptr) {
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (!from._internal_name().empty()) {
-    name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.name_);
-  }
-  if (from._internal_has_hunters()) {
-    hunters_ = new ::my_messages::DinoHunter(*from.hunters_);
-  } else {
-    hunters_ = nullptr;
-  }
-  // @@protoc_insertion_point(copy_constructor:my_messages.DinoHunterCollection)
-}
-
-void DinoHunterCollection::SharedCtor() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_DinoHunterCollection_MyMessages_2eproto.base);
-  name_.UnsafeSetDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  hunters_ = nullptr;
-}
-
-DinoHunterCollection::~DinoHunterCollection() {
-  // @@protoc_insertion_point(destructor:my_messages.DinoHunterCollection)
-  SharedDtor();
-}
-
-void DinoHunterCollection::SharedDtor() {
-  name_.DestroyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (this != internal_default_instance()) delete hunters_;
-}
-
-void DinoHunterCollection::SetCachedSize(int size) const {
-  _cached_size_.Set(size);
-}
-const DinoHunterCollection& DinoHunterCollection::default_instance() {
-  ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&::scc_info_DinoHunterCollection_MyMessages_2eproto.base);
-  return *internal_default_instance();
-}
-
-
-void DinoHunterCollection::Clear() {
-// @@protoc_insertion_point(message_clear_start:my_messages.DinoHunterCollection)
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  name_.ClearToEmptyNoArena(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited());
-  if (GetArenaNoVirtual() == nullptr && hunters_ != nullptr) {
-    delete hunters_;
-  }
-  hunters_ = nullptr;
-  _internal_metadata_.Clear();
-}
-
-const char* DinoHunterCollection::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) {
-#define CHK_(x) if (PROTOBUF_PREDICT_FALSE(!(x))) goto failure
-  while (!ctx->Done(&ptr)) {
-    ::PROTOBUF_NAMESPACE_ID::uint32 tag;
-    ptr = ::PROTOBUF_NAMESPACE_ID::internal::ReadTag(ptr, &tag);
-    CHK_(ptr);
-    switch (tag >> 3) {
-      // string name = 1;
-      case 1:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 10)) {
-          auto str = _internal_mutable_name();
-          ptr = ::PROTOBUF_NAMESPACE_ID::internal::InlineGreedyStringParser(str, ptr, ctx);
-          CHK_(::PROTOBUF_NAMESPACE_ID::internal::VerifyUTF8(str, "my_messages.DinoHunterCollection.name"));
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      // .my_messages.DinoHunter hunters = 2;
-      case 2:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 18)) {
-          ptr = ctx->ParseMessage(_internal_mutable_hunters(), ptr);
-          CHK_(ptr);
-        } else goto handle_unusual;
-        continue;
-      default: {
-      handle_unusual:
-        if ((tag & 7) == 4 || tag == 0) {
-          ctx->SetLastTag(tag);
-          goto success;
-        }
-        ptr = UnknownFieldParse(tag, &_internal_metadata_, ptr, ctx);
-        CHK_(ptr != nullptr);
-        continue;
-      }
-    }  // switch
-  }  // while
-success:
-  return ptr;
-failure:
-  ptr = nullptr;
-  goto success;
-#undef CHK_
-}
-
-::PROTOBUF_NAMESPACE_ID::uint8* DinoHunterCollection::_InternalSerialize(
-    ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const {
-  // @@protoc_insertion_point(serialize_to_array_start:my_messages.DinoHunterCollection)
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  // string name = 1;
-  if (this->name().size() > 0) {
-    ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::VerifyUtf8String(
-      this->_internal_name().data(), static_cast<int>(this->_internal_name().length()),
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::SERIALIZE,
-      "my_messages.DinoHunterCollection.name");
-    target = stream->WriteStringMaybeAliased(
-        1, this->_internal_name(), target);
-  }
-
-  // .my_messages.DinoHunter hunters = 2;
-  if (this->has_hunters()) {
-    target = stream->EnsureSpace(target);
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::
-      InternalWriteMessage(
-        2, _Internal::hunters(this), target, stream);
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
-        _internal_metadata_.unknown_fields(), target, stream);
-  }
-  // @@protoc_insertion_point(serialize_to_array_end:my_messages.DinoHunterCollection)
-  return target;
-}
-
-size_t DinoHunterCollection::ByteSizeLong() const {
-// @@protoc_insertion_point(message_byte_size_start:my_messages.DinoHunterCollection)
-  size_t total_size = 0;
-
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  // Prevent compiler warnings about cached_has_bits being unused
-  (void) cached_has_bits;
-
-  // string name = 1;
-  if (this->name().size() > 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::StringSize(
-        this->_internal_name());
-  }
-
-  // .my_messages.DinoHunter hunters = 2;
-  if (this->has_hunters()) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::MessageSize(
-        *hunters_);
-  }
-
-  if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
-    return ::PROTOBUF_NAMESPACE_ID::internal::ComputeUnknownFieldsSize(
-        _internal_metadata_, total_size, &_cached_size_);
-  }
-  int cached_size = ::PROTOBUF_NAMESPACE_ID::internal::ToCachedSize(total_size);
-  SetCachedSize(cached_size);
-  return total_size;
-}
-
-void DinoHunterCollection::MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_merge_from_start:my_messages.DinoHunterCollection)
-  GOOGLE_DCHECK_NE(&from, this);
-  const DinoHunterCollection* source =
-      ::PROTOBUF_NAMESPACE_ID::DynamicCastToGenerated<DinoHunterCollection>(
-          &from);
-  if (source == nullptr) {
-  // @@protoc_insertion_point(generalized_merge_from_cast_fail:my_messages.DinoHunterCollection)
-    ::PROTOBUF_NAMESPACE_ID::internal::ReflectionOps::Merge(from, this);
-  } else {
-  // @@protoc_insertion_point(generalized_merge_from_cast_success:my_messages.DinoHunterCollection)
-    MergeFrom(*source);
-  }
-}
-
-void DinoHunterCollection::MergeFrom(const DinoHunterCollection& from) {
-// @@protoc_insertion_point(class_specific_merge_from_start:my_messages.DinoHunterCollection)
-  GOOGLE_DCHECK_NE(&from, this);
-  _internal_metadata_.MergeFrom(from._internal_metadata_);
-  ::PROTOBUF_NAMESPACE_ID::uint32 cached_has_bits = 0;
-  (void) cached_has_bits;
-
-  if (from.name().size() > 0) {
-
-    name_.AssignWithDefault(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), from.name_);
-  }
-  if (from.has_hunters()) {
-    _internal_mutable_hunters()->::my_messages::DinoHunter::MergeFrom(from._internal_hunters());
-  }
-}
-
-void DinoHunterCollection::CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) {
-// @@protoc_insertion_point(generalized_copy_from_start:my_messages.DinoHunterCollection)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-void DinoHunterCollection::CopyFrom(const DinoHunterCollection& from) {
-// @@protoc_insertion_point(class_specific_copy_from_start:my_messages.DinoHunterCollection)
-  if (&from == this) return;
-  Clear();
-  MergeFrom(from);
-}
-
-bool DinoHunterCollection::IsInitialized() const {
-  return true;
-}
-
-void DinoHunterCollection::InternalSwap(DinoHunterCollection* other) {
-  using std::swap;
-  _internal_metadata_.Swap(&other->_internal_metadata_);
-  name_.Swap(&other->name_, &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
-    GetArenaNoVirtual());
-  swap(hunters_, other->hunters_);
-}
-
-::PROTOBUF_NAMESPACE_ID::Metadata DinoHunterCollection::GetMetadata() const {
-  return GetMetadataStatic();
-}
-
-
-// ===================================================================
-
 void Position::InitAsDefaultInstance() {
 }
 class Position::_Internal {
@@ -1269,9 +996,6 @@ template<> PROTOBUF_NOINLINE ::my_messages::DinoHunter_Dino* Arena::CreateMaybeM
 }
 template<> PROTOBUF_NOINLINE ::my_messages::DinoHunter* Arena::CreateMaybeMessage< ::my_messages::DinoHunter >(Arena* arena) {
   return Arena::CreateInternal< ::my_messages::DinoHunter >(arena);
-}
-template<> PROTOBUF_NOINLINE ::my_messages::DinoHunterCollection* Arena::CreateMaybeMessage< ::my_messages::DinoHunterCollection >(Arena* arena) {
-  return Arena::CreateInternal< ::my_messages::DinoHunterCollection >(arena);
 }
 template<> PROTOBUF_NOINLINE ::my_messages::Position* Arena::CreateMaybeMessage< ::my_messages::Position >(Arena* arena) {
   return Arena::CreateInternal< ::my_messages::Position >(arena);

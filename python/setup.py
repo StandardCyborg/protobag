@@ -12,7 +12,7 @@ from distutils.version import LooseVersion
 PROTOBAG_VERSION = 'unknown'
 if os.path.exists('protobag_version.txt'):
   with open('protobag_version.txt', 'r') as f:
-    PROTOBAG_VERSION = r.readlines()[0].strip()
+    PROTOBAG_VERSION = f.readlines()[0].strip()
 
 
 ## Based upon https://github.com/pybind/cmake_example/blob/11a644072b12ad78352b6e6649db9dfe7f406676/setup.py#L1
