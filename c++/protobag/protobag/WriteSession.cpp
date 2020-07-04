@@ -17,7 +17,7 @@ Result<WriteSession::Ptr> WriteSession::Create(const Spec &s) {
 
   WriteSession::Ptr w(new WriteSession());
   w->_spec = s;
-  w->_archive = std::move(*maybe_archive.value);
+  w->_archive = *maybe_archive.value;
   if (s.ShouldDoIndexing()) {
     w->_indexer.reset(new BagIndexBuilder());
     if (!w->_indexer) { return {.error = "Could not allocate indexer"}; }
@@ -58,6 +58,7 @@ OkOrErr WriteSession::WriteEntry(const Entry &entry, bool use_text_format) {
         tt.timestamp().seconds(),
         tt.timestamp().nanos());
 
+    // TODO: add extension for normal entries?
     entryname = 
       use_text_format ? 
         fmt::format("{}.prototxt", entryname) : 
@@ -87,7 +88,7 @@ void WriteSession::Close() {
         "/_protobag_index/bag_index",
         ::google::protobuf::util::TimeUtil::GetCurrentTime(),
         index));
-    _indexer = nullptr; // FIXME do we need this?  getting double index entries ....~~~~~~~~~~~~~~~~~~~~~~~~
+    _indexer = nullptr;
   }
 }
 

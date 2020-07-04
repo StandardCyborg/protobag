@@ -1,0 +1,2 @@
+from MyMessages_pb2 import DinoHunter
+from MyMessages_pb2 import Position

@@ -17,6 +17,9 @@ public:
 
   Result<WriteSession::Ptr> StartWriteSession(WriteSession::Spec s={}) const {
     s.archive_spec.path = path;
+    if (s.archive_spec.mode.empty()) {
+      s.archive_spec.mode = "write";
+    }
     return WriteSession::Create(s);
   }
 

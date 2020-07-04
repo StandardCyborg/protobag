@@ -5,8 +5,7 @@
 
 #include <fmt/format.h>
 
-#include <protobag/Protobag.hpp> // fixme includes ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+#include <protobag/Protobag.hpp>
 #include <protobag/ReadSession.hpp>
 #include <protobag/WriteSession.hpp>
 #include <protobag/Utils/PBUtils.hpp>
@@ -16,12 +15,13 @@ namespace py = pybind11;
 
 using namespace protobag;
 
-// A convenience SERDES to avoid pybind boxing of StampedMessage
+// A convenience SERDES to avoid pybind conversion of Entry optional context
 struct native_entry final {
   std::string entryname;
   std::string type_url;
   py::bytes msg_bytes;
 
+  bool has_ctx = false;
   std::string ctx_topic;
   int64_t ctx_sec = 0;
   int32_t ctx_nanos = 0;
@@ -61,6 +61,7 @@ struct native_entry final {
       .msg_bytes = entry.msg.value(),
     };
     if (entry.ctx.has_value()) {
+      ne.has_ctx = true;
       ne.ctx_topic = entry.ctx->topic;
       ne.ctx_sec = entry.ctx->stamp.seconds();
       ne.ctx_nanos = entry.ctx->stamp.nanos();

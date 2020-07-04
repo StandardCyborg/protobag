@@ -9,15 +9,23 @@ using namespace my_messages;
 
 int main() {
   protobag::Protobag bag("example_bag.zip");
-  
+
+  #define PRINT_AND_EXIT(msg) do { \
+    std::cerr << msg << std::endl; \
+    return -1; \
+  } while(0)
+
   auto maybeWriter = bag.StartWriteSession();
-  if (!maybeWriter.IsOk() {
-    std::cerr << "Failed to start writing: " << maybeWriter.error << std::endl;
-    return -1;
+  if (!maybeWriter.IsOk()) {
+    PRINT_AND_EXIT("Failed to start writing: " << maybeWriter.error);
   }
 
   auto &writer = *maybeWriter.value;
 
+
+  ///
+  /// Write some standalone entries
+  ///
   {
     DinoHunter max;
     max.set_first_name("max");
@@ -31,8 +39,7 @@ int main() {
         "hunters/max",
         max));
     if (!status.IsOk()) {
-      std::cerr << "Failed to write Max" << std::endl;
-      return -2;
+      PRINT_AND_EXIT("Failed to write Max: " << status.error);
     }
 
     std::cout << "Wrote Max: " << protobag::PBToString(max) << std::endl;
@@ -56,13 +63,16 @@ int main() {
         lara));
     
     if (!status.IsOk()) {
-      std::cerr << "Failed to write Lara" << std::endl;
-      return -3;
+      PRINT_AND_EXIT("Failed to write Lara: " << status.error);
     }
 
     std::cout << "Wrote Lara: " << protobag::PBToString(lara) << std::endl;
   }
 
+
+  ///
+  /// Use time series data API
+  ///
   {
     // A Chase!
     for (int t = 0; t < 10; t++) {
@@ -74,15 +84,37 @@ int main() {
           "positions/lara",
           t, 0,
           lara_pos));
-      if (!status.IsOk()) { std::cerr << "Chase write failed\n"; return -t; }
+      if (!status.IsOk()) {
+        PRINT_AND_EXIT(
+          "Chase failed to write at " << t << ": " << status.error);
+      }
 
-      auto status = writer->WriteEntry(
+      status = writer->WriteEntry(
         protobag::Entry::CreateStamped(
           "positions/toofz",
           t, 0,
           toofz_pos));
-      if (!status.IsOk()) { std::cerr << "Chase write failed\n"; return -t; }
+      if (!status.IsOk()) {
+        PRINT_AND_EXIT(
+          "Chase failed to write at " << t << ": " << status.error);
+      }
     }
+  }
+
+
+  ///
+  /// Use raw API
+  ///
+  {
+    std::string raw_data = "i am a raw string";
+    auto status = writer->WriteEntry(
+        protobag::Entry::CreateRawFromBytes(
+          "raw_data",
+          std::move(raw_data)));
+      if (!status.IsOk()) {
+        PRINT_AND_EXIT(
+          "Raw write failed: " << status.error);
+      }
   }
 
   writer->Close();

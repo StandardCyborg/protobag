@@ -4,7 +4,7 @@ project(Protobag C CXX)
 enable_testing()
 
 set(CMAKE_CXX_STANDARD 17)
-link_libraries(m atomic stdc++fs)
+link_libraries(m atomic)
 
 set(EXEC_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}"
   CACHE PATH "Base installation path for executables.")
@@ -101,9 +101,19 @@ install(
   ARCHIVE DESTINATION "${LIB_INSTALL_DIR}"
   LIBRARY DESTINATION "${LIB_INSTALL_DIR}")
 
-install(FILES ${PB_PROTO_HDRS} DESTINATION "${INSTALL_INCLUDE_DIR}/protobag_msg")
-file(GLOB_RECURSE pb_protos protobag/protobag_msg/*.proto)
-install(FILES ${pb_protos} DESTINATION "${INSTALL_INCLUDE_DIR}/protobag_msg")
+file(
+  GLOB_RECURSE protobag_proto_headers
+  protobag/protobag_msg/*.h)
+install(
+  FILES ${protobag_proto_headers}
+  DESTINATION "${INSTALL_INCLUDE_DIR}/protobag_msg")
+
+file(
+  GLOB_RECURSE pb_protos
+  protobag/protobag_msg/*.proto)
+install(
+  FILES ${pb_protos}
+  DESTINATION "${INSTALL_INCLUDE_DIR}/protobag_msg")
 
 
 # Install all main protobag headers, maintaining source tree format

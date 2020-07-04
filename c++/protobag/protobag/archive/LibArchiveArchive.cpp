@@ -463,7 +463,9 @@ Archive::ReadStatus LibArchiveArchive::ReadAsStr(const std::string &entryname) {
 OkOrErr LibArchiveArchive::Write(
     const std::string &entryname, const std::string &data) {
 
-  if (!_impl) { return {.error = "programming error: no writer"}; }
+  if (!_impl) {
+    return {.error = "LibArchiveArchive programming error: no writer"};
+  }
   auto writer = std::dynamic_pointer_cast<Writer>(_impl);
   if (!writer) { 
     return {.error = "Archive not set up for writing.  Did you Open()?"};
@@ -493,7 +495,9 @@ OkOrErr LibArchiveArchive::StreamingAddFile(
     const std::string &src_file,
     const std::string &entryname) {
 
-  if (!_impl) { return {.error = "programming error: no writer"}; }
+  if (!_impl) {
+    return {.error = "LibArchiveArchive programming error: no writer"};
+  }
   auto writer = std::dynamic_pointer_cast<Writer>(_impl);
   if (!writer) { 
     return {.error = "Archive not set up for writing.  Did you Open()?"};

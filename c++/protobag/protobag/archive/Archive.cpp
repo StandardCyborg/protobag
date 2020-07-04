@@ -38,28 +38,29 @@ std::string InferFormat(const std::string &path) {
 }
 
 Result<Archive::Ptr> Archive::Open(const Archive::Spec &s) {
-  std::string format = s.format;
-  if (format.empty()) {
-    format = InferFormat(s.path);
+  Archive::Spec final_spec = s;
+  if (final_spec.format.empty()) {
+    final_spec.format = InferFormat(s.path);
   }
 
-  if (format == "memory") {
-    if (s.memory_archive) {
-      return {.value = s.memory_archive};
+  if (final_spec.format == "memory") {
+    if (final_spec.memory_archive) {
+      return {.value = final_spec.memory_archive};
     } else {
-      return MemoryArchive::Open(s);
+      return MemoryArchive::Open(final_spec);
     }
-  } else if (format == "directory") {
-    return DirectoryArchive::Open(s);
-  } else if (LibArchiveArchive::IsSupported(format)) {
-    return LibArchiveArchive::Open(s);
-  } else if (format.empty()) {
+  } else if (final_spec.format == "directory") {
+    return DirectoryArchive::Open(final_spec);
+  } else if (LibArchiveArchive::IsSupported(final_spec.format)) {
+    return LibArchiveArchive::Open(final_spec);
+  } else if (final_spec.format.empty()) {
     return {
-      .error=fmt::format("Could not infer format for {}", s.path)
+      .error=fmt::format("Could not infer format for {}", final_spec.path)
     };
   } else {
     return {
-      .error=fmt::format("Unsupported format {} for {}", format, s.path)
+      .error=fmt::format(
+        "Unsupported format {} for {}", final_spec.format, final_spec.path)
     };
   }
 }
