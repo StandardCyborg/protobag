@@ -116,6 +116,26 @@ public:
     return native_entry::FromEntry(*maybe_entry.value);
   }
 
+  static py::bytes GetIndex(const std::string &path) {
+    auto maybe_index = ReadSession::GetIndex(path);
+    if (!maybe_index.IsOk()) {
+      throw std::runtime_error(
+        fmt::format("Failed to read index from {}: {}",
+          path, maybe_index.error));
+    }
+    
+    // We return a string-serialized Protobuf message to avoid having
+    // to translate the BagIndex message class through pybind11
+    auto maybe_str = PBFactory::ToBinaryString(*maybe_index.value);
+    if (!maybe_str.IsOk()) {
+      throw std::runtime_error(
+        fmt::format("Failed to re-encode index {}: {}",
+          path, maybe_str.error));
+    }
+
+    return *maybe_str.value;
+  }
+
 protected:
   ReadSession::Ptr _read_sess;
 };
@@ -168,7 +188,11 @@ PYBIND11_MODULE(protobag_native, m) {
     .def("start", &Reader::Start, "Begin reading the given Selection")
     .def("__iter__", [](Reader &r) -> Reader& { return r; })
     .def("next", &Reader::Next, "Generator interface: emit the next entry")
-    .def("__next__", &Reader::Next, "Generator interface: emit the next entry");
+    .def("__next__", &Reader::Next, "Generator interface: emit the next entry")
+    .def_static(
+      "get_index",
+      &Reader::GetIndex,
+      "Get the (string-serialized) BagIndex for the bag at the given path");
 
   py::class_<WriteSession::Spec>(m, "WriterSpec", "Spec for a WriteSession")
     .def(py::init<>())

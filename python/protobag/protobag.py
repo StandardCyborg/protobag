@@ -67,7 +67,7 @@ def to_topic_time(v):
   
 
 ## ============================================================================
-## == PBDecoder ===============================================================
+## == Protobuf Message Decoding ===============================================
 ## ============================================================================
 
 DEFAULT_MSG_TYPES = (
@@ -89,6 +89,7 @@ class PBDecoder(object):
 
   def __init__(self):
     self._type_url_to_cls = {}
+    self._dynamic_factory = None
 
   @classmethod
   def create_with_types(cls, pb_msg_clss):
@@ -106,7 +107,7 @@ class PBDecoder(object):
     type_url = self.get_type_url(pb_msg_cls)
     self._type_url_to_cls[type_url] = pb_msg_cls
 
-  def decode(self, type_url, msg_bytes):
+  def decode(self, type_url, msg_bytes, entryname=None):
     """TODO"""
     if type_url in self._type_url_to_cls:
       
@@ -114,12 +115,102 @@ class PBDecoder(object):
       msg = msg_cls()
       msg.ParseFromString(msg_bytes) # TODO support text format
       return msg
-    
+
+    elif self._dynamic_factory is not None:
+
+      return self._dynamic_factory.dynamic_decode(
+                    msg_bytes,
+                    type_url=type_url,
+                    entryname=entryname)
+
     else:
-      # TODO dynamic message if supported
-      raise KeyError(type_url)
+      
+      raise ValueError("Could not decode message for type %s " % type_url)
+  
+  def register_dynamic_types_from_index(self, bag_index):
+    if hasattr(bag_index, 'descriptor_pool_data'):
+      dpd = bag_index.descriptor_pool_data
+      self._dynamic_factory = \
+        DynamicMessageFactory.create_from_descriptor_pool_data(dpd)
+          # TODO support multiple indices
+  
+  def __str__(self):
+    return '\n'.join((
+      'PBDecoder',
+      'User-registered types:',
+      '\n'.join(sorted(self._type_url_to_cls.keys())),
+      '',
+      'Dynamic type support:',
+      str(self._dynamic_factory),
+    ))
 
 _DefaultPBDecoder = PBDecoder.create_with_types(DEFAULT_MSG_TYPES)
+
+
+
+class DynamicMessageFactory(object):
+  def __init__(self):
+    from google.protobuf import symbol_database
+    self._db = symbol_database.Default()
+    self._entryname_to_type_url = {}
+
+  @classmethod
+  def create_from_descriptor_pool_data(cls, dpd):
+    """Create a new `DynamicMessageFactory` instance from a
+    `protobag.DescriptorPoolData` message."""
+    f = cls()
+    f.register_entries(dpd.entryname_to_type_url)
+    for fds in dpd.type_url_to_descriptor.values():
+      f.register_types(fds)
+    return f
+
+  def register_entry(self, entryname, type_url):
+    self._entryname_to_type_url[entryname] = type_url
+  
+  def register_entries(self, entryname_to_type_url):
+    for entryname, type_url in entryname_to_type_url.items():
+      self.register_entry(entryname, type_url)
+
+  def register_types(self, fds):
+    for fd in fds.file:
+      self._db.pool.Add(fd)
+  
+  def dynamic_decode(self, msg_bytes, type_url=None, entryname=None):
+    """TODO"""
+    assert type_url or entryname, "Need a type_url or entryname"
+    
+    # Prefer entryname, which Protobag pins to a specific FileDescriptorSet
+    # at time of writing (in case the message type evolves between write 
+    # sessions).
+    if entryname is not None:
+      assert entryname in self._entryname_to_type_url, \
+        "Unregistered protobag entry: %s" % entryname
+      type_url = self._entryname_to_type_url[entryname]
+    
+    # Based upon https://github.com/protocolbuffers/protobuf/blob/86b3ccf28ca437330cc42a2b3a75a1314977fcfd/python/google/protobuf/json_format.py#L397
+    type_name = type_url.split('/')[-1]
+    try:
+      descriptor = self._db.pool.FindMessageTypeByName(type_name)
+    except Exception as e:
+      raise KeyError(
+        "Could not find descriptor for %s: %s" % ((type_url, entryname), e))
+
+    msg_cls = self._db.GetPrototype(descriptor)
+    msg = msg_cls()
+    msg.ParseFromString(msg_bytes)
+      # TODO support text format
+    return msg
+  
+  def __str__(self):
+    return '\n'.join((
+      'protobag.DynamicMessageFactory',
+      'Known types:',
+      '\n'.join(sorted(desc.name for desc in self._db._classes.keys())),
+      '',
+      'entryname -> type_url',
+      '\n'.join(sorted(self._entryname_to_type_url.items()))
+    ))
+
 
 
 ## ============================================================================
@@ -296,6 +387,14 @@ class Protobag(object):
     """Shortcut to update the wrapped decoder"""
     self.decoder.register_msg_type(msg_cls)
 
+  def get_bag_index(self):
+    """Get the (latest) `BagIndex` instance from this protobag."""
+    from protobag.protobag_native import Reader
+    bag_index_str = Reader.get_index(self._path)
+    msg = BagIndex()
+    msg.ParseFromString(bag_index_str)
+    return msg
+
   def iter_entries(self, selection=None, dynamic_decode=True):
     """Create a `ReadSession` and iterate through entries specified by
     the given `selection`; by default "SELECT ALL" (read all entries in 
@@ -324,7 +423,7 @@ class Protobag(object):
       selection_bytes = selection
     
     if dynamic_decode:
-      print('todo update decoder with index exactly once')
+      self.decoder.register_dynamic_types_from_index(self.get_bag_index())
 
     from protobag.protobag_native import Reader
     reader = Reader()

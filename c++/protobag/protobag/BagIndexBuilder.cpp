@@ -70,6 +70,7 @@ struct BagIndexBuilder::DescriptorIndexer {
     ::google::protobuf::FileDescriptorSet fds;
     {
       std::queue<const ::google::protobuf::FileDescriptor*> q;
+      q.push(descriptor->file());
       std::unordered_set<std::string> visited;
       while (!q.empty()) {
         const ::google::protobuf::FileDescriptor *current = q.front();
