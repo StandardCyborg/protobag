@@ -14,7 +14,13 @@ if __name__ == '__main__':
     # ignore the index
     if '_protobag_index' in entry.entryname:
       continue
-    print(entry)
+    print(entry.entryname)
+    print(entry.type_url)
+    if 'raw' in entry.entryname:
+      print(entry)
+    else:
+      from google.protobuf.json_format import MessageToDict
+      print(MessageToDict(entry.get_msg()))
     print()
     print()
   

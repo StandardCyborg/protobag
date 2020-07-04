@@ -111,9 +111,9 @@ struct BagIndexBuilder::DescriptorIndexer {
     }
 
     {
-      auto &entryname_to_type_url = *dpd.mutable_entryname_to_type_url();
+      auto &idx_entryname_to_type_url = *dpd.mutable_entryname_to_type_url();
       for (const auto &entry : entryname_to_type_url) {
-        entryname_to_type_url[entry.first] = entry.second;
+        idx_entryname_to_type_url[entry.first] = entry.second;
       }
     }
   }

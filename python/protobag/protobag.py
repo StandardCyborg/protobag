@@ -208,7 +208,9 @@ class DynamicMessageFactory(object):
       '\n'.join(sorted(desc.name for desc in self._db._classes.keys())),
       '',
       'entryname -> type_url',
-      '\n'.join(sorted(self._entryname_to_type_url.items()))
+      '\n'.join(
+        '%s -> %s' % (k, v)
+        for (k, v) in sorted(self._entryname_to_type_url.items()))
     ))
 
 
