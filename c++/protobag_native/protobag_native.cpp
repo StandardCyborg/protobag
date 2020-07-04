@@ -11,6 +11,10 @@
 #include <protobag/Utils/PBUtils.hpp>
 #include <protobag_msg/ProtobagMsg.pb.h>
 
+#ifndef PROTOBAG_VERSION
+#define PROTOBAG_VERSION "unknown"
+#endif
+
 namespace py = pybind11;
 
 using namespace protobag;
@@ -173,6 +177,8 @@ protected:
 PYBIND11_MODULE(protobag_native, m) {
   m.doc() = 
     "protobag_native: a pybind11-based interface to the Protobag C++ back-end";
+
+  m.def("get_version", []() { return std::string(PROTOBAG_VERSION);});
 
   py::class_<native_entry>(m, "native_entry", "Handle to a native entry")
     .def(py::init<>())

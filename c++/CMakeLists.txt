@@ -30,7 +30,9 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${protobag_common_flags} -g3")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${protobag_common_flags} -O3")
 
 file(STRINGS "protobag_version.txt" PROTOBAG_VERSION)
-set(protobag_common_flags "-DPROTOBAG_VERSION=${PROTOBAG_VERSION}")
+set(protobag_common_flags "-DPROTOBAG_VERSION=\"${PROTOBAG_VERSION}\"")
+
+add_definitions(${protobag_common_flags})
 
 ###
 ### Dependencies
@@ -139,7 +141,7 @@ target_link_libraries(
   ${protobag_dep_libs})
 add_test(
   NAME test_protobag_native
-  COMMAND bash -c "python3 -c 'import protobag_native; print(protobag_native.foo())'") # TODO make this a selftest!!
+  COMMAND bash -c "python3 -c 'import protobag_native; print(protobag_native.get_version())'")
 
 
 ###
