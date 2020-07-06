@@ -5,6 +5,8 @@
 #include <tuple>
 #include <unordered_set>
 
+                                                                  #include <iostream>
+
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/time_util.h>
 
@@ -49,57 +51,71 @@ struct BagIndexBuilder::DescriptorIndexer {
   void Observe(
         const std::string &entryname,
         const std::string &type_url, 
-        const ::google::protobuf::Descriptor *descriptor) {
-    if (!descriptor) { return; }
+        const ::google::protobuf::Descriptor *descriptor,
+        const ::google::protobuf::FileDescriptorSet *fds) {
+    
+    if (!(descriptor || fds)) {
+      // Nothing to index
+      return;
+    }
+
     if (type_url.empty()) { return; }
     if (entryname.empty()) { return; }
 
     entryname_to_type_url[entryname] = type_url;
-
 
     if (type_url_to_fds.find(type_url) != type_url_to_fds.end()) {
       // Don't re-index
       return;
     }
 
+    if (fds) {
 
-    // Now do a BFS of the file containing `descriptor` and the file's
-    // dependencies, being careful not to get caught in a cycle.
-    // TODO: collect a smaller set of total descriptor defs that petain
-    // only to `descriptor`.
-    ::google::protobuf::FileDescriptorSet fds;
-    {
-      std::queue<const ::google::protobuf::FileDescriptor*> q;
-      q.push(descriptor->file());
-      std::unordered_set<std::string> visited;
-      while (!q.empty()) {
-        const ::google::protobuf::FileDescriptor *current = q.front();
-        q.pop();
-        if (!current) { continue; } // BUG! TODO asserts
-        
-        if (visited.find(current->name()) != visited.end()) {
-          continue;
-        }
+      // Use the included FileDescriptorSet
+      type_url_to_fds[type_url] = *fds;
+    
+    } else if (descriptor) {
 
-        // Visit this file
-        {
-          visited.insert(current->name());
-            // TODO: can user have two different files with same name?
+      // Do a BFS of the file containing `descriptor` and the file's
+      // dependencies, being careful not to get caught in a cycle.
+      // TODO: collect a smaller set of total descriptor defs that petain
+      // only to `descriptor`.
+      ::google::protobuf::FileDescriptorSet collected_fds;
+      {
+        std::queue<const ::google::protobuf::FileDescriptor*> q;
+        q.push(descriptor->file());
+        std::unordered_set<std::string> visited;
+        while (!q.empty()) {
+          const ::google::protobuf::FileDescriptor *current = q.front();
+          q.pop();
+          if (!current) { continue; } // BUG! All pointers should be non-null
           
-          ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
-          current->CopyTo(fd);
-        }
+          if (visited.find(current->name()) != visited.end()) {
+            continue;
+          }
 
-        // Enqueue children
-        {
-          for (int d = 0; d < current->dependency_count(); ++d) {
-            q.push(current->dependency(d));
+          // Visit this file
+          {
+            visited.insert(current->name());
+              // TODO: can user have two different files with same name?
+            
+            ::google::protobuf::FileDescriptorProto *fd = 
+              collected_fds.add_file();
+            current->CopyTo(fd);
+          }
+
+          // Enqueue children
+          {
+            for (int d = 0; d < current->dependency_count(); ++d) {
+              q.push(current->dependency(d));
+            }
           }
         }
       }
-    }
 
-    type_url_to_fds[type_url] = fds;
+      type_url_to_fds[type_url] = collected_fds;
+
+    }
   }
 
   void MoveToDescriptorPoolData(BagIndex_DescriptorPoolData &dpd) {
@@ -182,18 +198,21 @@ void BagIndexBuilder::Observe(
     if (!_desc_idx) {
       _desc_idx.reset(new DescriptorIndexer());
     }
-
-    const ::google::protobuf::Descriptor *descriptor = entry.ctx->descriptor;
-    const std::string &inner_type_url = entry.ctx->inner_type_url;
-      // If either of these are empty: BUG! TODO asserts
     
-    _desc_idx->Observe(entryname, inner_type_url, descriptor);
+    _desc_idx->Observe(
+                  entryname,
+                  entry.ctx->inner_type_url,
+                  entry.ctx->descriptor,
+                  entry.ctx->fds);
 
     if (entry.IsStampedMessage()) {
+      // A hack to ensure our StampedMessage type gets indexed at least once
+      // when needed
       _desc_idx->Observe(
         "_protobag.StampedMessage",
         GetTypeURL<StampedMessage>(), 
-        StampedMessage().GetDescriptor());
+        StampedMessage().GetDescriptor(),
+        nullptr);
     }
   }
 }

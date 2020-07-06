@@ -2,8 +2,11 @@
 #include <pybind11/stl.h>
 
 #include <exception>
+#include <optional>
 
 #include <fmt/format.h>
+
+#include <google/protobuf/descriptor.h>
 
 #include <protobag/Protobag.hpp>
 #include <protobag/ReadSession.hpp>
@@ -19,60 +22,57 @@ namespace py = pybind11;
 
 using namespace protobag;
 
-// A convenience SERDES to avoid pybind conversion of Entry optional context
+// A convenience wrapper to avoid pybind conversion of Entry optional context
 struct native_entry final {
   std::string entryname;
   std::string type_url;
   py::bytes msg_bytes;
 
-  bool has_ctx = false;
-  std::string ctx_topic;
-  int64_t ctx_sec = 0;
-  int32_t ctx_nanos = 0;
-  // TODO not msg descriptor pointer but all the FileDescriptorSet stuff BagIndexBuilder would need ~~~~~
+  bool is_stamped = false;
+  std::string topic;
+  int64_t sec;
+  int32_t nanos;
+
+  // NB: Don't need descriptor context on decode because python Protobag
+  // handles the index directly.  FMI see `DynamicMessageFactory`.
   
-  
+  static native_entry FromEntry(const Entry &entry) {
+    if (entry.IsStampedMessage()) {
 
-  Entry AsEntry() const {
-    if (type_url.empty()) {
+      auto maybe_unpacked = entry.UnpackFromStamped();
+      if (!maybe_unpacked.IsOk()) {
+        throw std::runtime_error(fmt::format(
+          "Failed to unpack stamped entry for entry {}: {}",
+          entry.entryname,
+          maybe_unpacked.error));
+      }
 
-      return Entry::CreateRawFromBytes(entryname, msg_bytes);
-    
-    } else if (!ctx_topic.empty()) {
+      if (!maybe_unpacked.value->ctx.has_value()) {
+        throw std::runtime_error(fmt::format(
+          "Incorrect unpacking for stamped entry for entry {}",
+          entry.entryname));
+      }
 
-      return Entry::CreateStampedUnchecked(
-        ctx_topic,
-        ctx_sec,
-        ctx_nanos,
-        type_url,
-        std::move(msg_bytes));  
+      const Entry &unpacked = *maybe_unpacked.value;
+      return {
+        .entryname = entry.entryname,
+        .type_url = unpacked.ctx->inner_type_url,
+        .msg_bytes = unpacked.msg.value(),
+        
+        .is_stamped = true,
+        .topic = unpacked.ctx->topic,
+        .sec = unpacked.ctx->stamp.seconds(),
+        .nanos = unpacked.ctx->stamp.nanos(),
+      };
 
     } else {
 
-      return Entry::CreateUnchecked(
-        entryname,
-        type_url,
-        std::move(msg_bytes),
-        {}); // TODO add descriptor stuff for context ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+      return {
+        .entryname = entry.entryname,
+        .type_url = entry.msg.type_url(),
+        .msg_bytes = entry.msg.value(),
+      };
     }
-  }
-
-  static native_entry FromEntry(const Entry &entry) {
-    native_entry ne = {
-      .entryname = entry.entryname,
-      .type_url = entry.msg.type_url(),
-      .msg_bytes = entry.msg.value(),
-    };
-    if (entry.ctx.has_value()) {
-      ne.has_ctx = true;
-      ne.ctx_topic = entry.ctx->topic;
-      ne.ctx_sec = entry.ctx->stamp.seconds();
-      ne.ctx_nanos = entry.ctx->stamp.nanos();
-      ne.type_url = entry.ctx->inner_type_url; // overrides msg.type_url()
-      // TODO add descriptor context for decode ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    }
-    return ne;
   }
 };
 
@@ -98,7 +98,8 @@ public:
       .selection = sel,
     });
     if (!maybe_rp.IsOk()) {
-      throw std::runtime_error(maybe_rp.error);
+      throw std::runtime_error(
+        fmt::format("Failed to start reader: {}", maybe_rp.error));
     }
 
     _read_sess = *maybe_rp.value;
@@ -157,13 +158,68 @@ public:
     _write_sess = *maybe_w.value;
   }
 
-  void WriteEntry(const native_entry &nentry) {
-    if (!_write_sess) {
-      throw std::runtime_error("Invalid write session");
+  void Close() {
+    if (_write_sess) {
+      _write_sess->Close();
+      _write_sess = nullptr;
     }
+  }
 
-    auto &writer = *_write_sess;
-    auto maybe_ok = writer.WriteEntry(nentry.AsEntry());
+  void WriteRaw(const std::string &entryname, const py::bytes &raw_bytes) {
+    HasSessOrThrow();
+
+    auto maybe_ok = _write_sess->WriteEntry(
+      Entry::CreateRawFromBytes(
+        entryname,
+        raw_bytes));
+    if (!maybe_ok.IsOk()) {
+      throw std::runtime_error(maybe_ok.error);
+    }
+  
+  }
+
+  void WriteMsg(
+          const std::string &entryname,
+          const std::string &type_url,
+          const py::bytes &msg_bytes,
+          const std::optional<py::bytes> &fds_bytes) {
+    HasSessOrThrow();
+
+    auto maybe_fds = DecodeFDS(fds_bytes);
+
+    auto maybe_ok = _write_sess->WriteEntry(
+      Entry::CreateUnchecked(
+        entryname,
+        type_url,
+        msg_bytes,
+        {
+          .fds = maybe_fds.has_value() ? &maybe_fds.value() : nullptr,
+        }));
+    if (!maybe_ok.IsOk()) {
+      throw std::runtime_error(maybe_ok.error);
+    }    
+  }
+
+  void WriteStampedMsg(
+          const std::string &topic,
+          int64_t sec,
+          int32_t nanos,
+          const std::string &type_url,
+          const py::bytes &msg_bytes,
+          const std::optional<py::bytes> &fds_bytes) {
+    HasSessOrThrow();
+
+    auto maybe_fds = DecodeFDS(fds_bytes);
+
+    auto maybe_ok = _write_sess->WriteEntry(
+      Entry::CreateStampedUnchecked(
+        topic,
+        sec,
+        nanos,
+        type_url,
+        msg_bytes,
+        /* fds = */ maybe_fds.has_value() ? &maybe_fds.value() : nullptr,
+        /* descriptor = */ nullptr));
     if (!maybe_ok.IsOk()) {
       throw std::runtime_error(maybe_ok.error);
     }
@@ -171,6 +227,29 @@ public:
 
 protected:
   WriteSession::Ptr _write_sess;
+
+  void HasSessOrThrow() const {
+    if (!_write_sess) {
+      throw std::runtime_error("Programming error: null write session");
+    }
+  }
+
+  static std::optional<::google::protobuf::FileDescriptorSet> DecodeFDS(
+      const std::optional<py::bytes> &fds_bytes) {
+
+    if (!fds_bytes.has_value() || fds_bytes->is_none()) {
+      return std::nullopt;
+    }
+
+    auto maybe_fds = 
+      PBFactory::LoadFromContainer<::google::protobuf::FileDescriptorSet>(
+        std::string(*fds_bytes));
+    if (!maybe_fds.IsOk()) {
+      throw std::runtime_error(fmt::format(
+        "Failed to decode FileDescriptorSet, error: {}}", maybe_fds.error));
+    }
+    return *maybe_fds.value;
+  }
 };
 
 
@@ -185,9 +264,10 @@ PYBIND11_MODULE(protobag_native, m) {
     .def_readwrite("entryname", &native_entry::entryname)
     .def_readwrite("type_url", &native_entry::type_url)
     .def_readwrite("msg_bytes", &native_entry::msg_bytes)
-    .def_readwrite("ctx_topic", &native_entry::ctx_topic)
-    .def_readwrite("ctx_sec", &native_entry::ctx_sec)
-    .def_readwrite("ctx_nanos", &native_entry::ctx_nanos);
+    .def_readwrite("is_stamped", &native_entry::is_stamped)
+    .def_readwrite("topic", &native_entry::topic)
+    .def_readwrite("sec", &native_entry::sec)
+    .def_readwrite("nanos", &native_entry::nanos);
 
   py::class_<Reader>(m, "Reader", "Handle to a Protobag ReadSession")
     .def(py::init<>(), "Create a null session")
@@ -222,7 +302,25 @@ PYBIND11_MODULE(protobag_native, m) {
   py::class_<Writer>(m, "Writer", "Handle to a Protobag WriteSession")
     .def(py::init<>(), "Create a null session")
     .def("start", &Writer::Start, "Begin writing given a WriteSession::Spec")
-    .def("__iter__", [](Reader &r) -> Reader& { return r; })
-    .def("write_entry", &Writer::WriteEntry, "Write the given `native_entry`");
-    
+    .def("close", &Writer::Close, "End writing session")
+    .def("write_raw", &Writer::WriteRaw, "Write the given raw bytes")
+    .def(
+      "write_msg",
+      &Writer::WriteMsg,
+        py::arg("entryname"),
+        py::arg("type_url"),
+        py::arg("msg_bytes"),
+        py::arg("fds_bytes").none(true),
+      "Write the given message")
+    .def(
+      "write_stamped_msg",
+      &Writer::WriteStampedMsg,
+        py::arg("topic"),
+        py::arg("sec"),
+        py::arg("nanos"),
+        py::arg("type_url"),
+        py::arg("msg_bytes"),
+        py::arg("fds_bytes").none(true),
+      "Write the given stamped message");
+
 }

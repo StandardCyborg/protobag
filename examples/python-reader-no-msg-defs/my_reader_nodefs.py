@@ -20,7 +20,8 @@ if __name__ == '__main__':
       print(entry)
     else:
       from google.protobuf.json_format import MessageToDict
-      print(MessageToDict(entry.get_msg()))
+      import pprint
+      pprint.pprint(MessageToDict(entry.get_msg()))
     print()
     print()
   

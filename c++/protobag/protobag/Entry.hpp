@@ -60,6 +60,13 @@ struct Entry {
     // descriptor of the innermost msg (not StampedMessage nor Any).
     // Mainly for writing; for reading we can't populate this member.
     const ::google::protobuf::Descriptor *descriptor = nullptr;
+
+    // For non-C++ writers (e.g. Python), part of Descriptor Indexing needs
+    // to run in the writer's language where the Protobuf message definitions
+    // are available.  Those writers may supply a read-only reference to a
+    // completed `FileDescriptorSet`-- something we can't construct in the C++
+    // side of the write codepath.
+    const ::google::protobuf::FileDescriptorSet *fds = nullptr;
   };
   std::optional<Context> ctx;
 
@@ -148,7 +155,7 @@ struct Entry {
 
     ::google::protobuf::Any packed;
     packed.set_value(std::move(raw_msg_contents));
-      // Intentionally leave type_url empty
+      // Intentionally leave type_url empty; it means the message is raw
     
     return {
       .entryname = entryname,
@@ -196,13 +203,16 @@ struct Entry {
   // Create a StampedMessage entry given the user-provided `msg_bytes` and 
   // `type_url`; are `msg_bytes` actually from a message of type `type_url`?
   // We leave that issue "Unchecked" and trust the user.
+  // This API is typically not useful to end users but is used internally for
+  // write support (e.g. python `protobag_native`).
   static Entry CreateStampedUnchecked(
         const std::string &topic,
         uint64_t sec,
         uint32_t nsec,
         const std::string &type_url,
-        std::string &&msg_bytes) {
-          // TODO: add descriptor-like context; see protobag_native.cpp ~~~~~~~~~~~~~~~~
+        std::string &&msg_bytes,
+        const ::google::protobuf::FileDescriptorSet *fds=nullptr,
+        const ::google::protobuf::Descriptor *descriptor=nullptr) {
 
     StampedMessage stamped_msg;
     stamped_msg.mutable_timestamp()->set_seconds(sec);
@@ -221,7 +231,8 @@ struct Entry {
                 .topic = topic,
                 .stamp = stamped_msg.timestamp(),
                 .inner_type_url = type_url,
-                // .descriptor = msg.GetDescriptor(), TODO
+                .fds = fds,
+                .descriptor = descriptor,
               });
 
   }

@@ -20,6 +20,9 @@ if __name__ == '__main__':
     # ignore the index
     if '_protobag_index' in entry.entryname:
       continue
+    
     print(entry)
+    print("Message contents:")
+    print(entry.get_msg())
     print()
     print()

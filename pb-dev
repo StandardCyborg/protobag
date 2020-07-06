@@ -300,7 +300,8 @@ def main(args=None):
 
       cd /opt/protobag/examples/c++-writer &&
       protoc MyMessages.proto --cpp_out=. &&
-      protoc MyMessages.proto --python_out=../../examples/python-reader
+      protoc MyMessages.proto --python_out=../../examples/python-reader &&
+      protoc MyMessages.proto --python_out=../../examples/python-writer
     """
     run_in_container(
       CMD,
