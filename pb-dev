@@ -8,7 +8,9 @@ TODO examples
 ## Development
 
 When creating a new version:
- 1. Edit protobag_version.txt
+ 1. Edit `protobag_version.txt`
+ 2. Build a new environment using: `./pb-dev --build-env`
+
 """
 
 import os
@@ -34,7 +36,7 @@ https://github.com/NVIDIA/nvidia-docker#ubuntu-16041804-debian-jessiestretchbust
 """
 
 INSTALL_DOCKER_MAC = """
-To install Docker on a Mac, we advocate you install docker-machine (which uses 
+To install Docker on a Mac, we advocate you install docker-machine (which uses
 VirtualBox-based virtual machines) versus Docker Desktop for Mac (which uses
 the xhyve hypervisor) because:
   * The VirtualBox-based environment is more similar to Docker on Linux
@@ -54,7 +56,7 @@ To install docker-machine:
       ```
       $ eval `docker-machine env` # Tells the docker client how to reach your
                                   # VirtualBox; run once per shell session.
-      
+
       $ docker run hello-world
       ...
       Hello from Docker!
@@ -143,7 +145,7 @@ def raise_if_no_docker():
           $ docker-machine start default
         Error: %s
         """ % (e,))
-    
+
 
 
 ###############################################################################
@@ -165,14 +167,14 @@ def create_arg_parser():
   parser.add_argument(
     '--build-env', default=False, action='store_true',
     help='Build the Dockerized dev env')
-  
+
   parser.add_argument(
     '--shell', default=False, action='store_true',
     help='Drop into a dockerized dev environment')
   parser.add_argument(
     '--shell-rm', default=False, action='store_true',
     help='Delete the dockerized dev environment')
-  
+
   parser.add_argument(
     '--test', default=False, action='store_true',
     help='Build and run all tests')
@@ -196,7 +198,7 @@ def build_env(args):
   raise_if_no_docker()
 
   version = get_version(args.root)
-  
+
   CMD = """
     docker build -t {image}:{version} -f {dockerfile} {docker_root}
   """.format(
@@ -204,13 +206,13 @@ def build_env(args):
     dockerfile=os.path.join(args.root, 'docker/Dockerfile'),
     docker_root=args.root,
     version=version)
-  
+
   run_cmd(CMD)
 
 
 def post_release(args):
   version = get_version(args.root)
-  
+
   # Tag for cocoapods release
   print('todo: podspec version needs to match version')
   CMD = """
@@ -223,7 +225,7 @@ def start_container(
       src_root,
       container_name=CONTAINER_NAME,
       mnt_local_root=True):
-  
+
   local_mount = ''
   if mnt_local_root:
     local_mount = '-v %s:/opt/protobag:z' % src_root

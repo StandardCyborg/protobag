@@ -11,3 +11,6 @@ dist
 
 # Don't put Mac stuff in the docker build env
 cocoa
+
+c\+\+/build
+

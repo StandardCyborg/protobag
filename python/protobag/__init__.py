@@ -1,1 +1,1 @@
-from protobag.protobag import Protobag
+from protobag.protobag import *

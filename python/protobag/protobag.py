@@ -1,6 +1,10 @@
 import copy
 import datetime
 
+import attr
+import six
+
+from google.protobuf import json_format
 from google.protobuf.timestamp_pb2 import Timestamp
 
 from protobag.ProtobagMsg_pb2 import BagIndex
@@ -10,9 +14,261 @@ from protobag.ProtobagMsg_pb2 import StdMsg
 from protobag.ProtobagMsg_pb2 import TopicTime
 
 
+
+## ============================================================================
+## == Utils ===================================================================
+## ============================================================================
+
+def get_type_url(pb_msg):
+  # See also `protobag::GetTypeURL()`
+  return 'type.googleapis.com/' + pb_msg.DESCRIPTOR.full_name
+
+
+def to_pb_timestamp(v):
+  """Try to convert value `v` to a Protobuf `Timestamp` instance."""
+  if isinstance(v, Timestamp):
+    return v
+  elif isinstance(v, datetime.datetime):
+    ts = Timestamp()
+    ts.FromDatetime(v)
+    return ts
+  elif isinstance(v, int):
+    ts = Timestamp()
+    ts.FromSeconds(v)
+    return ts
+  elif isinstance(v, float):
+    sec = int(v)
+    nsec = int((v - sec) * 1e9)
+    ts = Timestamp(seconds=sec, nanos=nsec)
+    return ts
+  else:
+    raise ValueError(
+      "Don't know what to do with timestamp %s" % (v,))
+
+
+def to_sec_nanos(v):
+  """Try to convert value `v` to a (seconds, nanoseconds) tuple"""
+  if isinstance(v, (tuple, list)) and len(v) == 2:
+    return v
+  elif isinstance(v, Timestamp):
+    return (v.seconds, v.nanos)
+  elif isinstance(v, datetime.datetime):
+    import calendar
+    return (
+      calendar.timegm(dt.utctimetuple()), # seconds
+      dt.microsecond * 1000)              # nanos
+  elif isinstance(v, int):
+    return (v, 0)
+  elif isinstance(v, float):
+    sec = int(v)
+    nsec = int((v - sec) * 1e9)
+    return (sec, nsec)
+  else:
+    raise ValueError(
+      "Don't know what to do with value %s" % (v,))
+
+
+def to_topic_time(v):
+  """Try to convert value `v` to a TopicTime instance."""
+  if isinstance(v, TopicTime):
+    return v
+  elif isinstance(v, dict):
+    tt = TopicTime(
+              topic=v['topic'],
+              timestamp=to_pb_timestamp(v['timestamp']))
+    if 'entryname' in v:
+      tt.entryname = v['entryname']
+    return tt
+  elif isinstance(v, (tuple, list)):
+    entryname = None
+    if len(v) == 2:
+      topic, ts = v
+    elif len(v) == 3:
+      topic, ts, entryname = v
+    else:
+      raise ValueError("Can't unpack to TopicTime: %s" % (v,))
+    tt = TopicTime(
+              topic=topic,
+              timestamp=to_pb_timestamp(ts))
+    if entryname is not None:
+      tt.entryname = entryname
+    return tt
+  else:
+    raise ValueError(
+      "Don't know what to do with value %s" % (v,))
+
+
+
+def build_fds_for_msg(msg):
+  """
+  Given a Protobuf message `msg` (or message class), build a
+  `FileDescriptorSet` that can be used with `DynamicMessageFactory` below (or
+  `protobag::DynamicMsgFactory` in C++) to dynamically deserialize instances
+  of `msg` at runtime (when the Protobuf-generated code for `msg` is 
+  unavailable).
+
+  See also `protobag::DynamicMsgFactory` in C++.
+
+  We run a BFS of `msg`'s descriptor and its dependencies to collect all
+  data necessary to decode a `msg` instance.  The algorithm below mirrors that
+  in `protobag::BagIndexBuilder::Observe()`.  We must run this collection in
+  python because (we assume) we only have the Protobuf python-generated code
+  available for `msg` in this code path.
+
+  Args:
+      msg (Protobuf message or class): Build a `FileDescriptorSet` based upon
+        the `DESCRIPTOR` of this message.
+    
+  Returns:
+  A `FileDescriptorSet` protobuf message instance.
+  """
+
+  from google.protobuf.descriptor_pb2 import FileDescriptorProto
+  from google.protobuf.descriptor_pb2 import FileDescriptorSet
+
+  q = [msg.DESCRIPTOR.file]
+  visited = set()
+  files = []
+  while q:
+    current = q.pop()
+    if current.name not in visited:
+      # Visit!
+      visited.add(current.name)
+      
+      fd = FileDescriptorProto()
+      current.CopyToProto(fd)
+      files.append(fd)
+
+      q.extend(current.dependencies)
+  
+  return FileDescriptorSet(file=files)
+    
+
+
 ## ============================================================================
 ## == Public API ==============================================================
 ## ============================================================================
+
+
+###
+### Entries that one might find in a Protobag
+###
+
+@attr.s(slots=True, eq=True, weakref_slot=False)
+class Entry(object):
+  """A Protobag Entry, similar to a c++ `protobag::Entry`."""
+
+  ## Core Data
+  
+  entryname = attr.ib(default='', type='str')
+  """str: Location of the entry in the Protobag archive."""
+
+  type_url = attr.ib(default='', type='str')
+  """str: The Protobuf Type URL (if any) documenting the type of the message.
+  This field is empty for `RawEntry`s"""
+
+
+  ## Optional Context
+
+  serdes = attr.ib(default=None)
+  """PBSerdes: Handle to SERDES instance, if available"""
+
+  descriptor_data = attr.ib(default=None)
+  """object: Protobuf data needed to decode messages of this type when
+  protoc-generated code is not available."""
+
+
+  @classmethod
+  def from_nentry(cls, nentry, serdes=None):
+    """Construct and return an `Entry` subclass from the given
+    `protobag_native.nentry` `nentry`."""
+    serdes = serdes or DEFAULT_SERDES
+    if nentry.type_url == '':
+      return RawEntry.from_nentry(nentry, serdes=serdes)
+    elif nentry.is_stamped:
+      return StampedEntry.from_nentry(nentry, serdes=serdes)
+    else:
+      return MessageEntry.from_nentry(nentry, serdes=serdes)
+
+
+@attr.s(slots=True, eq=True, weakref_slot=False)
+class MessageEntry(Entry):
+  """A Protobuf message entry.
+  
+  Entrynames look like: 'foo/bar'
+  """
+
+  msg = attr.ib(default=None)
+  """google.protobuf.message.Message: Raw message contents"""
+
+  @classmethod
+  def from_nentry(cls, nentry, serdes=None):
+    msg = serdes.msg_from_typed_bytes(
+            TypedBytes(
+              type_url=nentry.type_url,
+              entryname=nentry.entryname,
+              msg_bytes=nentry.msg_bytes))
+
+    return cls(
+      entryname=nentry.entryname,
+      type_url=nentry.type_url,
+      serdes=serdes,
+      msg=msg)
+
+
+@attr.s(slots=True, eq=True, weakref_slot=False)
+class StampedEntry(MessageEntry):
+  """A Protobag StampedMessage entry"""
+
+  topic = attr.ib(default='', type='str')
+  """str: The topic (or channel) of time-series data for this message. This is
+  *not* the entryname, which might not be known unless the message has been
+  written.
+  
+  Example topic: '/sensor/data'
+  """
+
+  timestamp = attr.ib(default='', type=Timestamp, converter=to_pb_timestamp)
+  """google.protobuf.timestamp_pb2.Timestamp: The time associated with this 
+  entry"""
+
+  @classmethod
+  def from_nentry(cls, nentry, serdes=None):
+    msg_entry = MessageEntry.from_nentry(nentry, serdes=serdes)
+
+    assert nentry.is_stamped, "Not a stamped message"
+    return cls(
+      topic=nentry.topic,
+      timestamp=Timestamp(
+                  seconds=nentry.sec,
+                  nanos=nentry.nanos),
+      **attr.asdict(msg_entry))
+
+
+@attr.s(slots=True, eq=True, weakref_slot=False)
+class RawEntry(Entry):
+  """A Raw entry with no known type url (might not even be
+  a Protobuf message!).
+  
+  Entrynames look like: 'foo/bar.png'
+  """
+  
+  raw_bytes = attr.ib(default='', type='bytearray')
+  """bytearray: Raw message contents"""
+
+  @classmethod
+  def from_nentry(cls, nentry, serdes=None):
+    return cls(
+      entryname=nentry.entryname,
+      type_url=nentry.type_url,
+      serdes=serdes,
+
+      raw_bytes=nentry.msg_bytes)
+
+
+###
+### Interacting with Protobag files
+###
 
 class Protobag(object):
 
@@ -151,6 +407,21 @@ class _Writer(object):
   def close(self):
     self._writer.close()  
 
+
+  def write_entry(self, entry):
+    if isinstance(entry, RawEntry):
+      self.write_raw(entry.entryname, entry.raw_bytes)
+    elif isinstance(entry, MessageEntry):
+      self.write_msg(entry.entryname, entry.msg)
+    elif isinstance(entry, StampedEntry):
+      self.write_stamped_msg(
+        entry.topic,
+        entry.msg,
+        timestamp=entry.timestamp)
+    else:
+      raise ValueError("Don't know what to do with %s" % (entry,))
+
+
   def write_raw(self, entryname, raw_bytes):
     self._writer.write_raw(entryname, raw_bytes)
 
@@ -183,378 +454,9 @@ class _Writer(object):
     return fds_bytes
 
 
-## ============================================================================
-## == Utils ===================================================================
-## ============================================================================
-
-def get_type_url(pb_msg):
-  # See also `protobag::GetTypeURL()`
-  return 'type.googleapis.com/' + pb_msg.DESCRIPTOR.full_name
-
-
-def to_pb_timestamp(v):
-  """Try to convert value `v` to a Protobuf `Timestamp` instance."""
-  if isinstance(v, Timestamp):
-    return v
-  elif isinstance(v, datetime.datetime):
-    ts = Timestamp()
-    ts.FromDatetime(v)
-    return ts
-  elif isinstance(v, int):
-    ts = Timestamp()
-    ts.FromSeconds(v)
-    return ts
-  elif isinstance(v, float):
-    sec = int(v)
-    nsec = int((v - sec) * 1e9)
-    ts = Timestamp(seconds=sec, nanos=nsec)
-    return ts
-  else:
-    raise ValueError(
-      "Don't know what to do with timestamp %s" % (v,))
-
-
-def to_sec_nanos(v):
-  """Try to convert value `v` to a (seconds, nanoseconds) tuple"""
-  if isinstance(v, (tuple, list)) and len(v) == 2:
-    return v
-  elif isinstance(v, Timestamp):
-    return (v.seconds, v.nanos)
-  elif isinstance(v, datetime.datetime):
-    import calendar
-    return (
-      calendar.timegm(dt.utctimetuple()), # seconds
-      dt.microsecond * 1000)              # nanos
-  elif isinstance(v, int):
-    return (v, 0)
-  elif isinstance(v, float):
-    sec = int(v)
-    nsec = int((v - sec) * 1e9)
-    return (sec, nsec)
-  else:
-    raise ValueError(
-      "Don't know what to do with value %s" % (v,))
-
-
-def to_topic_time(v):
-  """Try to convert value `v` to a TopicTime instance."""
-  if isinstance(v, TopicTime):
-    return v
-  elif isinstance(v, dict):
-    tt = TopicTime(
-              topic=v['topic'],
-              timestamp=to_pb_timestamp(v['timestamp']))
-    if 'entryname' in v:
-      tt.entryname = v['entryname']
-    return tt
-  elif isinstance(v, (tuple, list)):
-    entryname = None
-    if len(v) == 2:
-      topic, ts = v
-    elif len(v) == 3:
-      topic, ts, entryname = v
-    else:
-      raise ValueError("Can't unpack to TopicTime: %s" % (v,))
-    tt = TopicTime(
-              topic=topic,
-              timestamp=to_pb_timestamp(ts))
-    if entryname is not None:
-      tt.entryname = entryname
-    return tt
-  else:
-    raise ValueError(
-      "Don't know what to do with value %s" % (v,))
-
-
-
-def build_fds_for_msg(msg):
-  """
-  Given a Protobuf message `msg` (or message class), build a
-  `FileDescriptorSet` that can be used with `DynamicMessageFactory` below (or
-  `protobag::DynamicMsgFactory` in C++) to dynamically deserialize instances
-  of `msg` at runtime (when the Protobuf-generated code for `msg` is 
-  unavailable).
-
-  See also `protobag::DynamicMsgFactory` in C++.
-
-  We run a BFS of `msg`'s descriptor and its dependencies to collect all
-  data necessary to decode a `msg` instance.  The algorithm below mirrors that
-  in `protobag::BagIndexBuilder::Observe()`.  We must run this collection in
-  python because (we assume) we only have the Protobuf python-generated code
-  available for `msg` in this code path.
-
-  Args:
-      msg (Protobuf message or class): Build a `FileDescriptorSet` based upon
-        the `DESCRIPTOR` of this message.
-    
-  Returns:
-  A `FileDescriptorSet` protobuf message instance.
-  """
-
-  from google.protobuf.descriptor_pb2 import FileDescriptorProto
-  from google.protobuf.descriptor_pb2 import FileDescriptorSet
-
-  q = [msg.DESCRIPTOR.file]
-  visited = set()
-  files = []
-  while q:
-    current = q.pop()
-    if current.name not in visited:
-      # Visit!
-      visited.add(current.name)
-      
-      fd = FileDescriptorProto()
-      current.CopyToProto(fd)
-      files.append(fd)
-
-      q.extend(current.dependencies)
-  
-  return FileDescriptorSet(file=files)
-    
-
-
-## ============================================================================
-## == Protobuf Message Decoding ===============================================
-## ============================================================================
-
-DEFAULT_MSG_TYPES = (
-    StdMsg.Bool,
-    StdMsg.Int,
-    StdMsg.Float,
-    StdMsg.String,
-    StdMsg.Bytes,
-    StdMsg.SSMap,
-    
-    BagIndex,
-    Selection,
-    StampedMessage,
-    StdMsg,
-    TopicTime,
-)
-
-class PBDecoder(object):
-
-  def __init__(self):
-    self._type_url_to_cls = {}
-    self._dynamic_factory = None
-
-  @classmethod
-  def create_with_types(cls, pb_msg_clss):
-    decoder = cls()
-    for msg_cls in pb_msg_clss:
-      decoder.register_msg_type(msg_cls)
-    return decoder
-
-  def register_msg_type(self, pb_msg_cls):
-    type_url = get_type_url(pb_msg_cls)
-    self._type_url_to_cls[type_url] = pb_msg_cls
-
-  def register_dynamic_types_from_index(self, bag_index):
-    if hasattr(bag_index, 'descriptor_pool_data'):
-      dpd = bag_index.descriptor_pool_data
-      self._dynamic_factory = \
-        DynamicMessageFactory.create_from_descriptor_pool_data(dpd)
-          # TODO support multiple indices
-
-  def decode(self, type_url, msg_bytes, entryname=None):
-    """Decode string-serialized Protobuf message `msg_bytes`, interpreting
-    the bytes as `type_url`, and return a decoded Protobuf message instance.
-    Picks a message deserializer based upon:
-     * `type_url`, the identifer of a message class that the user registered
-        using `register_msg_type()`
-     * using dynamic Protobuf message generation and Protobuf descriptor data
-        indexed to the Protobag at write time (and that data has been made
-        available through `register_dynamic_types_from_index()`)
-    """
-    if type_url in self._type_url_to_cls:
-      
-      msg_cls = self._type_url_to_cls[type_url]
-      msg = msg_cls()
-      msg.ParseFromString(msg_bytes) # TODO support text format
-      return msg
-
-    elif self._dynamic_factory is not None:
-
-      return self._dynamic_factory.dynamic_decode(
-                    msg_bytes,
-                    type_url=type_url,
-                    entryname=entryname)
-
-    else:
-      
-      raise ValueError("Could not decode message for type %s " % type_url)
-    
-  def __str__(self):
-    return '\n'.join((
-      'PBDecoder',
-      'User-registered types:',
-      '\n'.join(sorted(self._type_url_to_cls.keys())),
-      '',
-      'Dynamic type support:',
-      str(self._dynamic_factory),
-    ))
-
-_DefaultPBDecoder = PBDecoder.create_with_types(DEFAULT_MSG_TYPES)
-
-
-
-class DynamicMessageFactory(object):
-  def __init__(self):
-    from google.protobuf import symbol_database
-    self._db = symbol_database.Default()
-    self._entryname_to_type_url = {}
-
-  @classmethod
-  def create_from_descriptor_pool_data(cls, dpd):
-    """Create a new `DynamicMessageFactory` instance from a
-    `protobag.DescriptorPoolData` message."""
-    f = cls()
-    f.register_entries(dpd.entryname_to_type_url)
-    for fds in dpd.type_url_to_descriptor.values():
-      f.register_types(fds)
-    return f
-
-  def register_entry(self, entryname, type_url):
-    self._entryname_to_type_url[entryname] = type_url
-  
-  def register_entries(self, entryname_to_type_url):
-    for entryname, type_url in entryname_to_type_url.items():
-      self.register_entry(entryname, type_url)
-
-  def register_types(self, fds):
-    for fd in fds.file:
-      self._db.pool.Add(fd)
-  
-  def dynamic_decode(self, msg_bytes, type_url=None, entryname=None):
-    """Decode the given `msg_bytes` into a Protobuf message instance of either
-    type `type_url` or whatever type the entry `entryname` was indexed to have.
-    """
-    assert type_url or entryname, "Need a type_url or entryname"
-    
-    # Prefer entryname, which Protobag pins to a specific FileDescriptorSet
-    # at time of writing (in case the message type evolves between write 
-    # sessions).
-    if entryname is not None:
-      assert entryname in self._entryname_to_type_url, \
-        "Unregistered protobag entry: %s" % entryname
-      type_url = self._entryname_to_type_url[entryname]
-    
-    # Based upon https://github.com/protocolbuffers/protobuf/blob/86b3ccf28ca437330cc42a2b3a75a1314977fcfd/python/google/protobuf/json_format.py#L397
-    type_name = type_url.split('/')[-1]
-    try:
-      descriptor = self._db.pool.FindMessageTypeByName(type_name)
-    except Exception as e:
-      raise KeyError(
-        "Could not find descriptor for %s: %s" % ((type_url, entryname), e))
-
-    msg_cls = self._db.GetPrototype(descriptor)
-    msg = msg_cls()
-    msg.ParseFromString(msg_bytes)
-      # TODO support text format
-    return msg
-  
-  def __str__(self):
-    return '\n'.join((
-      'protobag.DynamicMessageFactory',
-      'Known types:',
-      '\n'.join(sorted(desc.name for desc in self._db._classes.keys())),
-      '',
-      'entryname -> type_url',
-      '\n'.join(
-        '%s -> %s' % (k, v)
-        for (k, v) in sorted(self._entryname_to_type_url.items()))
-    ))
-
-
-
-## ============================================================================
-## == Entries (Reading) =======================================================
-## ============================================================================
-
-class PBEntry(object):
-  """A single entry in a protobag; analogous to a C++ `protobag::Entry`"""
-
-  __slots__ = ['_nentry', '_pb_msg', '_decoder', '_topic', '_timestamp']
-
-  def __init__(self, nentry=None, decoder=None):
-    if nentry is None:
-      from protobag.protobag_native import native_entry
-      nentry = native_entry()
-    self._nentry = nentry
-    self._decoder = decoder or _DefaultPBDecoder
-    self._pb_msg = None
-    self._topic = None
-    self._timestamp = None
-
-  def __str__(self):
-    lines = []
-    if self.is_stamped_message():
-      lines += [
-        "Topic: %s" % self.topic,
-        "Timestamp: %s sec  %s ns" % (
-          self.timestamp.seconds, self.timestamp.nanos),
-      ]
-    lines += [
-      "Entryname: %s" % self.entryname,
-      "type_url: %s" % self.type_url,
-      "size: %s bytes" % len(self.raw_msg_bytes),
-    ]
-
-    if self._pb_msg:
-      lines.append("msg: \n%s\n" % str(self._pb_msg))
-    else:
-      lines.append("msg: (not yet deserialized)")
-    
-    return "\n".join(lines)
-
-  @property
-  def entryname(self):
-    return self._nentry.entryname
-  
-  @property
-  def raw_msg_bytes(self):
-    return self._nentry.msg_bytes
-  
-  @property
-  def type_url(self):
-    return self._nentry.type_url
-
-  def get_msg(self):
-    if not self._pb_msg:
-      if self.type_url:
-        # NB: If this is a Stamped Message, protobag_native will have already
-        # unwrapped the StampedMessage wrapper.
-        self._pb_msg = self._decoder.decode(self.type_url, self.raw_msg_bytes)
-      else:
-        # This message is raw
-        self._pb_msg = self.raw_msg_bytes
-    return self._pb_msg
-
-
-  # For Stamped Messages only
-
-  def is_stamped_message(self):
-    return self._nentry.is_stamped
-
-  @property
-  def topic(self):
-    assert self._nentry.is_stamped, "Not a stamped message"
-    return self._nentry.topic
-  
-  @property
-  def timestamp(self):
-    if not self._timestamp:
-      assert self._nentry.is_stamped, "Not a stamped message"
-      self._timestamp = Timestamp(
-                            seconds=self._nentry.sec,
-                            nanos=self._nentry.nanos)
-    return self._timestamp
-
-
-
-## ============================================================================
-## == Selections ==============================================================
-## ============================================================================
+###
+### Selecting Data from Protobags
+###
 
 class SelectionBuilder(object):
   """Helper for creating Protobag (read) Selections."""
@@ -614,3 +516,536 @@ class SelectionBuilder(object):
       ]
     spec['require_all'] = require_all
     return Selection(events=spec)
+
+
+
+## ============================================================================
+## == SERDES: Decoding / Encoding Protobuf Messages ===========================
+## ============================================================================
+
+DEFAULT_MSG_TYPES = (
+    StdMsg.Bool,
+    StdMsg.Int,
+    StdMsg.Float,
+    StdMsg.String,
+    StdMsg.Bytes,
+    StdMsg.SSMap,
+    
+    BagIndex,
+    Selection,
+    StampedMessage,
+    StdMsg,
+    TopicTime,
+)
+
+@attr.s(slots=True, eq=True, weakref_slot=False)
+class TypedBytes(object):
+  type_url = attr.ib(default='', type='str')
+  entryname = attr.ib(default='', type='str')
+  msg_bytes = attr.ib(default=None, type='bytearray')
+
+  def __str__(self):
+    lines = [
+      'TypedBytes:',
+      '  type_url: %s' % self.type_url,
+      '  entryname: %s' % self.entryname,
+      '  msg_bytes: %s ... (%s bytes)' % (
+        self.msg_bytes[:20] if self.msg_bytes is not None else 'None',
+        len(self.msg_bytes) if self.msg_bytes is not None else 0)
+    ]
+    return "\n".join(lines)
+
+
+class PBSerdes(object):
+  """A SERDES utility for Protobuf messages.  How `PBSerdes` helps:
+   Decoding:
+   * When `protoc`-generated Protobuf python code is available for your
+       messages, you can register that code with `PBSerdes` and then `PBSerdes`
+       will help you decode arbitrary messages given a `TypedBytes`
+       instance.
+   * When `protoc`-generated code is unavailable, you can register descriptor
+       data (e.g. the kind that `protobag` indexes at recording time) with
+       `PBSerdes`, and `PBSerdes` will use Protobuf's dynamic message support
+       for decoding `TypedBytes`.
+   Encoding:
+   * TODO
+  """
+
+  ## Setup
+
+  @classmethod
+  def create_with_types(cls, pb_msg_clss):
+    decoder = cls()
+    for msg_cls in pb_msg_clss:
+      decoder.register_msg_type(msg_cls)
+    return decoder
+
+  def register_msg_type(self, pb_msg_cls):
+    type_url = get_type_url(pb_msg_cls)
+    self._type_url_to_cls[type_url] = pb_msg_cls
+
+  def register_dynamic_types_from_index(self, bag_index):
+    if hasattr(bag_index, 'descriptor_pool_data'):
+      dpd = bag_index.descriptor_pool_data
+      self._dynamic_factory = \
+        DynamicMessageFactory.create_from_descriptor_pool_data(dpd)
+          # TODO support multiple indices
+      
+      self._type_url_to_descriptor_data = dict(dpd.type_url_to_descriptor)
+    
+  def register_descriptor_data(self, type_url, descriptor_data):
+    if type_url not in self._type_url_to_descriptor_data:
+      if isinstance(descriptor_data, six.string_types):
+        from google.protobuf.descriptor_pb2 import FileDescriptorSet
+        fds = FileDescriptorSet()
+        fds.ParseFromString(descriptor_data)
+        descriptor_data = fds
+      
+      self._type_url_to_descriptor_data[type_url] = descriptor_data
+
+      if self._dynamic_factory is None:
+        self._dynamic_factory = DynamicMessageFactory
+      self._dynamic_factory.register_type(type_url, descriptor_data)
+
+  ## I/O
+
+  def msg_to_typed_bytes(self, msg):
+    """Serialize protobuf `msg` and return a `TypedBytes` wrapper"""
+    return TypedBytes(
+              type_url=get_type_url(msg),
+              msg_bytes=msg.SerializeToString()) # TODO support text format
+
+  def msg_from_typed_bytes(self, typed_bytes):
+    """Decode string-serialized Protobuf message (wraped in `TypedBytes`)
+    `typed_bytes` and return a decoded Protobuf message instance.
+    Picks a message deserializer based upon:
+     * `type_url`, the identifer of a message class that the user registered
+        using `register_msg_type()`
+     * using dynamic Protobuf message generation and Protobuf descriptor data
+        indexed to the Protobag at write time (and that data has been made
+        available through `register_dynamic_types_from_index()`)
+    """
+    if typed_bytes.type_url in self._type_url_to_cls:
+      msg_cls = self._type_url_to_cls[typed_bytes.type_url]
+      msg = msg_cls()
+      msg.ParseFromString(msg_bytes) # TODO support text format
+      return msg
+    elif self._dynamic_factory is not None:
+      return self._dynamic_factory.dynamic_decode(typed_bytes)
+    else:
+      raise ValueError("Could not decode message from %s " % (typed_bytes,))
+
+  def get_msg_cls_for_type(self, type_url):
+    if type_url in self._type_url_to_cls:
+      return self._type_url_to_cls[type_url]
+    elif type_url in self._type_url_to_descriptor_data:
+      assert self._dynamic_factory
+      return self._dynamic_factory.get_msg_cls_for_type_url(type_url)
+  
+  def get_descriptor_data_for_type(
+            self,
+            type_url,
+            msg=None,
+            lazyily_register=True):
+      """Fetch the descriptor data for `type_url`; lazily deduce such
+      descriptor data and register it only if `lazyily_register`."""
+    
+    if type_url in self._type_url_to_descriptor_data:
+      return self._type_url_to_descriptor_data[type_url]
+    else:
+      if type_url in self._type_url_to_cls:
+        msg_cls = self._type_url_to_cls[type_url]
+        descriptor_data = build_fds_for_msg(msg_cls)
+      elif msg is not None:
+        descriptor_data = build_fds_for_msg(msg)
+      else:
+        raise KeyError("Can't find or build descriptor data for %s" % type_url)
+
+      if lazyily_register:
+        self.register_descriptor_data(type, descriptor_data)
+      return descriptor_data
+
+
+  ## Misc
+
+  def __init__(self):
+    self._type_url_to_cls = {}
+    self._dynamic_factory = None
+    self._type_url_to_descriptor_data = {}
+
+  def __str__(self):
+    return '\n'.join((
+      'PBSerdes',
+      'User-registered types:',
+      '\n'.join(sorted(self._type_url_to_cls.keys())),
+      '',
+      'Dynamic type support:',
+      str(self._dynamic_factory),
+    ))
+
+# TODO make thread-local
+DEFAULT_SERDES = PBSerdes.create_with_types(DEFAULT_MSG_TYPES)
+
+
+
+class DynamicMessageFactory(object):
+  def __init__(self):
+    from google.protobuf import symbol_database
+    self._db = symbol_database.Default()
+    self._registered_type_urls = set()
+    self._entryname_to_type_url = {}
+
+  @classmethod
+  def create_from_descriptor_pool_data(cls, dpd):
+    """Create a new `DynamicMessageFactory` instance from a
+    `protobag.DescriptorPoolData` message."""
+    f = cls()
+    f.register_entries(dpd.entryname_to_type_url)
+    for type_url, fds in dpd.type_url_to_descriptor.items():
+      f.register_type(type_url, fds)
+    return f
+
+  def register_entry(self, entryname, type_url):
+    self._entryname_to_type_url[entryname] = type_url
+  
+  def register_entries(self, entryname_to_type_url):
+    for entryname, type_url in entryname_to_type_url.items():
+      self.register_entry(entryname, type_url)
+
+  def register_type(self, type_url, fds):
+    if type_url not in self._registered_type_urls:
+      for fd in fds.file:
+        self._db.pool.Add(fd)
+      self._registered_type_urls.add(type_url)
+  
+  def dynamic_decode(self, typed_bytes):
+    """Decode the given `typed_bytes` into a Protobuf message instance of
+    either type `typed_bytes.type_url` or whatever type the entry
+    `typed_bytes.entryname` was indexed to have.
+    """
+    assert typed_bytes.type_url or typed_bytes.entryname, \
+      "Need a type_url or entryname"
+    
+    # Prefer entryname, which Protobag pins to a specific FileDescriptorSet
+    # at time of writing (in case the message type evolves between write 
+    # sessions).
+    if typed_bytes.entryname is not None:
+      assert typed_bytes.entryname in self._entryname_to_type_url, \
+        "Unregistered protobag entry: %s" % typed_bytes.entryname
+      typed_bytes.type_url = self._entryname_to_type_url[typed_bytes.entryname]
+    
+    try:
+      msg_cls = self.get_msg_cls_for_type_url(typed_bytes.type_url)
+    except Exception as e:
+      raise KeyError("Cannot dynamic decode %s: %s" % (typed_bytes, e))
+    
+    msg = msg_cls()
+    msg.ParseFromString(msg_bytes)
+      # TODO support text format
+    return msg
+  
+  def get_msg_cls_for_type_url(self, type_url):
+    # Based upon https://github.com/protocolbuffers/protobuf/blob/86b3ccf28ca437330cc42a2b3a75a1314977fcfd/python/google/protobuf/json_format.py#L397
+    type_name = type_url.split('/')[-1]
+    try:
+      descriptor = self._db.pool.FindMessageTypeByName(type_name)
+    except Exception as e:
+      raise KeyError(
+        "Could not find descriptor for %s: %s" % (type_url, e))
+
+    msg_cls = self._db.GetPrototype(descriptor)
+    return msg_cls
+
+  def __str__(self):
+    return '\n'.join((
+      'protobag.DynamicMessageFactory',
+      'Known types:',
+      '\n'.join(sorted(desc.name for desc in self._db._classes.keys())),
+      '',
+      'entryname -> type_url',
+      '\n'.join(
+        '%s -> %s' % (k, v)
+        for (k, v) in sorted(self._entryname_to_type_url.items()))
+    ))
+
+
+
+## ============================================================================
+## == Protobag <-> Tables of Rows =============================================
+## ============================================================================
+
+@attr.s(slots=True, eq=True, weakref_slot=False)
+class DictRowEntry(object):
+  
+  msg_dict = attr.ib(factory=dict, type=dict)
+  
+  entryname = attr.ib(default='', type='str')
+  type_url = attr.ib(default='', type='str')
+  topic = attr.ib(default='', type='str')
+  timestamp = attr.ib(default=None, type=Timestamp, converter=to_pb_timestamp)
+  descriptor_data = attr.ib(default=None)
+  serdes = attr.ib(default=DEFAULT_SERDES)
+
+  @classmethod
+  def from_entry(cls, entry):
+    if isinstance(entry, RawEntry):
+      msg_dict = {'protobag_raw_entry_bytes': entry.raw_bytes}
+    else:
+      msg_dict = json_format.MessageToDict(entry.msg)
+
+    return cls(
+      entryname=entry.entryname,
+      type_url=entry.type_url,
+      msg_dict=msg_dict,
+      
+      serdes=entry.serdes,
+      descriptor_data=
+        entry.serdes.get_descriptor_data_for_type(entry.type_url),
+
+      topic=entry.topic if isinstance(entry, StampedEntry) else ''
+      timestamp=entry.timestamp if isinstance(entry, StampedEntry) else None)
+
+  def is_raw_entry(self):
+    return 'protobag_raw_entry_bytes' in self.msg_dict
+  
+  def is_stamped_entry(self):
+    return self.topic and self.timestamp is not None
+
+  def to_entry(self):
+    if self.is_raw_entry():
+      return RawEntry(
+                entryname=self.entryname,
+                type_url='',
+                raw_bytes=self.msg_dict['protobag_raw_entry_bytes'],
+                serdes=self.serdes)
+    else:
+      if self.descriptor_data:
+        self.serdes.register_descriptor_data(
+          self.type_url,
+          self.descriptor_data)
+      msg_cls = self.serdes.get_msg_cls_for_type(self.type_url)
+      msg = msg_cls()
+      json_format.ParseDict(self.msg_dict, msg)
+
+      if self.is_stamped_entry():
+        return StampedEntry(
+                entryname=self.entryname,
+                type_url=self.type_url,
+                msg=msg,
+                
+                topic=self.topic,
+                timestamp=self.timestamp,
+                
+                serdes=self.serdes,
+                descriptor_data=self.descriptor_data)
+      else:
+        return MessageEntry(
+                entryname=self.entryname,
+                type_url=self.type_url,
+                msg=msg,
+                
+                serdes=self.serdes,
+                descriptor_data=self.descriptor_data)
+
+
+
+
+# """
+
+# RawEntry
+# Entry
+# StampedEntry
+
+# introduce the above so that users have a boxed thing for the write api
+
+
+# fix up _type_url_to_descriptor below
+
+# RowAdapter to/from rows.  
+# to row:
+#   * use protobuf to dict to make a dict
+#   * add in:
+#      * entryname
+#      * type_url
+#      * topic / timestamp if needed
+#      * descriptor_data from _type_url_to_descriptor thingy
+# from row:
+#   * need to use descriptor_data thing to go dict -> message instance
+#   * then create a RawEntry / Entry / StampedEntry instance based on what data
+#       we have (type_url and timestamp)
+
+# let's use spark as a demo parquet and sql solution.  kinda punt to athena
+# """
+
+
+# ## ============================================================================
+# ## == Protobuf Message Decoding ===============================================
+# ## ============================================================================
+
+
+
+# class PBDecoder(object):
+#   """Protobag-internal utility for deserializing (decoding) Protobuf messages
+#   from "typed byte strings."  Helps decode string-serialized messages using:
+#     * A known type URL for the message bytes
+#     * A reference set of user-provided Descriptors (protoc-generated python
+#         code)
+#     * Dynamic message decoding if the protoc-generated python Descriptors are
+#         unavailable but descriptors data *is* available (i.e. indexed into the
+#         protobag)
+#   """
+
+#   def __init__(self):
+#     self._type_url_to_cls = {}
+#     self._dynamic_factory = None
+
+#   @classmethod
+#   def create_with_types(cls, pb_msg_clss):
+#     decoder = cls()
+#     for msg_cls in pb_msg_clss:
+#       decoder.register_msg_type(msg_cls)
+#     return decoder
+
+#   def register_msg_type(self, pb_msg_cls):
+#     type_url = get_type_url(pb_msg_cls)
+#     self._type_url_to_cls[type_url] = pb_msg_cls
+
+#   def register_dynamic_types_from_index(self, bag_index):
+#     if hasattr(bag_index, 'descriptor_pool_data'):
+#       dpd = bag_index.descriptor_pool_data
+#       self._dynamic_factory = \
+#         DynamicMessageFactory.create_from_descriptor_pool_data(dpd)
+#           # TODO support multiple indices
+
+#   def decode(self, type_url, msg_bytes, entryname=None):
+#     """Decode string-serialized Protobuf message `msg_bytes`, interpreting
+#     the bytes as `type_url`, and return a decoded Protobuf message instance.
+#     Picks a message deserializer based upon:
+#      * `type_url`, the identifer of a message class that the user registered
+#         using `register_msg_type()`
+#      * using dynamic Protobuf message generation and Protobuf descriptor data
+#         indexed to the Protobag at write time (and that data has been made
+#         available through `register_dynamic_types_from_index()`)
+#     """
+#     if type_url in self._type_url_to_cls:
+      
+#       msg_cls = self._type_url_to_cls[type_url]
+#       msg = msg_cls()
+#       msg.ParseFromString(msg_bytes) # TODO support text format
+#       return msg
+
+#     elif self._dynamic_factory is not None:
+
+#       return self._dynamic_factory.dynamic_decode(
+#                     msg_bytes,
+#                     type_url=type_url,
+#                     entryname=entryname)
+
+#     else:
+      
+#       raise ValueError("Could not decode message for type %s " % type_url)
+    
+#   def __str__(self):
+#     return '\n'.join((
+#       'PBDecoder',
+#       'User-registered types:',
+#       '\n'.join(sorted(self._type_url_to_cls.keys())),
+#       '',
+#       'Dynamic type support:',
+#       str(self._dynamic_factory),
+#     ))
+
+# _DefaultPBDecoder = PBDecoder.create_with_types(DEFAULT_MSG_TYPES)
+
+
+
+
+
+
+
+# ## ============================================================================
+# ## == Entries (Reading) =======================================================
+# ## ============================================================================
+
+# class PBEntry(object):
+#   """A single entry in a protobag; analogous to a C++ `protobag::Entry`"""
+
+#   __slots__ = ['_nentry', '_pb_msg', '_decoder', '_topic', '_timestamp']
+
+#   def __init__(self, nentry=None, decoder=None):
+#     if nentry is None:
+#       from protobag.protobag_native import native_entry
+#       nentry = native_entry()
+#     self._nentry = nentry
+#     self._decoder = decoder or _DefaultPBDecoder
+#     self._pb_msg = None
+#     self._topic = None
+#     self._timestamp = None
+
+#   def __str__(self):
+#     lines = []
+#     if self.is_stamped_message():
+#       lines += [
+#         "Topic: %s" % self.topic,
+#         "Timestamp: %s sec  %s ns" % (
+#           self.timestamp.seconds, self.timestamp.nanos),
+#       ]
+#     lines += [
+#       "Entryname: %s" % self.entryname,
+#       "type_url: %s" % self.type_url,
+#       "size: %s bytes" % len(self.raw_msg_bytes),
+#     ]
+
+#     if self._pb_msg:
+#       lines.append("msg: \n%s\n" % str(self._pb_msg))
+#     else:
+#       lines.append("msg: (not yet deserialized)")
+    
+#     return "\n".join(lines)
+
+#   @property
+#   def entryname(self):
+#     return self._nentry.entryname
+  
+#   @property
+#   def raw_msg_bytes(self):
+#     return self._nentry.msg_bytes
+  
+#   @property
+#   def type_url(self):
+#     return self._nentry.type_url
+
+#   def get_msg(self):
+#     if not self._pb_msg:
+#       if self.type_url:
+#         # NB: If this is a Stamped Message, protobag_native will have already
+#         # unwrapped the StampedMessage wrapper.
+#         self._pb_msg = self._decoder.decode(self.type_url, self.raw_msg_bytes)
+#       else:
+#         # This message is raw
+#         self._pb_msg = self.raw_msg_bytes
+#     return self._pb_msg
+
+
+#   # For Stamped Messages only
+
+#   def is_stamped_message(self):
+#     return self._nentry.is_stamped
+
+#   @property
+#   def topic(self):
+#     assert self._nentry.is_stamped, "Not a stamped message"
+#     return self._nentry.topic
+  
+#   @property
+#   def timestamp(self):
+#     if not self._timestamp:
+#       assert self._nentry.is_stamped, "Not a stamped message"
+#       self._timestamp = Timestamp(
+#                             seconds=self._nentry.sec,
+#                             nanos=self._nentry.nanos)
+#     return self._timestamp
+
+
+
+

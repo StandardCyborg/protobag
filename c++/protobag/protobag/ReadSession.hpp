@@ -41,9 +41,6 @@ public:
 
   MaybeEntry GetNext();
 
-  // TODO: begin() end() interface? see do-while loop in demo
-  // TODO TypeResolver halper ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
   // Utilities
   
