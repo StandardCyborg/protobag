@@ -27,12 +27,14 @@ def to_std_msg(v):
 
 def test_type_url():
   msg = to_std_msg("foo")
-  assert protobag.get_type_url(msg) == 'type.googleapis.com/string'
+  assert protobag.get_type_url(msg) == \
+      'type.googleapis.com/protobag.StdMsg.String'
 
   msg = to_std_msg(1337)
-  assert protobag.get_type_url(msg) == 'type.googleapis.com/string'
+  assert protobag.get_type_url(msg) == \
+      'type.googleapis.com/protobag.StdMsg.Int'
 
-  with pytest.assert_raises(Exception):
+  with pytest.raises(Exception):
     protobag.get_type_url("junk")
 
 
@@ -40,17 +42,20 @@ def test_to_pb_timestamp():
   import datetime
   from google.protobuf.timestamp_pb2 import Timestamp
   
-  assert protobag.to_pb_timestamp(Timestamp(1337, 0)) == Timestamp(1337, 1337)
+  expected = Timestamp(seconds=1337, nanos=1337)
+  assert protobag.to_pb_timestamp(expected) == expected
 
-  assert protobag.to_pb_timestamp(1337) == Timestamp(1337, 0)
-  assert protobag.to_pb_timestamp(1337.1337) == Timestamp(1337, 1337)
-  assert protobag.to_pb_timestamp((1337, 1337)) == Timestamp(1337, 1337)
+  assert protobag.to_pb_timestamp(1337) == Timestamp(seconds=1337)
+  assert protobag.to_pb_timestamp(1337.1337) == \
+    Timestamp(seconds=1337, nanos=133700000)
+  assert protobag.to_pb_timestamp((1337, 1337)) == expected
 
   assert protobag.to_pb_timestamp(
-    datetime.datetime(second=1337, microsecond=1337)) == \
-      Timestamp(1337, 1337000)
+    datetime.datetime(
+      year=1970, month=1, day=1, second=13, microsecond=37)) == \
+      Timestamp(seconds=13, nanos=37000)
 
-  with pytest.assert_raises(ValueError):
+  with pytest.raises(ValueError):
     protobag.to_pb_timestamp("123")
 
 
@@ -60,24 +65,22 @@ def test_to_pb_timestamp():
 ## ============================================================================
 
 def test_typed_bytes():
-  t = TypedBytes(type_url='type_url', entryname='entryname')
-  assert str(t) == """
-    TypedBytes:
-      type_url: type_url
-      entryname: entryname
-      msg_bytes: None ... (0 bytes)
-    """
+  t = protobag.TypedBytes(type_url='type_url', entryname='entryname')
+  assert str(t) == (
+    "TypedBytes:\n"
+    "  type_url: type_url\n"
+    "  entryname: entryname\n"
+    "  msg_bytes: None ... (0 bytes)")
 
-  t = TypedBytes(
+  t = protobag.TypedBytes(
         type_url='type_url',
         entryname='entryname',
-        msg_bytes=bytearray('abc'))
-  assert str(t) == """
-    TypedBytes:
-      type_url: type_url
-      entryname: entryname
-      msg_bytes: abc ... (3 bytes)
-    """
+        msg_bytes=bytearray(b'abcabcabcabcabcabcabcabcabcabc'))
+  assert str(t) == (
+    "TypedBytes:\n"
+    "  type_url: type_url\n"
+    "  entryname: entryname\n"
+    "  msg_bytes: abcabcabcabcabcabcab ... (30 bytes)")
 
 
 

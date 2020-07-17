@@ -28,6 +28,8 @@ def to_pb_timestamp(v):
   """Try to convert value `v` to a Protobuf `Timestamp` instance."""
   if isinstance(v, Timestamp):
     return v
+  elif isinstance(v, (list, tuple)) and len(v) == 2:
+    return Timestamp(seconds=v[0], nanos=v[1])
   elif isinstance(v, datetime.datetime):
     ts = Timestamp()
     ts.FromDatetime(v)
@@ -550,8 +552,8 @@ class TypedBytes(object):
       '  type_url: %s' % self.type_url,
       '  entryname: %s' % self.entryname,
       '  msg_bytes: %s ... (%s bytes)' % (
-        self.msg_bytes[:20] if self.msg_bytes is not None else 'None',
-        len(self.msg_bytes) if self.msg_bytes is not None else 0)
+        self.msg_bytes[:20].decode() if self.msg_bytes is not None else 'None',
+        len(self.msg_bytes) if self.msg_bytes is not None else 0),
     ]
     return "\n".join(lines)
 
@@ -647,8 +649,8 @@ class PBSerdes(object):
             type_url,
             msg=None,
             lazyily_register=True):
-      """Fetch the descriptor data for `type_url`; lazily deduce such
-      descriptor data and register it only if `lazyily_register`."""
+    """Fetch the descriptor data for `type_url`; lazily deduce such
+    descriptor data and register it only if `lazyily_register`."""
     
     if type_url in self._type_url_to_descriptor_data:
       return self._type_url_to_descriptor_data[type_url]
@@ -802,7 +804,7 @@ class DictRowEntry(object):
       descriptor_data=
         entry.serdes.get_descriptor_data_for_type(entry.type_url),
 
-      topic=entry.topic if isinstance(entry, StampedEntry) else ''
+      topic=entry.topic if isinstance(entry, StampedEntry) else '',
       timestamp=entry.timestamp if isinstance(entry, StampedEntry) else None)
 
   def is_raw_entry(self):
