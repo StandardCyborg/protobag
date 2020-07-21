@@ -1,3 +1,5 @@
+import itertools
+
 import pytest
 
 import protobag
@@ -58,6 +60,141 @@ def test_to_pb_timestamp():
   with pytest.raises(ValueError):
     protobag.to_pb_timestamp("123")
 
+
+def test_to_sec_nanos():
+  import datetime
+  from google.protobuf.timestamp_pb2 import Timestamp
+
+  assert protobag.to_sec_nanos((1337, 1337)) == (1337, 1337)
+
+  assert \
+    protobag.to_sec_nanos(Timestamp(seconds=1337, nanos=1337)) == (1337, 1337)
+
+  assert protobag.to_sec_nanos(1337) == (1337, 0)
+  assert protobag.to_sec_nanos(1337.1337) == (1337, 133700000)
+
+  assert \
+    protobag.to_sec_nanos(
+      datetime.datetime(
+      year=1970, month=1, day=1, second=13, microsecond=37)) \
+        == (13, 37000)
+    
+  with pytest.raises(ValueError):
+    protobag.to_sec_nanos("123")
+
+  with pytest.raises(ValueError):
+    protobag.to_sec_nanos((1, 2, 3))
+
+
+def test_to_topic_time():
+  from google.protobuf.timestamp_pb2 import Timestamp
+  from protobag.ProtobagMsg_pb2 import TopicTime
+
+  assert protobag.to_topic_time(TopicTime()) == TopicTime()
+
+  assert \
+    protobag.to_topic_time({'topic': 't', 'timestamp': 1.1}) == \
+      TopicTime(topic='t', timestamp=Timestamp(seconds=1, nanos=100000000))
+  
+  assert \
+    protobag.to_topic_time(('t', 1.1)) == \
+      TopicTime(topic='t', timestamp=Timestamp(seconds=1, nanos=100000000))
+  
+  with pytest.raises(ValueError):
+    protobag.to_topic_time("foo")
+
+
+def test_build_fds_for_msg():
+  from protobag.ProtobagMsg_pb2 import TopicTime
+  fds = protobag.build_fds_for_msg(TopicTime)
+  actual_types = sorted(list(itertools.chain.from_iterable(
+    (f.package + '.' + t.name for t in f.message_type)
+    for f in fds.file)))
+  
+  expected_types = (
+    # These types get pulled in by `build_fds_for_msg()` naively grabbing
+    # everything else in the package that contains the target type TopicTime
+    'protobag.BagIndex',
+    'protobag.Selection',
+    'protobag.StampedMessage',
+    'protobag.StdMsg',
+    'protobag.TopicTime',
+    
+    # These protobuf types get pulled in by `build_fds_for_msg()` 
+    # looking for transitive dependencies.  So for example, if google's 
+    # Timestamp message changes, then our snapshot of TopicTime will
+    # capture the version of Timestamp used when the TopicTime message was
+    # recorded
+    'google.protobuf.Any',
+    'google.protobuf.DescriptorProto',
+    'google.protobuf.EnumDescriptorProto',
+    'google.protobuf.EnumOptions',
+    'google.protobuf.EnumValueDescriptorProto',
+    'google.protobuf.EnumValueOptions',
+    'google.protobuf.ExtensionRangeOptions',
+    'google.protobuf.FieldDescriptorProto',
+    'google.protobuf.FieldOptions',
+    'google.protobuf.FileDescriptorProto',
+    'google.protobuf.FileDescriptorSet',
+    'google.protobuf.FileOptions',
+    'google.protobuf.GeneratedCodeInfo',
+    'google.protobuf.MessageOptions',
+    'google.protobuf.MethodDescriptorProto',
+    'google.protobuf.MethodOptions',
+    'google.protobuf.OneofDescriptorProto',
+    'google.protobuf.OneofOptions',
+    'google.protobuf.ServiceDescriptorProto',
+    'google.protobuf.ServiceOptions',
+    'google.protobuf.SourceCodeInfo',
+    'google.protobuf.Timestamp',
+    'google.protobuf.UninterpretedOption',
+  )
+  assert actual_types == sorted(expected_types)
+
+
+## ============================================================================
+## == Tet Public API ==========================================================
+## ============================================================================
+
+def test_msg_entry_print():
+  entry = protobag.MessageEntry.from_msg(
+            entryname='my_entry',
+            msg=to_std_msg('foo'))
+  assert str(entry) == (
+    "MessageEntry:\n"
+    "  entryname: my_entry\n"
+    "  type_url: type.googleapis.com/protobag.StdMsg.String\n"
+    "  has serdes: False\n"
+    "  has descriptor_data: False\n"
+    "  msg:\n"
+    "value: \"foo\"\n")
+
+
+def test_raw_entry_print():
+  entry = protobag.RawEntry.from_bytes(
+            entryname='my_entry',
+            raw_bytes=bytearray(b'abcabcabcabcabcabcabcabcabcabc'))
+  assert str(entry) == (
+    "RawEntry:\n"
+    "  entryname: my_entry\n"
+    "  raw_bytes: abcabcabcabcabcabcab ... (30 bytes)")
+
+
+def test_stamped_entry_print():
+  entry = protobag.StampedEntry.from_msg(
+            topic='my_topic',
+            timestamp=(1337, 1337),
+            msg=to_std_msg('foo'))
+  assert str(entry) == (
+    "StampedEntry:\n"
+    "  topic: my_topic\n"
+    "  timestamp: 1337 sec  1337 ns\n"
+    "  type_url: type.googleapis.com/protobag.StdMsg.String\n"
+    "  entryname: \n"
+    "  has serdes: False\n"
+    "  has descriptor_data: False\n"
+    "  msg:\n"
+    "value: \"foo\"\n")
 
 
 ## ============================================================================

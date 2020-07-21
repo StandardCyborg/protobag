@@ -57,8 +57,8 @@ def to_sec_nanos(v):
   elif isinstance(v, datetime.datetime):
     import calendar
     return (
-      calendar.timegm(dt.utctimetuple()), # seconds
-      dt.microsecond * 1000)              # nanos
+      calendar.timegm(v.utctimetuple()), # seconds
+      v.microsecond * 1000)              # nanos
   elif isinstance(v, int):
     return (v, 0)
   elif isinstance(v, float):
@@ -112,10 +112,11 @@ def build_fds_for_msg(msg):
   See also `protobag::DynamicMsgFactory` in C++.
 
   We run a BFS of `msg`'s descriptor and its dependencies to collect all
-  data necessary to decode a `msg` instance.  The algorithm below mirrors that
-  in `protobag::BagIndexBuilder::Observe()`.  We must run this collection in
-  python because (we assume) we only have the Protobuf python-generated code
-  available for `msg` in this code path.
+  data necessary to decode a `msg` instance.  (NB: the current search is today
+  over-complete and pulls in unrelated types, too).  The algorithm below
+  mirrors that in `protobag::BagIndexBuilder::Observe()`.  We must run this
+  collection in python (and not C++) because we assume we only have the
+  Protobuf python-generated code available for `msg` in this code path.
 
   Args:
       msg (Protobuf message or class): Build a `FileDescriptorSet` based upon
@@ -158,7 +159,8 @@ def build_fds_for_msg(msg):
 
 @attr.s(slots=True, eq=True, weakref_slot=False)
 class Entry(object):
-  """A Protobag Entry, similar to a c++ `protobag::Entry`."""
+  """A Protobag Entry, similar to a c++ `protobag::Entry`.  You should probably
+  use a subclass like `MessageEntry`, `StampedEntry`, or `RawEntry` below."""
 
   ## Core Data
   
@@ -204,6 +206,14 @@ class MessageEntry(Entry):
   """google.protobuf.message.Message: Raw message contents"""
 
   @classmethod
+  def from_msg(cls, entryname, msg, **kwargs):
+    return cls(
+            entryname=entryname,
+            msg=msg,
+            type_url=get_type_url(msg),
+            **kwargs)
+
+  @classmethod
   def from_nentry(cls, nentry, serdes=None):
     msg = serdes.msg_from_typed_bytes(
             TypedBytes(
@@ -216,6 +226,17 @@ class MessageEntry(Entry):
       type_url=nentry.type_url,
       serdes=serdes,
       msg=msg)
+  
+  def __str__(self):
+    lines = [
+      'MessageEntry:',
+      '  entryname: %s' % self.entryname,
+      '  type_url: %s' % self.type_url,
+      '  has serdes: %s' % (self.serdes is not None),
+      '  has descriptor_data: %s' % (self.descriptor_data is not None),
+      '  msg:\n%s' % str(self.msg), # Uses protobuf text_format
+    ]
+    return "\n".join(lines)
 
 
 @attr.s(slots=True, eq=True, weakref_slot=False)
@@ -235,6 +256,15 @@ class StampedEntry(MessageEntry):
   entry"""
 
   @classmethod
+  def from_msg(cls, topic, timestamp, msg, **kwargs):
+    return cls(
+            topic=topic,
+            timestamp=to_pb_timestamp(timestamp),
+            type_url=get_type_url(msg),
+            msg=msg,
+            **kwargs)
+
+  @classmethod
   def from_nentry(cls, nentry, serdes=None):
     msg_entry = MessageEntry.from_nentry(nentry, serdes=serdes)
 
@@ -245,6 +275,20 @@ class StampedEntry(MessageEntry):
                   seconds=nentry.sec,
                   nanos=nentry.nanos),
       **attr.asdict(msg_entry))
+
+  def __str__(self):
+    lines = [
+      'StampedEntry:',
+      '  topic: %s' % self.topic,
+      '  timestamp: %s sec  %s ns' % (
+                self.timestamp.seconds, self.timestamp.nanos),
+      '  type_url: %s' % self.type_url,
+      '  entryname: %s' % self.entryname,
+      '  has serdes: %s' % (self.serdes is not None),
+      '  has descriptor_data: %s' % (self.descriptor_data is not None),
+      '  msg:\n%s' % str(self.msg), # Uses protobuf text_format
+    ]
+    return "\n".join(lines)
 
 
 @attr.s(slots=True, eq=True, weakref_slot=False)
@@ -259,6 +303,14 @@ class RawEntry(Entry):
   """bytearray: Raw message contents"""
 
   @classmethod
+  def from_bytes(cls, entryname, raw_bytes, **kwargs):
+    return cls(
+            entryname=entryname,
+            raw_bytes=raw_bytes,
+            type_url='', # Raw messages have no type
+            **kwargs)
+
+  @classmethod
   def from_nentry(cls, nentry, serdes=None):
     return cls(
       entryname=nentry.entryname,
@@ -266,6 +318,16 @@ class RawEntry(Entry):
       serdes=serdes,
 
       raw_bytes=nentry.msg_bytes)
+  
+  def __str__(self):
+    lines = [
+      'RawEntry:',
+      '  entryname: %s' % self.entryname,
+      '  raw_bytes: %s ... (%s bytes)' % (
+        self.raw_bytes[:20].decode() if self.raw_bytes is not None else 'None',
+        len(self.raw_bytes) if self.raw_bytes is not None else 0),
+    ]
+    return "\n".join(lines)
 
 
 ###
@@ -274,12 +336,12 @@ class RawEntry(Entry):
 
 class Protobag(object):
 
-  def __init__(self, path=None, decoder=None, msg_classes=None):
+  def __init__(self, path=None, serdes=None, msg_classes=None):
     """TODO
     """
   
     self._path = str(path or '')
-    self._decoder = decoder
+    self._serdes = serdes
     self._writer = None
     if msg_classes is not None:
       for msg_cls in msg_classes:
@@ -289,10 +351,10 @@ class Protobag(object):
   ## Utils
 
   @property
-  def decoder(self):
-    if self._decoder is None:
-      self._decoder = copy.deepcopy(_DefaultPBDecoder)
-    return self._decoder
+  def serdes(self):
+    if self._serdes is None:
+      self._serdes = copy.deepcopy(DEFAULT_SERDES)
+    return self._serdes
   
   @property
   def path(self):
@@ -300,7 +362,7 @@ class Protobag(object):
 
   def register_msg_type(self, msg_cls):
     """Shortcut to update the wrapped decoder"""
-    self.decoder.register_msg_type(msg_cls)
+    self.serdes.register_msg_type(msg_cls)
 
 
   ## Reading
@@ -330,7 +392,7 @@ class Protobag(object):
         normal protobuf deserialization.
     
     Returns:
-    Generates `PBEntry` instances
+    Generates `Entry` subclass instances
     """
 
     if selection is None:
@@ -341,13 +403,13 @@ class Protobag(object):
       selection_bytes = selection
     
     if dynamic_decode:
-      self.decoder.register_dynamic_types_from_index(self.get_bag_index())
+      self.serdes.register_dynamic_types_from_index(self.get_bag_index())
 
     from protobag.protobag_native import Reader
     reader = Reader()
     reader.start(self._path, selection_bytes)
     for nentry in reader:
-      yield PBEntry(nentry=nentry, decoder=self.decoder)
+      yield Entry.from_nentry(nentry, serdes=self.serdes)
   
   def get_entry(self, entryname):
     """Convenience for getting a single entry with `entryname`."""
@@ -630,7 +692,7 @@ class PBSerdes(object):
     if typed_bytes.type_url in self._type_url_to_cls:
       msg_cls = self._type_url_to_cls[typed_bytes.type_url]
       msg = msg_cls()
-      msg.ParseFromString(msg_bytes) # TODO support text format
+      msg.ParseFromString(typed_bytes.msg_bytes) # TODO support text format
       return msg
     elif self._dynamic_factory is not None:
       return self._dynamic_factory.dynamic_decode(typed_bytes)
@@ -685,7 +747,7 @@ class PBSerdes(object):
       str(self._dynamic_factory),
     ))
 
-# TODO make thread-local
+# TODO make thread-local ?
 DEFAULT_SERDES = PBSerdes.create_with_types(DEFAULT_MSG_TYPES)
 
 
@@ -784,7 +846,10 @@ class DictRowEntry(object):
   entryname = attr.ib(default='', type='str')
   type_url = attr.ib(default='', type='str')
   topic = attr.ib(default='', type='str')
-  timestamp = attr.ib(default=None, type=Timestamp, converter=to_pb_timestamp)
+  timestamp = attr.ib(
+    default=None,
+    type=Timestamp,
+    converter=lambda v: to_pb_timestamp(v) if v is not None else v)
   descriptor_data = attr.ib(default=None)
   serdes = attr.ib(default=DEFAULT_SERDES)
 
@@ -802,7 +867,9 @@ class DictRowEntry(object):
       
       serdes=entry.serdes,
       descriptor_data=
-        entry.serdes.get_descriptor_data_for_type(entry.type_url),
+        entry.serdes.get_descriptor_data_for_type(entry.type_url)
+        if not isinstance(entry, RawEntry)
+        else None,
 
       topic=entry.topic if isinstance(entry, StampedEntry) else '',
       timestamp=entry.timestamp if isinstance(entry, StampedEntry) else None)
