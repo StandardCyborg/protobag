@@ -413,7 +413,7 @@ class Protobag(object):
   
   def get_entry(self, entryname):
     """Convenience for getting a single entry with `entryname`."""
-    sel = SelectionBuilder.get_entry(entryname)
+    sel = SelectionBuilder.select_entry(entryname)
     for entry in self.iter_entries(selection=sel):
       return entry
     raise KeyError("Protobag %s missing entry %s" % (self._path, entryname))
@@ -804,7 +804,7 @@ class DynamicMessageFactory(object):
       raise KeyError("Cannot dynamic decode %s: %s" % (typed_bytes, e))
     
     msg = msg_cls()
-    msg.ParseFromString(msg_bytes)
+    msg.ParseFromString(typed_bytes.msg_bytes)
       # TODO support text format
     return msg
   
