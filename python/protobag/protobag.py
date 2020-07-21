@@ -659,7 +659,11 @@ class PBSerdes(object):
     
   def register_descriptor_data(self, type_url, descriptor_data):
     if type_url not in self._type_url_to_descriptor_data:
-      if isinstance(descriptor_data, six.string_types):
+      is_binary = (
+        isinstance(descriptor_data, six.string_types) or
+        isinstance(descriptor_data, six.binary_type) or
+        isinstance(descriptor_data, bytearray))
+      if is_binary:
         from google.protobuf.descriptor_pb2 import FileDescriptorSet
         fds = FileDescriptorSet()
         fds.ParseFromString(descriptor_data)
@@ -668,7 +672,7 @@ class PBSerdes(object):
       self._type_url_to_descriptor_data[type_url] = descriptor_data
 
       if self._dynamic_factory is None:
-        self._dynamic_factory = DynamicMessageFactory
+        self._dynamic_factory = DynamicMessageFactory()
       self._dynamic_factory.register_type(type_url, descriptor_data)
 
   ## I/O
@@ -838,6 +842,12 @@ class DynamicMessageFactory(object):
 ## == Protobag <-> Tables of Rows =============================================
 ## ============================================================================
 
+def to_pb_timestamp_safe(v):
+  try:
+    return to_pb_timestamp(v)
+  except Exception:
+    return None
+
 @attr.s(slots=True, eq=True, weakref_slot=False)
 class DictRowEntry(object):
   
@@ -847,9 +857,7 @@ class DictRowEntry(object):
   type_url = attr.ib(default='', type='str')
   topic = attr.ib(default='', type='str')
   timestamp = attr.ib(
-    default=None,
-    type=Timestamp,
-    converter=lambda v: to_pb_timestamp(v) if v is not None else v)
+    default=None, type=Timestamp, converter=to_pb_timestamp_safe)
   descriptor_data = attr.ib(default=None)
   serdes = attr.ib(default=DEFAULT_SERDES)
 
@@ -870,6 +878,7 @@ class DictRowEntry(object):
         entry.serdes.get_descriptor_data_for_type(entry.type_url)
         if not isinstance(entry, RawEntry)
         else None,
+          # TODO use a cached string so we don't create tons of large string copies
 
       topic=entry.topic if isinstance(entry, StampedEntry) else '',
       timestamp=entry.timestamp if isinstance(entry, StampedEntry) else None)
@@ -878,7 +887,7 @@ class DictRowEntry(object):
     return 'protobag_raw_entry_bytes' in self.msg_dict
   
   def is_stamped_entry(self):
-    return self.topic and self.timestamp is not None
+    return self.topic and (self.timestamp is not None)
 
   def to_entry(self):
     if self.is_raw_entry():
@@ -916,7 +925,34 @@ class DictRowEntry(object):
                 serdes=self.serdes,
                 descriptor_data=self.descriptor_data)
 
+  def __str__(self):
+    import pprint
 
+    def get_descriptor_data_formatted():
+      v = self.descriptor_data
+      if isinstance(v, six.string_types):
+        return "(binary) %s ... (%s bytes)" % (v[:20].decode(), len(v))
+      elif hasattr(v, 'DESCRIPTOR'):
+        return "(protobuf message) %s %s (%s bytes)" % (
+          v.DESCRIPTOR.full_name,
+          str(v)[:20],
+          len(v.SerializeToString()))
+      else:
+        return str(v)
+
+    return '\n'.join((
+      'protobag.DictRowEntry:',
+      '  entryname: %s' % self.entryname,
+      '  topic: %s timestamp %s' % (
+        self.topic,
+        '%s sec %s ns' % (self.timestamp.seconds, self.timestamp.nanos)
+        if self.timestamp is not None
+        else ''),
+      '  type_url: %s' % self.type_url,
+      '  has serdes: %s' % (self.serdes is not None),
+      '  descriptor_data: %s' % get_descriptor_data_formatted(),
+      '  msg_dict:\n %s' % pprint.pformat(self.msg_dict),
+    ))
 
 
 # """
