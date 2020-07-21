@@ -4,10 +4,9 @@
 #include <filesystem>
 #include <fstream>
 
-                                                                        #include <iostream>
-
 #include <fmt/format.h>
 
+#include "protobag/ArchiveUtil.hpp"
 #include "protobag/Utils/Tempfile.hpp"
 
 namespace protobag {
@@ -15,29 +14,14 @@ namespace archive {
   
 namespace fs = std::filesystem;
 
-// NB: http://0x80.pl/notesen/2019-01-07-cpp-read-file.html
-// We use C++ Filesystem POSIX-backed API because it's the fastest
-std::string ReadFile(const fs::path &path) {
-  std::FILE* f = std::fopen(path.string().c_str(), "r");
-  if (!f) {
-    return "";
-  }
-
-  const auto f_size = fs::file_size(path);
-  std::string res;
-  res.resize(f_size);
-
-  std::fread(&res[0], 1, f_size, f);
-
-  std::fclose(f);
-  return res;
-}
-
 std::string CanonicalEntryname(const std::string &entryname) {
   // Trim leading path sep from `entryname`, or else std::filesytem
   // will throw out the `_spec.path` base directory part.
   std::string entry_path_rel = entryname;
-  if (!entry_path_rel.empty() && entry_path_rel[0] == fs::path::preferred_separator) {
+  if (
+    !entry_path_rel.empty() && entry_path_rel[0] ==
+    fs::path::preferred_separator) {
+    
     entry_path_rel = entry_path_rel.substr(1, entry_path_rel.size() - 1);
   }
   return entry_path_rel;
@@ -76,17 +60,15 @@ std::vector<std::string> DirectoryArchive::GetNamelist() {
   return paths;
 }
 
-Result<std::string> 
-  DirectoryArchive::ReadAsStr(const std::string &entryname) {
+Archive::ReadStatus DirectoryArchive::ReadAsStr(const std::string &entryname) {
 
   std::string entry_path_rel = CanonicalEntryname(entryname);
   fs::path entry_path = fs::path(_spec.path) / entry_path_rel;
   if (!fs::is_regular_file(entry_path)) {
-    return Result<std::string>::Err(
-      fmt::format("Entry {} not found in {}", entryname, ToString()));
+    return Archive::ReadStatus::EntryNotFound();
   }
 
-  return {.value = ReadFile(entry_path.u8string())};
+  return Archive::ReadStatus::OK(ReadFile(entry_path.u8string()));
 }
 
 OkOrErr DirectoryArchive::Write(

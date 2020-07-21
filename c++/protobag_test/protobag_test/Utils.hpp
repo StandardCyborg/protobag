@@ -9,10 +9,15 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <filesystem>
 
 #include "protobag/archive/Archive.hpp"
+#include "protobag/archive/MemoryArchive.hpp"
+#include "protobag/Utils/Tempfile.hpp"
+#include "protobag/ReadSession.hpp"
+#include "protobag/WriteSession.hpp"
 
 namespace protobag_test {
 
@@ -28,7 +33,9 @@ inline fs::path GetFixture(PathT fname) {
   }
 }
 
-inline fs::path CreateTempDir(const std::string &testname, bool clean=true) {
+// Create a "temp dir" for a test using a path that's not random across runs--
+// so you can easily look at output in the dir while iterating on a test.
+inline fs::path CreateTestTempdir(const std::string &testname, bool clean=true) {
   fs::path tempdir = 
     fs::temp_directory_path() / 
         fs::path("protobag-test") /
@@ -43,7 +50,9 @@ inline fs::path CreateTempDir(const std::string &testname, bool clean=true) {
 
 
 inline
-protobag::archive::Archive::Ptr OpenAndCheck(const protobag::archive::Archive::Spec &spec) {
+protobag::archive::Archive::Ptr OpenAndCheck(
+    protobag::archive::Archive::Spec spec) {
+  
   auto result = protobag::archive::Archive::Open(spec);
   if (!result.IsOk()) {
     throw std::runtime_error(result.error);
@@ -57,6 +66,114 @@ protobag::archive::Archive::Ptr OpenAndCheck(const protobag::archive::Archive::S
   return ar;
 }
 
+template <typename EntryContainerT>
+std::shared_ptr<protobag::archive::MemoryArchive> CreateMemoryArchive(
+    const EntryContainerT &entries) {
+
+  auto buffer = protobag::archive::MemoryArchive::Create();
+  
+  {
+    auto maybe_ws = protobag::WriteSession::Create({
+      .archive_spec = {
+        .mode="write",
+        .format="memory",
+        .memory_archive=buffer,
+      },
+    });
+    if (!maybe_ws.IsOk()) {
+      throw std::runtime_error(maybe_ws.error);
+    }
+    auto &writer = **maybe_ws.value;
+
+    for (const auto &entry : entries) {
+      auto status = writer.WriteEntry(entry);
+      if (!status.IsOk()) {
+        throw std::runtime_error(status.error);
+      }
+    }
+    writer.Close();
+  }
+
+  return buffer;
+}
+
+template <typename EntryContainerT>
+protobag::ReadSession::Ptr CreateInMemoryReadSession(
+    const protobag::Selection &sel,
+    const EntryContainerT &entries) {
+
+  auto fixture = CreateMemoryArchive(entries);
+  
+  auto result = protobag::ReadSession::Create({
+    .archive_spec = {
+      .mode="read",
+      .format="memory",
+      .memory_archive=fixture,
+    },
+    .selection = sel,
+  });
+  if (!result.IsOk()) {
+    throw std::runtime_error(result.error);
+  }
+
+  auto rs = *result.value;
+  if (!rs) {
+    throw std::runtime_error("Null pointer exception: bad result object");
+  }
+
+  return rs;
+}
+
+inline
+void CheckHasCommand(const std::string &cmd) {
+  std::string full_cmd = fmt::format(
+    "which {} >> /dev/null 2>&1",
+    cmd);
+  auto ret = std::system(full_cmd.c_str());
+  if (ret != 0) {
+    throw std::runtime_error(
+      fmt::format("CheckHasCommand failed: don't have {}", cmd));
+  }
+}
+
+inline
+void RunCMDAndCheckOutput(
+    const std::string &cmd,
+    const std::string &expected_output,
+    std::string outpath="") {
+
+  if (outpath.empty()) {
+    auto maybeTempdir = protobag::CreateTempdir();
+    if (!maybeTempdir.IsOk()) {
+      throw std::runtime_error(fmt::format(
+        "Could not create tempdir: {}", maybeTempdir.error));
+    }
+    auto tempdir = fs::path(*maybeTempdir.value);
+    outpath = (tempdir / "RunCMDAndCheckOutput_out.txt").u8string();
+  }
+
+  std::string full_cmd = fmt::format("{} > {}", cmd, outpath);
+  auto ret = std::system(full_cmd.c_str());
+  if (ret != 0) {
+    throw std::runtime_error(fmt::format(
+      "RunCMDAndCheckOutput: command {} returned {}",
+      full_cmd,
+      ret));
+  }
+
+  {
+    std::string contents;
+    std::ifstream fin(outpath);
+    fin >> contents;
+    if (contents != expected_output) {
+      throw std::runtime_error(fmt::format(
+        "RunCMDAndCheckOutput:\n\ncmd:\n\n{}\nexpected:\n{}\n\nactual:\n{}",
+        full_cmd,
+        expected_output,
+        contents));
+    }
+  }
+}
 
 // GTest appears to lack a sequence checker... so here is one!
 template <typename ExpectedBT,

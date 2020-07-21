@@ -9,6 +9,13 @@
 namespace protobag {
 namespace archive {
 
+class MemoryArchive;
+
+// Try to return a valid value for `Spec.format` below given a file `path`
+// based on the path's filename extension (or if `path` is an existing
+// directory).  May return "" -- no format detected.
+std::string InferFormat(const std::string &path);
+
 // An interface abstracting away the archive 
 class Archive {
 public:
@@ -26,8 +33,16 @@ public:
       //   "<tempfile>" - Generate a 
     std::string format;
       // Choices:
+      //   "memory" - Simply use an in-memory hashmap to store all archive
+      //     data.  Does not require a 3rd party back-end.  Most useful for
+      //     testing.
       //   "directory" - Simply use an on-disk directory as an "archive". Does
       //     not require a 3rd party back-end.
+      //   "zip", "tar" - Use a LibArchiveArchive back-end to write a
+      //     zip/tar/etc archive
+    std::shared_ptr<MemoryArchive> memory_archive;
+      // Optional: when using "memory" format, use this `memory_archive`
+      // instead of creating a new one.
     // clang-format on
     static Spec WriteToTempdir() {
       return {
@@ -40,13 +55,40 @@ public:
   static Result<Ptr> Open(const Spec &s=Spec::WriteToTempdir());
   virtual void Close() { }
 
-  // Reading
+  // Reading ------------------------------------------------------------------
   virtual std::vector<std::string> GetNamelist() { return {}; }
-  virtual Result<std::string> ReadAsStr(const std::string &entryname) {
-    return Result<std::string>::Err("Reading unsupported in base");
+
+
+  // A Result<string> with special status codes for "entry not found" (which
+  // sometimes is an acceptable error) as well as "end of archive."  The
+  // string value is the payload data read.
+  struct ReadStatus : public Result<std::string> {
+    static ReadStatus EntryNotFound() { return Err("EntryNotFound"); }
+    bool IsEntryNotFound() const { return error == "EntryNotFound"; }
+    
+    // static ReadStatus EndOfArchive() { return Err("EndOfArchive"); }
+    // bool IsEndOfArchive() const { return error == "EndOfArchive"; }
+
+    static ReadStatus Err(const std::string &s) {
+      ReadStatus st; st.error = s; return st;
+    }
+
+    static ReadStatus OK(std::string &&s) {
+      ReadStatus st; st.value = std::move(s); return st;
+    }
+
+    bool operator==(const ReadStatus &other) const {
+      return error == other.error && value == other.value;
+    }
+  };
+
+  virtual ReadStatus ReadAsStr(const std::string &entryname) {
+    return ReadStatus::Err("Reading unsupported in base");
   }
 
-  // Writing
+  // TODO: bulk reads of several entries, probably be faster
+
+  // Writing ------------------------------------------------------------------
   virtual OkOrErr Write(
     const std::string &entryname, const std::string &data) {
       return OkOrErr::Err("Writing unsupported in base");

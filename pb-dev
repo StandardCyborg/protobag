@@ -4,6 +4,11 @@
 """
 pb-dev: A CLI for Protobag development
 TODO examples
+
+## Development
+
+When creating a new version:
+ 1. Edit protobag_version.txt
 """
 
 import os
@@ -11,12 +16,11 @@ import platform
 import subprocess
 import sys
 
-
 ###############################################################################
 ## Env Configuration
 
 CONTAINER_NAME = 'protobag-dev-' + os.environ.get('USER', 'anon')
-CONTAINER_IMAGE = 'protobag' # need version  ---------------------------------------------------------------
+IMAGE_NAME = 'protobag'
 
 ###############################################################################
 ## Setup Hints
@@ -65,7 +69,7 @@ To install docker-machine:
 ## Logging
 import logging
 LOG_FORMAT = ""#"%(asctime)s\t%(name)-4s %(process)d : %(message)s"
-log = logging.getLogger("ppg")
+log = logging.getLogger("pbd")
 log.setLevel(logging.INFO)
 console_handler = logging.StreamHandler(sys.stderr)
 console_handler.setFormatter(logging.Formatter(LOG_FORMAT))
@@ -96,6 +100,12 @@ def run_cmd(cmd, collect=False, quiet=False):
     log.info("... done with %s " % cmd)
   
   return out
+
+
+def get_version(src_root=os.path.dirname(os.path.abspath(__file__))):
+  version_path = os.path.join(src_root, 'protobag_version.txt')
+  assert os.path.exists(version_path)
+  return open(version_path, 'r').read().strip()
 
 
 def is_cmd_missing(cmd):
@@ -155,12 +165,25 @@ def create_arg_parser():
   parser.add_argument(
     '--build-env', default=False, action='store_true',
     help='Build the Dockerized dev env')
+  
   parser.add_argument(
     '--shell', default=False, action='store_true',
     help='Drop into a dockerized dev environment')
   parser.add_argument(
     '--shell-rm', default=False, action='store_true',
     help='Delete the dockerized dev environment')
+  
+  parser.add_argument(
+    '--test', default=False, action='store_true',
+    help='Build and run all tests')
+  parser.add_argument(
+    '--test-in-container', default=False, action='store_true',
+    help='Build and run all tests in a containerized environment')
+  
+  parser.add_argument(
+    '--run-protoc', default=False, action='store_true',
+    help='Re-generate protoc-generated files, updating the source tree '
+         'in-place')
   parser.add_argument(
     '--post-release', default=False, action='store_true',
     help='Run the post-release workflow; run this on master after merging '
@@ -172,33 +195,41 @@ def create_arg_parser():
 def build_env(args):
   raise_if_no_docker()
 
-  # TODO(tag with version etc)
+  version = get_version(args.root)
+  
   CMD = """
-    docker build -t {image} -f {dockerfile} {docker_root}
+    docker build -t {image}:{version} -f {dockerfile} {docker_root}
   """.format(
-    image=CONTAINER_IMAGE,
+    image=IMAGE_NAME,
     dockerfile=os.path.join(args.root, 'docker/Dockerfile'),
-    docker_root=args.root)
+    docker_root=args.root,
+    version=version)
   
   run_cmd(CMD)
 
 
 def post_release(args):
-  print('todo get_version')
-  version = 'v0.0.1'
+  version = get_version(args.root)
   
   # Tag for cocoapods release
-  print('todo: podspec version matches version')
+  print('todo: podspec version needs to match version')
   CMD = """
     git tag -f {version} && git push -f origin {version}
   """.format(version=version)
   run_cmd(CMD)
 
 
-def start_container(src_root, container_name=CONTAINER_NAME, mnt_local_root=True):
+def start_container(
+      src_root,
+      container_name=CONTAINER_NAME,
+      mnt_local_root=True):
+  
   local_mount = ''
   if mnt_local_root:
     local_mount = '-v %s:/opt/protobag:z' % src_root
+
+  version = get_version(src_root)
+  docker_image = IMAGE_NAME + ":" + version
 
   CMD = """
       docker run
@@ -210,13 +241,40 @@ def start_container(src_root, container_name=CONTAINER_NAME, mnt_local_root=True
     """.format(
           container_name=container_name,
           local_mount=local_mount,
-          docker_image=CONTAINER_IMAGE)
+          docker_image=docker_image)
   run_cmd(CMD)
 
 
 def enter_container(container_name=CONTAINER_NAME):
   EXEC_CMD = 'docker exec -it %s bash' % container_name
   os.execvp("docker", EXEC_CMD.split(' '))
+
+
+def run_tests(src_root):
+  import multiprocessing
+
+  log.info("Running C++ tests ...")
+  CMD = """
+    cd {src_root} &&
+    mkdir -p c++/build &&
+    cd c++/build &&
+    cmake -DCMAKE_BUILD_TYPE=DEBUG .. &&
+    make -j {n_proc} &&
+    ./protobag_test
+  """.format(
+    src_root=src_root,
+    n_proc=multiprocessing.cpu_count())
+  run_cmd(CMD)
+  log.info("... done with C++ tests.")
+
+
+def run_in_container(cmd, src_root, container_name='pbdev-temp'):
+  start_container(src_root, container_name=container_name)
+  EXEC_CMD = """
+    docker exec -it {container_name} bash -c "{cmd}"
+  """.format(container_name=container_name, cmd=cmd)
+  run_cmd(EXEC_CMD)
+  run_cmd("docker rm -f %s || true" % container_name)
 
 
 def main(args=None):
@@ -235,17 +293,28 @@ def main(args=None):
     CMD = "docker rm -f %s || true" % CONTAINER_NAME
     run_cmd(CMD)
   elif args.run_protoc:
-    container_name = 'protobag-dev-protoc'
-    start_container(args.root, container_name=container_name)
     CMD = """
-      docker exec -it {container_name} bash -c "
-        cd /opt/protobag/c++/protobag/protobag_msg &&
-        protoc ProtobagMsg.proto --python_out=../../../python/protobag/ &&
-        protoc ProtobagMsg.proto --cpp_out=../../../c++/protobag/protobag_msg/ &&
-        "
-    """.format(container_name=container_name)
-    run_cmd(CMD)
-    run_cmd("docker rm -f %s || true" % container_name)
+      cd /opt/protobag/c++/protobag/protobag_msg &&
+      protoc ProtobagMsg.proto --cpp_out=../../../c++/protobag/protobag_msg/ &&
+      protoc ProtobagMsg.proto --python_out=../../../python/protobag/ &&
+
+      cd /opt/protobag/examples/c++-writer &&
+      protoc MyMessages.proto --cpp_out=. &&
+      protoc MyMessages.proto --python_out=../../examples/python-reader &&
+      protoc MyMessages.proto --python_out=../../examples/python-writer
+    """
+    run_in_container(
+      CMD,
+      args.root,
+      container_name='protobag-dev-protoc')
+  elif args.test:
+    run_tests(args.root)
+  elif args.test_in_container:
+    CMD = "./pb-dev --test"
+    run_in_container(
+      CMD,
+      args.root,
+      container_name='protobag-dev-test')
 
 if __name__ == '__main__':
   main()

@@ -12,25 +12,27 @@
 
 namespace protobag {
 
-class ReadSession {
+class ReadSession final {
 public:
   typedef std::shared_ptr<ReadSession> Ptr;
 
   struct Spec {
     archive::Archive::Spec archive_spec;
     Selection selection;
+    bool unpack_stamped_messages;
 
-    // NB: for now we *only* support time-ordered reads
+    // NB: for now we *only* support time-ordered reads for stamped entries. non-stamped are not ordered
 
     static Spec ReadAllFromPath(const std::string &path) {
       Selection sel;
-      sel.mutable_window(); // The empty window means "SELECT *"
+      sel.mutable_select_all(); // Creating an ALL means "SELECT *"
       return {
         .archive_spec = {
           .mode="read",
           .path=path,
         },
         .selection = sel,
+        .unpack_stamped_messages = true,
       };
     }
   };
@@ -46,27 +48,34 @@ public:
   // Utilities
   
   // Read just the index from `path`
-  static Result<BagMeta> GetIndex(const std::string &path);
+  static Result<BagIndex> GetIndex(const std::string &path);
 
 protected:
   Spec _spec;
   archive::Archive::Ptr _archive;
 
   bool _started = false;
-  std::queue<std::string> _entries_to_read;
+  struct ReadPlan {
+    std::queue<std::string> entries_to_read;
+    bool require_all = true;
+    bool raw_mode = false;
+  };
+  ReadPlan _plan;
 
   // maybe move these and make public ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-  static Result<BagMeta> GetReindexed(archive::Archive::Ptr archive);
+  // static Result<BagIndex> GetReindexed(archive::Archive::Ptr archive);
   
-  static std::string GetTopicFromEntryname(const std::string &entryname);
+  
 
-  static Result<StampedMessage> ReadMessageFrom(
+  static MaybeEntry ReadEntryFrom(
     archive::Archive::Ptr archive,
-    const std::string &entryname);
+    const std::string &entryname,
+    bool raw_mode = false,
+    bool unpack_stamped = true);
   
-  static Result<BagMeta> ReadLatestIndex(archive::Archive::Ptr archive);
+  static Result<BagIndex> ReadLatestIndex(archive::Archive::Ptr archive);
 
-  static Result<std::queue<std::string>> GetEntriesToRead(
+  static Result<ReadPlan> GetEntriesToRead(
     archive::Archive::Ptr archive,
     const Selection &sel);
 };

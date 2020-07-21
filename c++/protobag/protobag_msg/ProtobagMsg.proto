@@ -6,20 +6,22 @@ import "google/protobuf/any.proto";
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/descriptor.proto";
 
-// TODO
-// option cc_enable_arenas = true;
-
+// Protobag includes special handling for time series data and stores
+// such data using this mesage container
 message StampedMessage {
     google.protobuf.Timestamp timestamp = 1;
     google.protobuf.Any msg = 2;
 }
 
+// A set of basic messages that users might leverage to write generic messages
+// without having to define their own.  Typically used in Protobag tests.
 message StdMsg {
     message Bool { bool value = 1; }
     message Int { int64 value = 1; }
     message Float { float value = 1; }
     message String { string value = 1; }
     message Bytes { bytes value = 1; }
+    message SSMap { map<string, string> value = 1; }
 }
 
 message TopicTime {
@@ -27,12 +29,32 @@ message TopicTime {
     google.protobuf.Timestamp timestamp = 2;
 
     string entryname = 10;
-        // TODO when adding parquet back-end, fix this crutch ...
 }
 
+// A Selection is a portable way for representing a section of a Protobag
+// that a user wants to read.
 message Selection {
+    message All {
+        // Just select everything in the protobag
+        bool all_entries_are_raw = 1; // defaults to false
+    }
+
+    // Generic protobag data: just read these entries; treat the protobag
+    // like a Map<string, protobuf_binary_blob>
+    message Entrynames {
+        // Just read these entries
+        repeated string entrynames = 1;
+
+        // By default, a "file not found" causes an error
+        bool ignore_missing_entries = 2; // defaults to false
+
+        // Set to true to enable reading of messages written in "raw mode"
+        bool entries_are_raw = 3; // defaults to false
+    }
+
+    // Time series data: a time window of messages (that may be empty)
     message Window {
-        // An empty Window means "SELECT *"
+        // NB: An empty Window means "SELECT *"
         
         // A Window may include a specific list of topics and/or an inclusive
         // time range
@@ -45,35 +67,72 @@ message Selection {
         repeated string exclude_topics = 4;
     }
 
+    // Time series data: specific timepoints / events
     message Events {
-        // A Selection may alteratively be a list of specific messages
+        // A Selection may alteratively be a list of specific messages. The 
+        // entryname attribute of these events is ignored; if you need
+        // to select entries, use `Entrynames` above.
         repeated TopicTime events = 10;
+
+        // By default, missing messages do *NOT* cause an error
+        bool require_all = 2; // defaults to false
     }
 
     oneof criteria {
-        Window window = 1;
-        Events events = 2;
+        All select_all = 1;
+        Entrynames entrynames = 2;
+        Window window = 3;
+        Events events = 4;
     }
 }
 
-message DescriptorMap {
-    map<string, google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
-}
+// An index over some subset of entries in the Protobag.  Typically the index
+// covers *all* entries, but multiple WriteSessions to one Protobag may 
+// create multiple (disjoint) index entries.
+message BagIndex {
+    // Meta
 
-message BagMeta {
+    // An optional parent topic namespace or "parent directory" for all entries
+    // indexed.  Might be something like a recording session ID, or a device/
+    // robot ID.  User handles semantics of this member.
     string bag_namespace = 1;
     
-    google.protobuf.Timestamp start = 2;
-    google.protobuf.Timestamp end = 3;
-    
-    string protobag_version = 10;
+    // Version of the Protobag library that created this index
+    string protobag_version = 2;
 
+
+    // Descriptor Data
+
+    // Underlying data that a protobuf DescriptorPool (and 
+    // SimpleDescriptorDatabase) need in order to recreate message instances.
+    message DescriptorPoolData {
+        // The actual Protobuf Descriptors for messages used
+        map<string, google.protobuf.FileDescriptorSet> type_url_to_descriptor = 1;
+            // NB: DescriptorPool doesn't actually need the type_urls; these
+            // are just to link entries to msg defs and save space
+        
+        // We scope the above descriptors to the entries provided below.
+        // A message schema might evolve over time (even, technically, in
+        // the same protobag file!) and this member helps us pin an entry
+        // to the actual message definition used to record it.
+        map<string, string> entryname_to_type_url = 2;
+    }
+    DescriptorPoolData descriptor_pool_data = 1000;
+
+
+    // Time Series Data
+
+    // The inclusive start and end time of all StampedMessage entries
+    google.protobuf.Timestamp start = 2000;
+    google.protobuf.Timestamp end = 2001;
+
+    // Total number of messages for each StampedMessage-based topic.  Used
+    // in part to create filenames for written StampedMessages.
     message TopicStats {
         int64 n_messages = 1;
     }
-    map<string, TopicStats> topic_to_stats = 20;
+    map<string, TopicStats> topic_to_stats = 2020;
 
-    repeated TopicTime time_ordered_entries = 30;
-
-    DescriptorMap descriptor_map = 40;
+    // To support efficient time-ordered playback
+    repeated TopicTime time_ordered_entries = 2030;
 }

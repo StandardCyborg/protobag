@@ -9,6 +9,11 @@ from setuptools import setup, Extension, Distribution
 from setuptools.command.build_ext import build_ext
 from distutils.version import LooseVersion
 
+PROTOBAG_VERSION = 'unknown'
+if os.path.exists('protobag_version.txt'):
+  with open('protobag_version.txt', 'r') as f:
+    PROTOBAG_VERSION = f.readlines()[0].strip()
+
 
 ## Based upon https://github.com/pybind/cmake_example/blob/11a644072b12ad78352b6e6649db9dfe7f406676/setup.py#L1
 
@@ -129,7 +134,7 @@ class CMakeBuild(build_ext):
 
 setup(
   name='protobag',
-  version='0.0.1',
+  version=PROTOBAG_VERSION,
   author='Paul Wais',
   author_email='paul@standardcyborg.com',
   description='Protobag for python',

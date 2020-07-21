@@ -8,8 +8,6 @@
 
 namespace protobag {
 
-int foo();
-
 class Protobag final {
 public:
   Protobag() = default;
@@ -19,6 +17,9 @@ public:
 
   Result<WriteSession::Ptr> StartWriteSession(WriteSession::Spec s={}) const {
     s.archive_spec.path = path;
+    if (s.archive_spec.mode.empty()) {
+      s.archive_spec.mode = "write";
+    }
     return WriteSession::Create(s);
   }
 
@@ -32,7 +33,7 @@ public:
     });
   }
 
-  BagMeta GetIndex() const;
+  BagIndex GetIndex() const;
 };
 
 } /* namespace protobag */

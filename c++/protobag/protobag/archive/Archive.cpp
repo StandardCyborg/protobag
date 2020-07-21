@@ -6,15 +6,8 @@
 
 #include "protobag/archive/DirectoryArchive.hpp"
 #include "protobag/archive/LibArchiveArchive.hpp"
-
-
-// #if PROTOBAG_HAVE_LIBARCHIVE
-
-
-
-// #else /* PROTOBAG_HAVE_LIBARCHIVE is false */
-//   #error "Currently we only support LibArchive"
-// #endif
+#include "protobag/archive/MemoryArchive.hpp"
+#include "protobag/ArchiveUtil.hpp"
 
 namespace fs = std::filesystem;
 
@@ -26,31 +19,50 @@ inline bool EndsWith(const std::string &s, const std::string &suffix) {
     s.substr(s.size() - suffix.size(), suffix.size()) == suffix);
 }
 
-Result<Archive::Ptr> Archive::Open(const Archive::Spec &s) {
-  std::string format = s.format;
-  if (format.empty()) {
-    if (fs::is_directory(s.path)) {
-      format = "directory";
-    } else {
-      // TODO make this better ... ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      std::vector<std::string> exts = {"zip", "tar"};
-      for (auto &ext : exts) {
-        if (EndsWith(s.path, ext)) {
-          format = ext;
-          break;
-        }
+std::string InferFormat(const std::string &path) {
+  auto maybeDir = IsDirectory(path);
+  if (maybeDir.IsOk() && *maybeDir.value) {
+    return "directory";
+  } else {
+
+    // TODO: support more extensions
+    std::vector<std::string> exts = {"zip", "tar"};
+    for (auto &ext : exts) {
+      if (EndsWith(path, ext)) {
+        return ext;
       }
-      format = format.empty() ? "directory" : format;
     }
   }
 
-  if (format == "directory") {
-    return DirectoryArchive::Open(s);
-  } else if (LibArchiveArchive::IsSupported(format)) {
-    return LibArchiveArchive::Open(s);
+  return "";
+}
+
+Result<Archive::Ptr> Archive::Open(const Archive::Spec &s) {
+  Archive::Spec final_spec = s;
+  if (final_spec.format.empty()) {
+    final_spec.format = InferFormat(s.path);
   }
 
-  return {.error=fmt::format("Unsupported format {}", s.format)};
+  if (final_spec.format == "memory") {
+    if (final_spec.memory_archive) {
+      return {.value = final_spec.memory_archive};
+    } else {
+      return MemoryArchive::Open(final_spec);
+    }
+  } else if (final_spec.format == "directory") {
+    return DirectoryArchive::Open(final_spec);
+  } else if (LibArchiveArchive::IsSupported(final_spec.format)) {
+    return LibArchiveArchive::Open(final_spec);
+  } else if (final_spec.format.empty()) {
+    return {
+      .error=fmt::format("Could not infer format for {}", final_spec.path)
+    };
+  } else {
+    return {
+      .error=fmt::format(
+        "Unsupported format {} for {}", final_spec.format, final_spec.path)
+    };
+  }
 }
 
 } /* namespace archive */

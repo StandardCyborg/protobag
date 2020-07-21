@@ -1,6 +1,6 @@
 {
   "name": "ProtobagCocoa",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "summary": "Protobag: an archive of string-serialized Protobufs",
   "homepage": "https://github.com/StandardCyborg/protobag",
   "license": "Apache 2",
@@ -10,7 +10,7 @@
   "cocoapods_version": ">= 1.0",
   "source": {
     "git": "git@github.com:StandardCyborg/protobag.git",
-    "tag": "v0.0.1"
+    "tag": "v0.0.2"
   },
   "public_header_files": [
     "c++/protobag/**/*.{hpp,h}"
@@ -24,14 +24,14 @@
     "osx": "10.15"
   },
   "dependencies": {
-    "Protobuf-C++": "~> 3.11",
+    "Protobuf-C++": "~> 3.11.4",
     "FMTCocoa": "~> 6.2.0",
     "LibArchiveCocoa": "~> 3.4.2"
   },
   "pod_target_xcconfig": {
     "CLANG_CXX_LANGUAGE_STANDARD": "c++17",
     "CLANG_CXX_LIBRARY": "libc++",
-    "OTHER_CPLUSPLUSFLAGS": "-DFMT_HEADER_ONLY=1"
+    "OTHER_CPLUSPLUSFLAGS": "$(inherited) -fembed-bitcode -DFMT_HEADER_ONLY=1"
   },
   "libraries": "c++"
 }

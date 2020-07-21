@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package my_package;
+
+message Moof {
+  string x = 1;
+  
+  message InnerMoof {
+    int64 inner_v = 1;
+  }
+
+  InnerMoof inner = 2;
+}
+

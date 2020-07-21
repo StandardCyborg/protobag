@@ -39,7 +39,8 @@ RUN \
         less \
         unzip \
         wget \
-        vim
+        vim \
+		zip
 
 # Gtest
 RUN \
@@ -72,6 +73,8 @@ RUN \
 
 
 # Libarchive
+# Note: below we skip two tests because they don't run properly in docker.
+# FMI: https://github.com/libarchive/libarchive/issues/723
 RUN \
     cd /tmp && \
     wget https://github.com/libarchive/libarchive/archive/v3.4.2.tar.gz && \
@@ -81,7 +84,7 @@ RUN \
     mkdir -p build && cd build && \
     cmake .. && \
     make -j `nproc` && \
-    make test && \
+    ctest -E "bsdcpio_test_format_newc|bsdcpio_test_option_c" && \
     make install
 
 
@@ -124,10 +127,8 @@ RUN \
 COPY . /opt/protobag
 WORKDIR /opt/protobag
 RUN \
-    cd c++ && \
-    mkdir -p build && cd build && \
-    cmake .. && \
-    make -j `nproc` && \
-    make test && \
-    make install
-
+   cd c++ && \
+   mkdir -p build && cd build && \
+   cmake .. && \
+   make -j `nproc` && \
+   make test

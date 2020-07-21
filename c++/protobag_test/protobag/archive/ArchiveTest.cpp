@@ -8,7 +8,6 @@ using namespace protobag;
 using namespace protobag::archive;
 
 TEST(ArchiveTest, TestBase) {
-  auto ar = Archive::Open();
-
-  std::cout << "archive" << std::endl;
+  auto maybeAr = Archive::Open();
+  ASSERT_TRUE(maybeAr.IsOk()) << maybeAr.error;
 }

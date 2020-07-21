@@ -1,18 +1,16 @@
 #include "protobag/ReadSession.hpp"
 
-#include <filesystem>
+#include <list>
 #include <set>
+#include <sstream>
 
 #include <fmt/format.h>
 #include <google/protobuf/util/time_util.h>
 
-                                                                          #include <iostream>
-
-#include "protobag/BagMetaBuilder.hpp"
+#include "protobag/BagIndexBuilder.hpp"
 #include "protobag/Utils/PBUtils.hpp"
+#include "protobag/Utils/TopicTime.hpp"
 
-
-namespace fs = std::filesystem;
 
 namespace protobag {
 
@@ -29,47 +27,92 @@ Result<ReadSession::Ptr> ReadSession::Create(const ReadSession::Spec &s) {
   return {.value = r};
 }
 
-MaybeEntry ReadSession::GetNext() {
-  if (!_archive) {
-    return MaybeEntry::Err("Programming Error: no archive open for writing");
+MaybeEntry ReadSession::ReadEntryFrom(
+      archive::Archive::Ptr archive,
+      const std::string &entryname,
+      bool raw_mode,
+      bool unpack_stamped) {
+
+  if (!archive) {
+    return MaybeEntry::Err("No archive to read");
   }
 
-  // TODO: make a lot faster ... 
+  const auto maybe_bytes = archive->ReadAsStr(entryname);
+  if (maybe_bytes.IsEntryNotFound()) {
+    return MaybeEntry::Err(maybe_bytes.error);
+  } else if (!maybe_bytes.IsOk()) {
+    return MaybeEntry::Err(
+      fmt::format("Read error for {}: {}", entryname, maybe_bytes.error));
+  }
+
+  if (raw_mode) {
+    
+    Entry entry;
+    entry.entryname = entryname;
+    entry.msg.set_value(std::move(*maybe_bytes.value));
+    return MaybeEntry::Ok(std::move(entry));
+
+  } else {
+
+    auto maybe_any = 
+      PBFactory::LoadFromContainer<google::protobuf::Any>(*maybe_bytes.value);
+        // do we need to handle text format separately ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    if (!maybe_any.IsOk()) {
+      return MaybeEntry::Err(fmt::format(
+        "Could not read protobuf from {}: {}", entryname, maybe_any.error));
+    }
+
+    Entry entry{
+      .entryname = entryname,
+      .msg = std::move(*maybe_any.value),
+    };
+    if (unpack_stamped && entry.IsStampedMessage()) {
+      return entry.UnpackFromStamped();
+    } else {
+      return MaybeEntry::Ok(std::move(entry));
+    }
+
+  }
+}
+
+MaybeEntry ReadSession::GetNext() {
   if (!_started) {
     auto maybe_entries_to_read = GetEntriesToRead(_archive, _spec.selection);
     if (!maybe_entries_to_read.IsOk()) {
       return MaybeEntry::Err(
-        fmt::format("Could not select entries to read: {}", maybe_entries_to_read.error));
+        fmt::format(
+          "Could not select entries to read: \n{}",
+          maybe_entries_to_read.error));
     }
-    _entries_to_read = *maybe_entries_to_read.value;
+    _plan = *maybe_entries_to_read.value;
     _started = true;
   }
 
-  if (_entries_to_read.empty()) {
+  if (_plan.entries_to_read.empty()) {
     return MaybeEntry::EndOfSequence();
   }
-std::cout << "_entries_to_read " << _entries_to_read.size() << std::endl;
-  std::string entryname = _entries_to_read.front();
-std::cout << "entryname " << entryname << std::endl;
-  _entries_to_read.pop();
 
-  auto maybe_stamped_msg = ReadMessageFrom(_archive, entryname);
-  if (!maybe_stamped_msg.IsOk()) {
-    return MaybeEntry::Err(
-      fmt::format(
-        "Could not decode StampedMessage from {}, error {} ", 
-        entryname, maybe_stamped_msg.error)
-    );
+  std::string entryname = _plan.entries_to_read.front();
+  _plan.entries_to_read.pop();
+
+  if (!_archive) {
+    return MaybeEntry::Err("Programming Error: no archive open for writing");
   }
 
-  return MaybeEntry::Ok({
-    .topic = GetTopicFromEntryname(entryname),
-    .stamped_msg = *maybe_stamped_msg.value,
-  });
+  auto maybe_entry = ReadEntryFrom(
+    _archive, entryname, _plan.raw_mode, _spec.unpack_stamped_messages);
+  if (maybe_entry.IsNotFound()) {
+    if (_plan.require_all) {
+      return MaybeEntry::Err(fmt::format("Entry not found: {}", entryname));
+    } else {
+      return GetNext();
+    }
+  } else {
+    return maybe_entry;
+  }
 }
 
-
-Result<BagMeta> ReadSession::GetIndex(const std::string &path) {
+Result<BagIndex> ReadSession::GetIndex(const std::string &path) {
   auto maybe_r = ReadSession::Create(ReadSession::Spec::ReadAllFromPath(path));
   if (!maybe_r.IsOk()) {
     return {.error = maybe_r.error};
@@ -83,77 +126,29 @@ Result<BagMeta> ReadSession::GetIndex(const std::string &path) {
   return ReadLatestIndex(rp->_archive);
 }
 
-
-std::string ReadSession::GetTopicFromEntryname(const std::string &entryname) {
-  // return std::string("/") +  // fixme ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  //     fs::path(entryname).parent_path().u8string();
-  return 
-      fs::path(entryname).parent_path().u8string();
-}
-
-Result<StampedMessage> ReadSession::ReadMessageFrom(
-    archive::Archive::Ptr archive,
-    const std::string &entryname) {
-
+Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
   if (!archive) {
     return {.error = "No archive to read"};
   }
 
-  const auto maybe_bytes = archive->ReadAsStr(entryname);
-  if (!maybe_bytes.IsOk()) {
-    return {.error = 
-      fmt::format("Read error for {}: {}", entryname, maybe_bytes.error)
-    };
-  }
-
-  return PBFactory::LoadFromContainer<StampedMessage>(*maybe_bytes.value);
-}
-
-Result<BagMeta> ReadSession::GetReindexed(archive::Archive::Ptr archive) {
-  if (!archive) {
-    return {.error = "No archive to read"};
-  }
-
-  BagMetaBuilder::UPtr builder(new BagMetaBuilder());
-  auto namelist = archive->GetNamelist();
-  for (const auto &name : namelist) {
-                                                std::cout << "name " << name << std::endl;
-    auto maybe_stamped_msg = ReadMessageFrom(archive, name);
-    if (!maybe_stamped_msg.IsOk()) {
-      return {.error = 
-        fmt::format(
-          "Could not decode StampedMessage from {}, error {} ", 
-          name, maybe_stamped_msg.error)
-        };
-    }
-
-    builder->Observe(
-      Entry{
-        .topic = GetTopicFromEntryname(name),
-        .stamped_msg = *maybe_stamped_msg.value,
-      },
-      name);
-  }
-
-  return {.value = BagMetaBuilder::Complete(std::move(builder))};
-}
-
-Result<BagMeta> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
-  if (!archive) {
-    return {.error = "No archive to read"};
-  }
-
-  std::optional<StampedMessage> index_entry;
+  std::optional<Entry> index_entry;
   {
     auto namelist = archive->GetNamelist();
     for (const auto &entryname : namelist) {
-      if (EntryIsInTopic(entryname, "/_protobag_meta/bag_meta")) {
-        auto maybe_stamped_msg = ReadMessageFrom(archive, entryname);
-        if (maybe_stamped_msg.IsOk()) {
-          const StampedMessage &cur_msg = *maybe_stamped_msg.value;
-          if (!index_entry.has_value() ||
-                (cur_msg.timestamp() < index_entry->timestamp())) {
-            index_entry = cur_msg;
+      if (EntryIsInTopic(entryname, "/_protobag_index/bag_index")) {
+        auto maybe_entry = ReadEntryFrom(
+                              archive,
+                              entryname,
+                              /* raw_mode */ false,
+                              /* unpack_stamped */ true);
+        if (maybe_entry.IsOk() && maybe_entry.value->ctx.has_value()) {
+          if (!index_entry.has_value()) {
+            index_entry = std::move(*maybe_entry.value);
+          } else {
+            const Entry::Context &current = *maybe_entry.value->ctx;
+            if (current.stamp < index_entry->ctx->stamp) {
+              index_entry = std::move(*maybe_entry.value);
+            }
           }
         }
       }
@@ -161,14 +156,14 @@ Result<BagMeta> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
   }
 
   if (index_entry.has_value()) {
-    return PBFactory::UnpackFromAny<BagMeta>(index_entry->msg());
+    return PBFactory::UnpackFromAny<BagIndex>(index_entry->msg);
   } else {
     return {.error = "Could not find an index"};
   }
 
 }
 
-Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
+Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
     archive::Archive::Ptr archive,
     const Selection &sel) {
 
@@ -176,10 +171,11 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
     return {.error = "No archive to read"};
   }
 
-  auto maybe_index = ReadLatestIndex(archive);
+  auto maybe_index = ReadLatestIndex(archive); // TODO support multiple indices ~~~~~~~~~~~~~~~~
   if (!maybe_index.IsOk()) {
-    // Then create one!
-    maybe_index = GetReindexed(archive);
+    // // Then create one!
+    // maybe_index = GetReindexed(archive);
+    return {.error = "Unindexed protobag not supported right now"}; // ~~~~~~~~~~~~~~~~~~~~~~~~~
   }
 
   if (!maybe_index.IsOk()) {
@@ -191,49 +187,92 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
     };
   }
 
-  const BagMeta &index = *maybe_index.value;
-        std::cout << " index " << *PBFactory::ToTextFormatString(index).value << std::endl;
+  const BagIndex &index = *maybe_index.value;
 
-  if (sel.has_events()) {
+  if (sel.has_select_all()) {
+
+    auto namelist = archive->GetNamelist();
+    std::queue<std::string> entries_to_read;
+    for (const auto &n : namelist) { entries_to_read.push(n); }
+    return {.value = ReadPlan{
+      .entries_to_read = entries_to_read,
+      .require_all = false,
+      .raw_mode = sel.select_all().all_entries_are_raw(),
+    }};
+
+  } else if (sel.has_entrynames()) {
+
+    const Selection_Entrynames &sel_entrynames = sel.entrynames();
+    std::queue<std::string> entries_to_read;
+    for (const auto &entryname : sel_entrynames.entrynames()) {
+      entries_to_read.push(entryname);
+    }
+    return {.value = ReadPlan{
+      .entries_to_read = entries_to_read,
+      .require_all = !sel_entrynames.ignore_missing_entries(),
+      .raw_mode = sel_entrynames.entries_are_raw(),
+    }};
+
+  } else if (sel.has_events()) {
+
     const Selection_Events &sel_events = sel.events();
 
     std::set<TopicTime> events;
-    for (size_t i = 0; i < sel_events.events_size(); ++i) {
-      TopicTime tt = sel_events.events(i);
+    for (TopicTime tt : sel_events.events()) {
       tt.set_entryname(""); // Do not match on archive entryname
-      events.insert(sel_events.events(i));
+      events.insert(tt);
     }
 
     std::queue<std::string> entries_to_read;
-    for (size_t i = 0; i < index.time_ordered_entries_size(); ++i) {
-      TopicTime tt = index.time_ordered_entries().Get(i);
+    std::list<TopicTime> missing_entries;
+    for (TopicTime tt : index.time_ordered_entries()) {
       std::string entryname = tt.entryname();
       tt.set_entryname(""); // Do not match on archive entryname
       if (events.find(tt) != events.end()) {
         entries_to_read.push(entryname);
+      } else if (sel_events.require_all()) {
+        tt.set_entryname(entryname); // Restore for easier debugging
+        missing_entries.push_back(tt);
       }
     }
 
-    return {.value = entries_to_read};
+    if (sel_events.require_all() && !missing_entries.empty()) {
+      std::stringstream ss;
+      for (const auto &missing : missing_entries) {
+        auto maybe_txt = PBFactory::ToTextFormatString(missing);
+        if (!maybe_txt.IsOk()) {
+          return {.error = maybe_txt.error};
+        }
+        ss << *maybe_txt.value << "\n";
+      }
+      return {.error = fmt::format((
+        "Could not find all requested entries and all were required.  "
+        "Missing: \n{}"), ss.str())
+      };
+    }
 
+    return {.value = ReadPlan{
+      .entries_to_read = entries_to_read,
+      .require_all = sel_events.require_all(),
+      .raw_mode = false,
+    }};
 
   } else if (sel.has_window()) {
 
     const Selection_Window &window = sel.window();
     
     std::set<std::string> exclude_topics;
-    for (size_t i = 0; i < window.exclude_topics_size(); ++i) {
-      exclude_topics.insert(window.exclude_topics(i));
+    for (const auto &topic : window.exclude_topics()) {
+      exclude_topics.insert(topic);
     }
 
     std::set<std::string> include_topics;
-    for (size_t i = 0; i < window.topics_size(); ++i) {
-      include_topics.insert(window.topics(i));
+    for (const auto &topic : window.topics()) {
+      include_topics.insert(topic);
     }
 
     std::queue<std::string> entries_to_read;
-    for (size_t i = 0; i < index.time_ordered_entries_size(); ++i) {
-      TopicTime tt = index.time_ordered_entries().Get(i);
+    for (const TopicTime &tt : index.time_ordered_entries()) {
       
       if (!exclude_topics.empty() &&
             (exclude_topics.find(tt.topic()) != exclude_topics.end())) {
@@ -252,12 +291,17 @@ Result<std::queue<std::string>> ReadSession::GetEntriesToRead(
       if (window.has_end() && (window.end() < tt.timestamp())) {
         continue;
       }
-std::cout << "tt.entryname() " << tt.entryname() << std::endl;
+// std::cout << "entries_to_read: " << tt.entryname() << std::endl;
       entries_to_read.push(tt.entryname());
     }
-    return {.value = entries_to_read};
+    return {.value = ReadPlan{
+      .entries_to_read = entries_to_read,
+      .require_all = false, // TODO should we report if index and archive don't match? ~~~~~~~~~~~~~~
+      .raw_mode = false,
+    }};
 
   } else {
+
     // We don't support whatever criteria `sel` has
     std::string sel_txt;
     {
@@ -267,8 +311,9 @@ std::cout << "tt.entryname() " << tt.entryname() << std::endl;
       }
     }
     return {.error = 
-      fmt::format("Unsupported selection {}", sel_txt)
+      fmt::format("Unsupported selection: {}", sel_txt)
     };
+
   }
 }
 
