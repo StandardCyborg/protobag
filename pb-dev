@@ -9,6 +9,7 @@ TODO examples
 
 When creating a new version:
  1. Edit `protobag_version.txt`
+      and `__version__` in `python/protobag/__init__.py`
  2. Build a new environment using: `./pb-dev --build-env`
 
 """
