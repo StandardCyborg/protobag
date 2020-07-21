@@ -6,12 +6,12 @@ FROM ubuntu:${UBUNTU_VERSION} as base
 # up properly when deleting things and the cache gets stale.
 ENV PYTHONDONTWRITEBYTECODE 1
 
-# python3
+# python3 and dev tools
 RUN apt-get update && \
     apt-get install -y \
         python3-dev \
         python3-pip
-RUN pip3 install pytest
+RUN pip3 install pytest jupyter
 
 # build-essential-ish with clang; forcing to libc++ 8
 RUN apt-get update && \
