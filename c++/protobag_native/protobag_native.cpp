@@ -76,7 +76,6 @@ struct native_entry final {
   }
 };
 
-
 class Reader final {
 public:
   void Start(const std::string &path, const std::string &sel_pb_bytes) {

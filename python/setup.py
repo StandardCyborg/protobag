@@ -16,9 +16,10 @@ if os.path.exists('protobag_version.txt'):
 
 with open('protobag/__init__.py') as f:
   import re
-  v = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", f.read(), re.M)
+  v = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", f.read(), re.M).groups()[0]
   assert v == PROTOBAG_VERSION, \
-    "Please make protobag/__init__.py __version__ match protobag_version.txt"
+    ("Please make protobag/__init__.py __version__ match protobag_version.txt"
+     "%s != %s" % (v, PROTOBAG_VERSION))
 
 ## Based upon https://github.com/pybind/cmake_example/blob/11a644072b12ad78352b6e6649db9dfe7f406676/setup.py#L1
 
