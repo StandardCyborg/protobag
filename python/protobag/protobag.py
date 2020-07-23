@@ -408,8 +408,14 @@ class Protobag(object):
     from protobag.protobag_native import Reader
     reader = Reader()
     reader.start(self._path, selection_bytes)
-    for nentry in reader:
-      yield Entry.from_nentry(nentry, serdes=self.serdes)
+    while True:
+      nentry = reader.get_next()
+      if nentry is not None:
+        yield Entry.from_nentry(nentry, serdes=self.serdes)  
+      else:
+        return
+    # for nentry in reader:
+    #   yield Entry.from_nentry(nentry, serdes=self.serdes)
   
   def get_entry(self, entryname):
     """Convenience for getting a single entry with `entryname`."""
