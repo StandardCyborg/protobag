@@ -76,18 +76,7 @@ struct native_entry final {
   }
 };
 
-// // NB: We use this exception instead of pybind11::stop_iteration due
-// // to a bug in pybind related to libc++.  FMI see:
-// // * https://gitter.im/pybind/Lobby?at=5f18cfc9361e295cf01fd21a
-// // * (This fix appear to still have a bug)
-// //      https://github.com/pybind/pybind11/pull/949
-// class EndOfSequence : public std::exception {
-// public:
-//   EndOfSequence() {}
-//   virtual const char * what() const noexcept override {
-//     return "protobag::EndOfSequence";
-//   }
-// };
+
 
 class Reader final {
 public:
@@ -117,28 +106,6 @@ public:
     _read_sess = *maybe_rp.value;
   }
 
-  // native_entry Next() {
-  //   if (!_read_sess) {
-  //     throw std::runtime_error("Invalid read session");
-  //   }
-  //   auto &reader = *_read_sess;
-
-  //   auto maybe_entry = reader.GetNext();
-  //   if (maybe_entry.IsEndOfSequence()) {
-  //     // // throw pybind11::stop_iteration();
-  //     throw EndOfSequence();
-
-  //     PyErr_SetString(PyExc_StopIteration, "protobag::ReadSession end");
-  //     return native_entry();
-
-  //   } else if (!maybe_entry.IsOk()) {
-  //     throw std::runtime_error(maybe_entry.error);
-  //   }
-
-  //   return native_entry::FromEntry(*maybe_entry.value);
-  // }
-
-
   std::optional<native_entry> GetNext() {
     if (!_read_sess) {
       throw std::runtime_error("Invalid read session");
@@ -147,6 +114,11 @@ public:
 
     auto maybe_entry = reader.GetNext();
     if (maybe_entry.IsEndOfSequence()) {
+      // NB: We use this exception instead of pybind11::stop_iteration due
+      // to a bug in pybind related to libc++.  FMI see:
+      // * https://gitter.im/pybind/Lobby?at=5f18cfc9361e295cf01fd21a
+      // * (This fix appears to still have a bug)
+      //      https://github.com/pybind/pybind11/pull/949
       return std::nullopt;
 
     } else if (!maybe_entry.IsOk()) {
@@ -303,25 +275,6 @@ PYBIND11_MODULE(protobag_native, m) {
     .def_readwrite("topic", &native_entry::topic)
     .def_readwrite("sec", &native_entry::sec)
     .def_readwrite("nanos", &native_entry::nanos);
-
-  m.def("get_pybind", []() { 
-    return std::string(PYBIND11_INTERNALS_ID);
-  });
-
-  m.def("throw_stop", []() { 
-    throw pybind11::stop_iteration();
-  });
-
-  // // Translate EndOfSequence to StopIteration manually; FMI see EndOfSequence
-  // static py::exception<EndOfSequence> ex(m, "EndOfSequence");
-  // py::register_exception_translator([](std::exception_ptr p) {
-  //     try {
-  //       if (p) std::rethrow_exception(p);
-  //     } catch (const EndOfSequence &e) {
-  //       fprintf(stdout, "caught endofseq");
-  //       PyErr_SetString(PyExc_StopIteration, e.what());
-  //     }
-  // });
 
   py::class_<Reader>(m, "Reader", "Handle to a Protobag ReadSession")
     .def(py::init<>(), "Create a null session")

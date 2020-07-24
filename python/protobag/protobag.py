@@ -410,12 +410,15 @@ class Protobag(object):
     reader.start(self._path, selection_bytes)
     while True:
       nentry = reader.get_next()
+      # NB: We use this exception instead of pybind11::stop_iteration due
+      # to a bug in pybind related to libc++.  FMI see:
+      # * https://gitter.im/pybind/Lobby?at=5f18cfc9361e295cf01fd21a
+      # * (This fix appears to still have a bug)
+      #      https://github.com/pybind/pybind11/pull/949
       if nentry is not None:
         yield Entry.from_nentry(nentry, serdes=self.serdes)  
       else:
         return
-    # for nentry in reader:
-    #   yield Entry.from_nentry(nentry, serdes=self.serdes)
   
   def get_entry(self, entryname):
     """Convenience for getting a single entry with `entryname`."""
