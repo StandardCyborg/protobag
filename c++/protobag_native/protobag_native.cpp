@@ -12,7 +12,7 @@
 #include <protobag/ReadSession.hpp>
 #include <protobag/WriteSession.hpp>
 #include <protobag/Utils/PBUtils.hpp>
-#include <protobag_msg/ProtobagMsg.pb.h>
+#include <protobag/Utils/TimeSync.hpp>
 
 #ifndef PROTOBAG_VERSION
 #define PROTOBAG_VERSION "unknown"
@@ -78,7 +78,7 @@ struct native_entry final {
 
 
 
-class Reader final {
+class PyReader final {
 public:
   void Start(const std::string &path, const std::string &sel_pb_bytes) {
     auto maybe_sel = PBFactory::LoadFromContainer<Selection>(sel_pb_bytes);
@@ -148,12 +148,76 @@ public:
     return *maybe_str.value;
   }
 
+  ReadSession::Ptr GetSession() const { return _read_sess; }
+
 protected:
   ReadSession::Ptr _read_sess;
 };
 
 
-class Writer final {
+
+class PyTimeSyncBase {
+public:
+  virtual ~PyTimeSyncBase() { }
+  virtual std::optional<std::list<native_entry>> GetNext() {
+    if (!_sync) {
+      throw std::runtime_error("Invalid synchronizer");
+    }
+
+    MaybeBundle next = _sync->GetNext();
+    if (next.IsEndOfSequence()) {
+      // NB: We use this exception instead of pybind11::stop_iteration due
+      // to a bug in pybind related to libc++.  FMI see:
+      // * https://gitter.im/pybind/Lobby?at=5f18cfc9361e295cf01fd21a
+      // * (This fix appears to still have a bug)
+      //      https://github.com/pybind/pybind11/pull/949
+      return std::nullopt;
+
+    } else if (!next.IsOk()) {
+      throw std::runtime_error(next.error);
+    }
+
+    std::list<native_entry> nbundle;
+    for (const auto &entry : *next.value) {
+      nbundle.push_back(native_entry::FromEntry(entry));
+    }
+    return nbundle;
+  }
+
+protected:
+  TimeSync::Ptr _sync;
+};
+
+class PyMaxSlopTimeSync : public PyTimeSyncBase {
+public:
+  void Start(
+    const PyReader &reader,
+    const MaxSlopTimeSync::Spec &spec) {
+
+      auto read_sess = reader.GetSession();
+      if (!read_sess) {
+        throw std::runtime_error("Invalid read session");
+      }
+
+      _spec = spec;
+      auto maybe_sync = MaxSlopTimeSync::Create(read_sess, spec);
+      if (!maybe_sync.IsOk()) {
+        throw std::runtime_error(fmt::format(
+          "Failed to create MaxSlopTimeSync: {}", maybe_sync.error));
+      }
+
+      _sync = *maybe_sync.value;
+  }
+
+  MaxSlopTimeSync::Spec GetSpec() const { return _spec; }
+
+protected:
+  MaxSlopTimeSync::Spec _spec;
+};
+
+
+
+class PyWriter final {
 public:
   void Start(WriteSession::Spec s) {
     s.archive_spec.mode = "write";
@@ -266,6 +330,8 @@ PYBIND11_MODULE(protobag_native, m) {
 
   m.def("get_version", []() { return std::string(PROTOBAG_VERSION);});
 
+
+  /// native_entry
   py::class_<native_entry>(m, "native_entry", "Handle to a native entry")
     .def(py::init<>())
     .def_readwrite("entryname", &native_entry::entryname)
@@ -276,18 +342,63 @@ PYBIND11_MODULE(protobag_native, m) {
     .def_readwrite("sec", &native_entry::sec)
     .def_readwrite("nanos", &native_entry::nanos);
 
-  py::class_<Reader>(m, "Reader", "Handle to a Protobag ReadSession")
+
+  /// Reading
+  py::class_<PyReader>(m, "Reader", "Handle to a Protobag ReadSession")
     .def(py::init<>(), "Create a null session")
-    .def("start", &Reader::Start, "Begin reading the given Selection")
-    // .def("__iter__", [](Reader &r) -> Reader& { return r; })
-    // .def("next", &Reader::Next, "Generator interface: emit the next entry")
-    // .def("__next__", &Reader::Next, "Generator interface: emit the next entry")
-    .def("get_next", &Reader::GetNext, "Get next item or None for end of sequence")
+    .def("start", &PyReader::Start, "Begin reading the given Selection")
+    .def(
+      "get_next",
+      &PyReader::GetNext,
+      "Get next item or None for end of sequence")
     .def_static(
       "get_index",
-      &Reader::GetIndex,
+      &PyReader::GetIndex,
       "Get the (string-serialized) BagIndex for the bag at the given path");
 
+
+  /// TimeSync
+  py::class_<MaxSlopTimeSync::Spec>(
+    m, "MaxSlopTimeSyncSpec", "Spec for a MaxSlopTimeSync")
+    .def(py::init<>())
+    .def_readwrite(
+      "topics", &MaxSlopTimeSync::Spec::topics, "Synchronize these topics")
+    .def("set_max_slop", 
+      [](MaxSlopTimeSync::Spec &s, int64_t sec, int32_t nanos) { 
+        s.max_slop.set_seconds(sec); s.max_slop.set_nanos(nanos);
+      },
+        py::arg("seconds"),
+        py::arg("nanos"),
+      "Discard any bundle with total time difference greater than `max_slop`")
+    .def("get_max_slop",
+      [](MaxSlopTimeSync::Spec &s) {
+        py::dict d;
+        d["seconds"] = s.max_slop.seconds();
+        d["nanos"] = s.max_slop.nanos();
+        return d;
+      })
+    .def_readwrite(
+      "max_queue_size",
+      &MaxSlopTimeSync::Spec::max_queue_size,
+      "Buffer at most this many messages per topic");
+
+  py::class_<PyMaxSlopTimeSync>(
+    m, "PyMaxSlopTimeSync",
+    "Approximately synchronize two or more StampedMessage topics using "
+    "a max slop algorithm.  FMI see docs for `protobag::MaxSlopTimeSync`. "
+    "Non-timestamped entries read during synchronization are dropped and "
+    "ignored. ")
+    .def(py::init<>())
+    .def(
+      "start", &PyMaxSlopTimeSync::Start,
+      "Begin synchronizing the given reader")
+    .def(
+      "get_next",
+      &PyMaxSlopTimeSync::GetNext,
+      "Get next bundle or None for end of sequence");
+
+
+  /// Writing
   py::class_<WriteSession::Spec>(m, "WriterSpec", "Spec for a WriteSession")
     .def(py::init<>())
     .def_readwrite(
@@ -307,14 +418,14 @@ PYBIND11_MODULE(protobag_native, m) {
       },
       "Write in this format");
 
-  py::class_<Writer>(m, "Writer", "Handle to a Protobag WriteSession")
+  py::class_<PyWriter>(m, "Writer", "Handle to a Protobag WriteSession")
     .def(py::init<>(), "Create a null session")
-    .def("start", &Writer::Start, "Begin writing given a WriteSession::Spec")
-    .def("close", &Writer::Close, "End writing session")
-    .def("write_raw", &Writer::WriteRaw, "Write the given raw bytes")
+    .def("start", &PyWriter::Start, "Begin writing given a WriteSession::Spec")
+    .def("close", &PyWriter::Close, "End writing session")
+    .def("write_raw", &PyWriter::WriteRaw, "Write the given raw bytes")
     .def(
       "write_msg",
-      &Writer::WriteMsg,
+      &PyWriter::WriteMsg,
         py::arg("entryname"),
         py::arg("type_url"),
         py::arg("msg_bytes"),
@@ -322,7 +433,7 @@ PYBIND11_MODULE(protobag_native, m) {
       "Write the given message")
     .def(
       "write_stamped_msg",
-      &Writer::WriteStampedMsg,
+      &PyWriter::WriteStampedMsg,
         py::arg("topic"),
         py::arg("sec"),
         py::arg("nanos"),

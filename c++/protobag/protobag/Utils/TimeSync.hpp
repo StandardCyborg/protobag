@@ -32,6 +32,7 @@ struct MaybeBundle : Result<EntryBundle> {
   }
 };
 
+// Base interace to a Time Synchronization algorithm.  
 class TimeSync {
 public:
   typedef std::shared_ptr<TimeSync> Ptr;
@@ -52,10 +53,10 @@ protected:
 
 
 // Approximately synchronizes messages from given topics as follows:
-//  * Waits until there is at least one StampedMessage for every topic
+//  * Waits until there is at least one StampedMessage for every topic (and 
+//      ignores entries that lack topci/timestamp data)
 //  * Look at all possible bundlings of messages receieved thus far ...
-//    * Discard any bundling with total time difference greater than 
-//        `max_slop`
+//    * Discard any bundle with total time difference greater than `max_slop`
 //    * Emit the bundle with minimal total time difference and dequeue emitted
 //        messages
 //    * Continue until source ReadSession exhausted

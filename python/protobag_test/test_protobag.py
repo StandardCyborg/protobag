@@ -1,3 +1,4 @@
+import copy
 import itertools
 
 import pytest
@@ -21,6 +22,7 @@ def to_std_msg(v):
     return StdMsg.Bytes(value=v)
   else:
     raise TypeError(v)
+
 
 
 ## ============================================================================
@@ -152,6 +154,7 @@ def test_build_fds_for_msg():
   assert actual_types == sorted(expected_types)
 
 
+
 ## ============================================================================
 ## == Tet Public API ==========================================================
 ## ============================================================================
@@ -197,6 +200,7 @@ def test_stamped_entry_print():
     "value: \"foo\"\n")
 
 
+
 ## ============================================================================
 ## == Test SERDES =============================================================
 ## ============================================================================
@@ -220,57 +224,92 @@ def test_typed_bytes():
     "  msg_bytes: abcabcabcabcabcabcab ... (30 bytes)")
 
 
+_to_typed_bytes = protobag.PBSerdes.msg_to_typed_bytes
+
+def test_serdes_msg_from_typed_bytes_empty():
+  tb = _to_typed_bytes(to_std_msg('moof'))
+  serdes = protobag.PBSerdes()
+  with pytest.raises(ValueError):
+    msg = serdes.msg_from_typed_bytes(tb)
 
 
-# def test():
-#   p = Protobag()
-
-# from protobag import ProtoBag
-# from protobag import Entry
-
-
-
-
-# def to_unixtime(dt):
-#   import time
-#   return int(time.mktime(dt.timetuple()))
+def test_serdes_msg_from_typed_bytes_default_serdes():
+  tb = _to_typed_bytes(to_std_msg('moof'))
+  serdes = copy.deepcopy(protobag.DEFAULT_SERDES)
+    # The DEFAULT_SERDES has built-in support for protobag standard messages
+  msg = serdes.msg_from_typed_bytes(tb)
+  assert msg.value == 'moof'
 
 
+def test_serdes_msg_from_typed_bytes_user_registered():
+  tb = _to_typed_bytes(to_std_msg('moof'))
 
-# def test_demo():
-#   import tempfile
-
-#   f = tempfile.NamedTemporaryFile(suffix='.zip')
-#   print('temp file', f.name)
-#   b = ProtoBag.write_zip(f)
-
-#   ENTRIES = (
-#     Entry(
-#       topic='/topic1',
-#       timestamp=0,
-#       msg=to_std_msg("foo")),
-#     Entry(
-#       topic='/topic1',
-#       timestamp=1,
-#       msg=to_std_msg("bar")),
-#     Entry(
-#       topic='/topic2',
-#       timestamp=0,
-#       msg=to_std_msg(1337)),
-#   )
-
-#   for entry in ENTRIES:
-#     b.write_entry(entry)
+  from protobag.ProtobagMsg_pb2 import StdMsg
+  serdes = protobag.PBSerdes.create_with_types([StdMsg.String])
   
-#   # Flush / close the zip
-#   del b
+  msg = serdes.msg_from_typed_bytes(tb)
+  assert msg.value == 'moof'
 
-#   b = ProtoBag.read_zip(f)  
-#   expected = sorted(
-#     (entry.topic, entry.timestamp, entry.msg.value)
-#     for entry in ENTRIES)
-#   actual = sorted(
-#     (entry.topic, to_unixtime(entry.timestamp), entry.msg.value)
-#     for entry in b.iter_entries())
+
+def test_serdes_msg_from_typed_bytes_dynamic_decode():
+  tb = _to_typed_bytes(to_std_msg('moof'))
   
-#   assert expected == actual
+  serdes = protobag.PBSerdes()
+  
+  from protobag.ProtobagMsg_pb2 import StdMsg
+  fds = protobag.build_fds_for_msg(StdMsg.String)
+  descriptor_data = fds.SerializeToString()
+  serdes.register_descriptor_data(tb.type_url, descriptor_data)
+
+  msg = serdes.msg_from_typed_bytes(tb)
+  assert msg.value == 'moof'
+
+
+
+## ============================================================================
+## == Test Public API =========================================================
+## ============================================================================
+
+def test_write_msg():
+  pass
+
+
+def test_write_stamped_msg():
+  pass
+
+
+def test_write_raw():
+  pass
+
+
+def test_read_msg():
+  pass
+
+
+def test_read_stamped_msg():
+  pass
+
+
+def test_read_raw():
+  pass
+
+
+def test_write_read_full():
+  pass
+
+
+def test_read_stamped_msg_max_slop_sync():
+  pass
+
+
+## ============================================================================
+## == Test DictRowEntry =======================================================
+## ============================================================================
+
+def test_entry_to_dict_row():
+  pass
+
+
+def test_dict_row_to_entry():
+  pass
+
