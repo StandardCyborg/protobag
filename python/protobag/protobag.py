@@ -337,7 +337,9 @@ class RawEntry(Entry):
 class Protobag(object):
 
   def __init__(self, path=None, serdes=None, msg_classes=None):
-    """TODO
+    """Handle to a Protobag archive on disk at the given `path`.  Use this
+    object to help organize your reads and writes to an existing or new 
+    Protobag archive.
     """
   
     self._path = str(path or '')
@@ -369,8 +371,8 @@ class Protobag(object):
 
   def get_bag_index(self):
     """Get the (latest) `BagIndex` instance from this protobag."""
-    from protobag.protobag_native import Reader
-    bag_index_str = Reader.get_index(self._path)
+    from protobag.protobag_native import PyReader
+    bag_index_str = PyReader.get_index(self._path)
     msg = BagIndex()
     msg.ParseFromString(bag_index_str)
     return msg
@@ -426,8 +428,8 @@ class Protobag(object):
         else:
           return
 
-    from protobag.protobag_native import Reader
-    reader = Reader()
+    from protobag.protobag_native import PyReader
+    reader = PyReader()
     reader.start(self._path, selection_bytes)
 
     if sync_using_max_slop is not None:
@@ -498,13 +500,14 @@ class Protobag(object):
       spec.save_descriptor_index = save_descriptor_index
       return _Writer(spec)
 
+
 class _Writer(object):
   def __init__(self, spec):
     self._spec = spec
     self._indexed_type_urls = set()
 
-    from protobag.protobag_native import Writer
-    self._writer = Writer()
+    from protobag.protobag_native import PyWriter
+    self._writer = PyWriter()
     self._writer.start(spec)
 
   def close(self):

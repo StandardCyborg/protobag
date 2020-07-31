@@ -344,7 +344,7 @@ PYBIND11_MODULE(protobag_native, m) {
 
 
   /// Reading
-  py::class_<PyReader>(m, "Reader", "Handle to a Protobag ReadSession")
+  py::class_<PyReader>(m, "PyReader", "Handle to a Protobag ReadSession")
     .def(py::init<>(), "Create a null session")
     .def("start", &PyReader::Start, "Begin reading the given Selection")
     .def(
@@ -418,7 +418,7 @@ PYBIND11_MODULE(protobag_native, m) {
       },
       "Write in this format");
 
-  py::class_<PyWriter>(m, "Writer", "Handle to a Protobag WriteSession")
+  py::class_<PyWriter>(m, "PyWriter", "Handle to a Protobag WriteSession")
     .def(py::init<>(), "Create a null session")
     .def("start", &PyWriter::Start, "Begin writing given a WriteSession::Spec")
     .def("close", &PyWriter::Close, "End writing session")
