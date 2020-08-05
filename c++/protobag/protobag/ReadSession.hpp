@@ -47,6 +47,10 @@ public:
   // Read just the index from `path`
   static Result<BagIndex> GetIndex(const std::string &path);
 
+  // Get a list of all the topics from `path` (if the archive at `path`
+  // has any time-series data)
+  static Result<std::vector<std::string>> GetAllTopics(const std::string &path);
+
 protected:
   Spec _spec;
   archive::Archive::Ptr _archive;

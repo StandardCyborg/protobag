@@ -287,6 +287,7 @@ def test_read_msg():
 
 
 def test_read_stamped_msg():
+  # test get_topics too
   pass
 
 

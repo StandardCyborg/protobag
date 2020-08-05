@@ -377,6 +377,11 @@ class Protobag(object):
     msg.ParseFromString(bag_index_str)
     return msg
 
+  def get_topics(self):
+    """Get the list of topics for any time-series data in this protobag."""
+    from protobag.protobag_native import PyReader
+    return PyReader.get_topics(self._path)
+
   def iter_entries(
         self,
         selection=None,
@@ -991,11 +996,11 @@ class DictRowEntry(object):
     return '\n'.join((
       'protobag.DictRowEntry:',
       '  entryname: %s' % self.entryname,
-      '  topic: %s timestamp %s' % (
+      '  topic: %s timestamp: %s' % (
         self.topic,
-        '%s sec %s ns' % (self.timestamp.seconds, self.timestamp.nanos)
-        if self.timestamp is not None
-        else ''),
+        '%s sec %s ns' % (self.timestamp.seconds, self.timestamp.nanos))
+      if self.timestamp is not None
+      else '  (not a time-series entry)',
       '  type_url: %s' % self.type_url,
       '  has serdes: %s' % (self.serdes is not None),
       '  descriptor_data: %s' % get_descriptor_data_formatted(),

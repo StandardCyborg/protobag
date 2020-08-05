@@ -148,6 +148,16 @@ public:
     return *maybe_str.value;
   }
 
+  static std::vector<std::string> GetAllTopics(const std::string &path) {
+    auto maybe_topics = ReadSession::GetAllTopics(path);
+    if (!maybe_topics.IsOk()) {
+      throw std::runtime_error(
+        fmt::format("Failed to read topics from {}: {}",
+          path, maybe_topics.error));
+    }
+    return *maybe_topics.value;
+  }
+
   ReadSession::Ptr GetSession() const { return _read_sess; }
 
 protected:
@@ -354,7 +364,12 @@ PYBIND11_MODULE(protobag_native, m) {
     .def_static(
       "get_index",
       &PyReader::GetIndex,
-      "Get the (string-serialized) BagIndex for the bag at the given path");
+      "Get the (string-serialized) BagIndex for the bag at the given path")
+    .def_static(
+      "get_topics",
+      &PyReader::GetAllTopics,
+      "Get the list of topics (for any time-series data) in the bag "
+      "at the given path");
 
 
   /// TimeSync

@@ -126,6 +126,21 @@ Result<BagIndex> ReadSession::GetIndex(const std::string &path) {
   return ReadLatestIndex(rp->_archive);
 }
 
+Result<std::vector<std::string>> ReadSession::GetAllTopics(const std::string &path) {
+  auto maybe_index = GetIndex(path);
+  if (!maybe_index.IsOk()) {
+    return {.error = maybe_index.error};
+  }
+
+  const BagIndex &index = *maybe_index.value;
+  std::vector<std::string> topics;
+  topics.reserve(index.topic_to_stats_size());
+  for (const auto &entry : index.topic_to_stats()) {
+    topics.push_back(entry.first);
+  }
+  return {.value = topics};
+}
+
 Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
   if (!archive) {
     return {.error = "No archive to read"};
