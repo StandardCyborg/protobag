@@ -5,11 +5,15 @@ _With built-in support for time-series data_
 
 ## Quickstart & Demo
 
-See [this python noteboook](fixme link) for a demo of key features.
+See [this python noteboook](examples/protobag-to-parquet/protobag-demo-full.ipynb) 
+for a demo of key features.
 
+Or you can install using `pip`:
 `pip3 install protobag`
 
-`todo docker local start`
+Or you can drop into a Protobag development shell using a clone of this repo
+and Docker:
+`./pb-dev --shell`
 
 ## Summary 
 

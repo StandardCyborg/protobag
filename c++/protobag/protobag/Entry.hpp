@@ -306,6 +306,8 @@ struct MaybeEntry : public Result<Entry> {
   // See Archive::ReadStatus for definition; this can be an acceptible error
   bool IsNotFound() const;
 
+  static MaybeEntry NotFound(const std::string &entryname);
+
   static MaybeEntry Err(const std::string &s) {
     MaybeEntry m; m.error = s; return m;
   }

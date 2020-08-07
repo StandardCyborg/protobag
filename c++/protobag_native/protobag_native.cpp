@@ -113,7 +113,7 @@ public:
     auto &reader = *_read_sess;
 
     auto maybe_entry = reader.GetNext();
-    if (maybe_entry.IsEndOfSequence()) {
+    if (maybe_entry.IsEndOfSequence() || maybe_entry.IsNotFound()) {
       // NB: We use this exception instead of pybind11::stop_iteration due
       // to a bug in pybind related to libc++.  FMI see:
       // * https://gitter.im/pybind/Lobby?at=5f18cfc9361e295cf01fd21a

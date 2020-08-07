@@ -54,7 +54,18 @@ std::string Entry::ToString() const {
 // }
 
 bool MaybeEntry::IsNotFound() const {
-  return error == archive::Archive::ReadStatus::EntryNotFound().error;
+  static const std::string kIsNotFoundPrefix = 
+    archive::Archive::ReadStatus::EntryNotFound().error + ": ";
+  return error.find(kIsNotFoundPrefix) == 0;
+}
+
+MaybeEntry MaybeEntry::NotFound(const std::string &entryname) {
+  MaybeEntry m;
+  m.error = fmt::format(
+    "{}: {}",
+    archive::Archive::ReadStatus::EntryNotFound().error,
+    entryname);
+  return m;
 }
 
 std::string GetTopicFromEntryname(const std::string &entryname) {

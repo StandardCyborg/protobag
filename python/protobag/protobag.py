@@ -615,6 +615,10 @@ class SelectionBuilder(object):
     return Selection(window=spec)
   
   @classmethod
+  def select_window_all(cls):
+    return cls.select_window()
+
+  @classmethod
   def select_events(
         cls,
         topic_times=None,

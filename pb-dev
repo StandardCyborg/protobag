@@ -3,7 +3,9 @@
 
 """
 pb-dev: A CLI for Protobag development
-TODO examples
+
+Drop into a development shell:
+  $ ./pb-dev --shell
 
 ## Development
 
@@ -269,6 +271,30 @@ def run_tests(src_root):
     n_proc=multiprocessing.cpu_count())
   run_cmd(CMD)
   log.info("... done with C++ tests.")
+
+
+  log.info("Running python tests ...")
+  CMD = """
+    cd {src_root}/python &&
+    python3 setup.py test
+  """.format(
+    src_root=src_root)
+  run_cmd(CMD)
+  log.info("... done with python tests.")
+
+
+  log.info("Running Jupyter Notebook smoke tests ...")
+  notebook_path = os.path.join(
+    src_root, 'examples/protobag-to-parquet/protobag-demo-full.ipynb')
+  CMD = """
+    jupyter-nbconvert \
+      --ExecutePreprocessor.timeout=3600 \
+        --to notebook --execute --output /tmp/out \
+          %s
+  """ % notebook_path
+    # For helpful discussion, see http://www.blog.pythonlibrary.org/2018/10/16/testing-jupyter-notebooks/
+  run_cmd(CMD)
+  log.info("... done with Jupyter Notebook tests.")
 
 
 def run_in_container(cmd, src_root, container_name='pbdev-temp'):
