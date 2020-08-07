@@ -9,3 +9,4 @@ eggs
 build
 dist
 *~
+test_build

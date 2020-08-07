@@ -261,8 +261,8 @@ def run_tests(src_root):
   log.info("Running C++ tests ...")
   CMD = """
     cd {src_root} &&
-    mkdir -p c++/build &&
-    cd c++/build &&
+    mkdir -p c++/test_build &&
+    cd c++/test_build &&
     cmake -DCMAKE_BUILD_TYPE=DEBUG .. &&
     make -j {n_proc} &&
     ./protobag_test
