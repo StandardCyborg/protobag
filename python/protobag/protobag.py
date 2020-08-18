@@ -907,6 +907,35 @@ def to_pb_timestamp_safe(v):
 
 @attr.s(slots=True, eq=True, weakref_slot=False)
 class DictRowEntry(object):
+  """Utility for converting Protobag entries to and from python dicts / 
+  table "rows".  
+
+  # Examples:
+  ## Entry -> dict
+  >>> bag = protobag.Protobag(path='my_bag.zip')
+  >>> entry = bag.get_entry('foo')
+  >>> row = DictRowEntry.from_entry(entry)
+      # row is now a DictRowEntry; use the attributes directly or try
+      # `attrs.asdict()`
+
+  ## dict -> Entry
+  >>> bag = protobag.Protobag(path='my_bag.zip', msg_classes=(MyPbMsgType,))
+  >>> d = dict(
+            entryname='foo',
+            type_url='type.googleapis.com/MyPbMsgType',
+              # Can get this using `get_type_url(MyPbMsgType)`
+            msg_dict={'x': 5, 'y': 7},
+            serdes=bag.serdes)
+        # Need to provide the `serdes` that knows how to encode `MyPbMsgType`
+        # instances from python dicts.  If your dict has `descriptor_data`, 
+        # you can omit the serdes
+  >>> row = DictRowEntry(**d)
+  >>> entry = row.to_entry()
+        # entry is now a MessageEntry instance
+  >>> writer = bag.create_writer()
+  >>> writer.write_entry(entry)
+
+  """
   
   msg_dict = attr.ib(factory=dict, type=dict)
   

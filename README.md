@@ -5,15 +5,12 @@ _With built-in support for time-series data_
 
 ## Quickstart & Demo
 
-See [this python noteboook](examples/protobag-to-parquet/protobag-demo-full.ipynb) 
+See [this python noteboook](examples/notebook-demo/protobag-demo-full.ipynb) 
 for a demo of key features.
 
-Or you can install using `pip`:
-`pip3 install protobag`
-
 Or you can drop into a Protobag development shell using a clone of this repo
-and Docker:
-`./pb-dev --shell`
+and Docker; FMI see:
+`./pb-dev --help`
 
 ## Summary 
 
@@ -136,22 +133,25 @@ For C++, see:
      deserialize messages given only Protobuf Descriptor data.
 
 
-coming soon
-
-```
-indocker % cd /opt/protobag/cxx
-indocker % mkdir -p build && cd build
-indocker % cmake -DCMAKE_BUILD_TYPE=DEBUG ..
-indocker % make -j `nproc` && ./protobag_test --gtest_filter=DemoTest*
-```
+## Cocoa Pods
 
 ```
  pod repo push  SCCocoaPods ProtobagCocoa.podspec.json  --use-libraries --verbose --allow-warnings
 ```
 
+## C++ Build
 
-in python subdir:
+In c++ subdir:
+```
+mkdir build && cd build
+cmake ..
+make -j
+make test
+```
+
+## Python Build
+
+In python subdir:
 ```
 python3 setup.py bdist_wheel
 ```
-for both linux and xcode

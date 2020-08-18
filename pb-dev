@@ -4,8 +4,15 @@
 """
 pb-dev: A CLI for Protobag development
 
-Drop into a development shell:
+## Quickstart
+
+First, you need to build the dockerized environment if you don't already have
+the image locally:
+  $ ./pb-dev --build-env
+
+Then drop into a development shell:
   $ ./pb-dev --shell
+
 
 ## Development
 
@@ -330,7 +337,8 @@ def main(args=None):
       cd /opt/protobag/examples/c++-writer &&
       protoc MyMessages.proto --cpp_out=. &&
       protoc MyMessages.proto --python_out=../../examples/python-reader &&
-      protoc MyMessages.proto --python_out=../../examples/python-writer
+      protoc MyMessages.proto --python_out=../../examples/python-writer &&
+      protoc MyMessages.proto --python_out=../../examples/notebook-demo
     """
     run_in_container(
       CMD,

@@ -369,7 +369,7 @@ def test_write_read_stamped_msg():
     entry = bag.get_entry('does_not_exist')
   
   # Test getting topic list
-  assert bag.get_topics() == ['my_t1', 'my_t2']
+  assert sorted(bag.get_topics()) == sorted(['my_t1', 'my_t2'])
 
   # Test getting time series data
   def _check_expected_topic_t_value(sel, expected_topic_t_value):
@@ -446,10 +446,54 @@ def test_write_read_raw():
 ## == Test DictRowEntry =======================================================
 ## ============================================================================
 
-def test_entry_to_dict_row():
-  pass
+def test_dict_row_entry_round_trip():
+  ## First create a fixture; need a backing protobag to create entries
+  test_root = get_test_tempdir('test_dict_row_entry_round_trip')
+  path = os.path.join(test_root, 'bag.zip')
+
+  bag = protobag.Protobag(path=path)
+  writer = bag.create_writer()
+  writer.write_msg('txt_foo', to_std_msg("foo"))
+  for t in range(3):
+    writer.write_stamped_msg("my_t1", to_std_msg(str(t)), t_sec=t)
+  writer.write_raw('raw_data', b"i am a raw string")
+  writer.close()
 
 
-def test_dict_row_to_entry():
-  pass
+  ## Now read entries and test round trip entry -> dict -> entry
+  path_rewrite = os.path.join(test_root, 'bag_rewrite.zip')
 
+  bag = protobag.Protobag(path=path)
+  bag_rewrite = protobag.Protobag(path=path_rewrite)
+  writer = bag_rewrite.create_writer()
+
+  # Simple messages
+  entry = bag.get_entry("txt_foo")
+  row = protobag.DictRowEntry.from_entry(entry)
+  assert row.entryname == "txt_foo"
+  assert row.type_url == 'type.googleapis.com/protobag.StdMsg.String'
+  assert row.msg_dict == {'value': 'foo'}
+  writer.write_entry(row.to_entry())
+
+  # Time-series data
+  sel = protobag.SelectionBuilder.select_window(topics=['my_t1'])
+  entry = None
+  for e in bag.iter_entries(selection=sel):
+    entry = e
+    break
+  row = protobag.DictRowEntry.from_entry(entry)
+  assert row.type_url == 'type.googleapis.com/protobag.StdMsg.String'
+  assert row.msg_dict == {'value': '0'}
+  assert row.topic == 'my_t1'
+  assert row.timestamp == protobag.to_pb_timestamp(0)
+  writer.write_entry(row.to_entry())
+
+  # Raw data
+  entry = bag.get_entry("raw_data")
+  row = protobag.DictRowEntry.from_entry(entry)
+  assert row.entryname == "raw_data"
+  assert row.type_url == ''
+  assert row.msg_dict == {'protobag_raw_entry_bytes': b"i am a raw string"}
+  writer.write_entry(row.to_entry())
+
+  writer.close()
