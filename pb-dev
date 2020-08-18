@@ -196,10 +196,6 @@ def create_arg_parser():
     '--run-protoc', default=False, action='store_true',
     help='Re-generate protoc-generated files, updating the source tree '
          'in-place')
-  parser.add_argument(
-    '--post-release', default=False, action='store_true',
-    help='Run the post-release workflow; run this on master after merging '
-         'your feature branch')
 
   return parser
 
@@ -217,17 +213,6 @@ def build_env(args):
     docker_root=args.root,
     version=version)
 
-  run_cmd(CMD)
-
-
-def post_release(args):
-  version = get_version(args.root)
-
-  # Tag for cocoapods release
-  print('todo: podspec version needs to match version')
-  CMD = """
-    git tag -f {version} && git push -f origin {version}
-  """.format(version=version)
   run_cmd(CMD)
 
 
@@ -292,7 +277,7 @@ def run_tests(src_root):
 
   log.info("Running Jupyter Notebook smoke tests ...")
   notebook_path = os.path.join(
-    src_root, 'examples/protobag-to-parquet/protobag-demo-full.ipynb')
+    src_root, 'examples/notebook-demo/protobag-demo-full.ipynb')
   CMD = """
     jupyter-nbconvert \
       --ExecutePreprocessor.timeout=3600 \
@@ -320,8 +305,6 @@ def main(args=None):
 
   if args.build_env:
     build_env(args)
-  elif args.post_release:
-    post_release(args)
   elif args.shell:
     start_container(args.root)
     enter_container()
