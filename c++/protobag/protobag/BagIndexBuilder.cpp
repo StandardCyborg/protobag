@@ -164,7 +164,7 @@ void BagIndexBuilder::Observe(
 
   if (_do_timeseries_indexing) {
     const auto &maybe_tt = entry.GetTopicTime();
-    if (maybe_tt.has_value()) {
+    if (maybe_tt.has_value() && !maybe_tt->topic().empty()) {
       TopicTime tt = *maybe_tt;
       tt.set_entryname(entryname);
 

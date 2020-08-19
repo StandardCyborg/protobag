@@ -84,7 +84,7 @@ public:
   struct Spec {
     std::vector<std::string> topics;
     ::google::protobuf::Duration max_slop;
-    size_t max_queue_size = 1;
+    size_t max_queue_size = 1; // Recall: max queue size *per topic*
 
     // static WithMaxSlop(float max_slop_sec) {
     //   Specs s;

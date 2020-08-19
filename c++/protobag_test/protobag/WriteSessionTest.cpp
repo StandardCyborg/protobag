@@ -44,7 +44,7 @@ inline
 void ExpectWriteOk(WriteSession &w, const Entry &entry) {
   OkOrErr result = w.WriteEntry(entry);
   if (!result.IsOk()) {
-    throw new std::runtime_error(result.error);
+    throw std::runtime_error(result.error);
   }
 }
 
