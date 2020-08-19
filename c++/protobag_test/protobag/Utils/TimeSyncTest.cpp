@@ -12,7 +12,6 @@ using namespace protobag;
 using namespace protobag_test;
 
 
-// TODO promote for other tests? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 namespace protobag {
 
 inline

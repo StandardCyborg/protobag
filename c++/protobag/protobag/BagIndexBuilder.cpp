@@ -156,12 +156,6 @@ BagIndex_TopicStats &BagIndexBuilder::GetMutableStats(const std::string &topic) 
   return topic_to_stats[topic];
 }
 
-// uint64_t BagIndexBuilder::GetNextFilenum(const std::string &topic) {
-//   const auto &stats = GetMutableStats(topic);
-//   return stats.n_messages() + 1;
-// }
-
-
 void BagIndexBuilder::Observe(
     const Entry &entry, const std::string &final_entryname) {
   

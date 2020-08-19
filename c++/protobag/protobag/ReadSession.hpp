@@ -21,7 +21,8 @@ public:
     Selection selection;
     bool unpack_stamped_messages;
 
-    // NB: for now we *only* support time-ordered reads for stamped entries. non-stamped are not ordered
+    // NB: for now we *only* support time-ordered reads for stamped entries. 
+    // Non-stamped are not ordered.
 
     static Spec ReadAllFromPath(const std::string &path) {
       Selection sel;
@@ -62,11 +63,6 @@ protected:
     bool raw_mode = false;
   };
   ReadPlan _plan;
-
-  // maybe move these and make public ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-  // static Result<BagIndex> GetReindexed(archive::Archive::Ptr archive);
-  
-  
 
   static MaybeEntry ReadEntryFrom(
     archive::Archive::Ptr archive,

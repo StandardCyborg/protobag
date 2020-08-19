@@ -6,6 +6,6 @@
 
 TEST(ProtobagTest, TestBasic) {
 
-  // TODO
+  // See DemoTest
 
 }

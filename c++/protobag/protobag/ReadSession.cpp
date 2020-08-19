@@ -186,11 +186,12 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
     return {.error = "No archive to read"};
   }
 
-  auto maybe_index = ReadLatestIndex(archive); // TODO support multiple indices ~~~~~~~~~~~~~~~~
+  auto maybe_index = ReadLatestIndex(archive); // TODO support multiple indices
   if (!maybe_index.IsOk()) {
+    // TODO: support reindexing
     // // Then create one!
     // maybe_index = GetReindexed(archive);
-    return {.error = "Unindexed protobag not supported right now"}; // ~~~~~~~~~~~~~~~~~~~~~~~~~
+    return {.error = "Unindexed protobag not currently supported"};
   }
 
   if (!maybe_index.IsOk()) {
@@ -306,12 +307,13 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
       if (window.has_end() && (window.end() < tt.timestamp())) {
         continue;
       }
-// std::cout << "entries_to_read: " << tt.entryname() << std::endl;
+
       entries_to_read.push(tt.entryname());
     }
     return {.value = ReadPlan{
       .entries_to_read = entries_to_read,
-      .require_all = false, // TODO should we report if index and archive don't match? ~~~~~~~~~~~~~~
+      .require_all = false, 
+          // TODO should we report if index and archive don't match?
       .raw_mode = false,
     }};
 
