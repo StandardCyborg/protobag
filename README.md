@@ -135,11 +135,19 @@ For C++, see:
 
 ## Cocoa Pods
 
+You can integrate Protobag into an iOS or OSX application using the CocoaPod `ProtobagCocoa.podspec.json`
+podspec included in this repo.  Protobag is explicitly designed to be cross-platform (and utilize only C++
+features friendly to iOS) to facilitate such interoperability.
+
+Note: before pushing, be sure to edit the "version" field of the `ProtobagCocoa.podspec.json` file
+to match the version you're pushing.
 ```
  pod repo push  SCCocoaPods ProtobagCocoa.podspec.json  --use-libraries --verbose --allow-warnings
 ```
 
 ## C++ Build
+
+Use the existing CMake-based build system.
 
 In c++ subdir:
 ```
@@ -151,7 +159,10 @@ make test
 
 ## Python Build
 
+The Python library includes a wheel that leverages the above C++ CMake build system.
+
 In python subdir:
 ```
 python3 setup.py bdist_wheel
 ```
+
