@@ -10,7 +10,9 @@ for a demo of key features.
 
 Or you can drop into a Protobag development shell using a clone of this repo
 and Docker; FMI see:
-`./pb-dev --help`
+```
+./pb-dev --help
+```
 
 ## Summary 
 
