@@ -1,7 +1,5 @@
 #include "gtest/gtest.h"
 
-#include <iostream>
-
 #include "protobag/Entry.hpp"
 #include "protobag/Utils/StdMsgUtils.hpp"
 
