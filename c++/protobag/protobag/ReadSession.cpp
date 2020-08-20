@@ -39,7 +39,7 @@ MaybeEntry ReadSession::ReadEntryFrom(
 
   const auto maybe_bytes = archive->ReadAsStr(entryname);
   if (maybe_bytes.IsEntryNotFound()) {
-    return MaybeEntry::Err(maybe_bytes.error);
+    return MaybeEntry::NotFound(entryname);
   } else if (!maybe_bytes.IsOk()) {
     return MaybeEntry::Err(
       fmt::format("Read error for {}: {}", entryname, maybe_bytes.error));
@@ -56,7 +56,7 @@ MaybeEntry ReadSession::ReadEntryFrom(
 
     auto maybe_any = 
       PBFactory::LoadFromContainer<google::protobuf::Any>(*maybe_bytes.value);
-        // do we need to handle text format separately ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        // TODO maybe handle text format separately ?
     if (!maybe_any.IsOk()) {
       return MaybeEntry::Err(fmt::format(
         "Could not read protobuf from {}: {}", entryname, maybe_any.error));
@@ -103,7 +103,7 @@ MaybeEntry ReadSession::GetNext() {
     _archive, entryname, _plan.raw_mode, _spec.unpack_stamped_messages);
   if (maybe_entry.IsNotFound()) {
     if (_plan.require_all) {
-      return MaybeEntry::Err(fmt::format("Entry not found: {}", entryname));
+      return MaybeEntry::NotFound(entryname);
     } else {
       return GetNext();
     }
@@ -124,6 +124,21 @@ Result<BagIndex> ReadSession::GetIndex(const std::string &path) {
   }
 
   return ReadLatestIndex(rp->_archive);
+}
+
+Result<std::vector<std::string>> ReadSession::GetAllTopics(const std::string &path) {
+  auto maybe_index = GetIndex(path);
+  if (!maybe_index.IsOk()) {
+    return {.error = maybe_index.error};
+  }
+
+  const BagIndex &index = *maybe_index.value;
+  std::vector<std::string> topics;
+  topics.reserve(index.topic_to_stats_size());
+  for (const auto &entry : index.topic_to_stats()) {
+    topics.push_back(entry.first);
+  }
+  return {.value = topics};
 }
 
 Result<BagIndex> ReadSession::ReadLatestIndex(archive::Archive::Ptr archive) {
@@ -171,11 +186,12 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
     return {.error = "No archive to read"};
   }
 
-  auto maybe_index = ReadLatestIndex(archive); // TODO support multiple indices ~~~~~~~~~~~~~~~~
+  auto maybe_index = ReadLatestIndex(archive); // TODO support multiple indices
   if (!maybe_index.IsOk()) {
+    // TODO: support reindexing
     // // Then create one!
     // maybe_index = GetReindexed(archive);
-    return {.error = "Unindexed protobag not supported right now"}; // ~~~~~~~~~~~~~~~~~~~~~~~~~
+    return {.error = "Unindexed protobag not currently supported"};
   }
 
   if (!maybe_index.IsOk()) {
@@ -291,12 +307,13 @@ Result<ReadSession::ReadPlan> ReadSession::GetEntriesToRead(
       if (window.has_end() && (window.end() < tt.timestamp())) {
         continue;
       }
-// std::cout << "entries_to_read: " << tt.entryname() << std::endl;
+
       entries_to_read.push(tt.entryname());
     }
     return {.value = ReadPlan{
       .entries_to_read = entries_to_read,
-      .require_all = false, // TODO should we report if index and archive don't match? ~~~~~~~~~~~~~~
+      .require_all = false, 
+          // TODO should we report if index and archive don't match?
       .raw_mode = false,
     }};
 

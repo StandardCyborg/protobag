@@ -15,9 +15,13 @@ using namespace protobag_test;
 
 std::vector<Entry> CreateEntriesFixture() {
   return {
+    Entry::Create("/moof", ToStringMsg("moof")),
+
     Entry::CreateStamped("/topic1", 0, 0, ToStringMsg("foo")),
     Entry::CreateStamped("/topic1", 1, 0, ToStringMsg("bar")),
     Entry::CreateStamped("/topic2", 0, 0, ToIntMsg(1337)),
+
+    Entry::CreateRawFromBytes("/i_am_raw", "i am raw data"),
   };
 }
 
@@ -40,7 +44,7 @@ inline
 void ExpectWriteOk(WriteSession &w, const Entry &entry) {
   OkOrErr result = w.WriteEntry(entry);
   if (!result.IsOk()) {
-    throw new std::runtime_error(result.error);
+    throw std::runtime_error(result.error);
   }
 }
 
@@ -86,6 +90,8 @@ TEST(WriteSessionDirectory, TestBasic) {
         "/topic1/0.0.stampedmsg.protobin",
         "/topic1/1.0.stampedmsg.protobin",
         "/topic2/0.0.stampedmsg.protobin",
+        "/moof",
+        "/i_am_raw",
       };
       EXPECT_SORTED_SEQUENCES_EQUAL(expected, actual);
     }
@@ -169,10 +175,33 @@ TEST(WriteSessionDirectory, TestBasic) {
       }
     }
 
+    {
+      auto res = dar->ReadAsStr("moof");
+      ASSERT_TRUE(res.IsOk()) << res.error;
+      auto maybe_msg = PBFactory::LoadFromContainer<::google::protobuf::Any>(*res.value);
+      ASSERT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
+      const ::google::protobuf::Any &any_msg = *maybe_msg.value;
+      ASSERT_EQ(any_msg.type_url(), GetTypeURL<StdMsg_String>());
+      {
+        auto maybe_msg = PBFactory::UnpackFromAny<StdMsg_String>(any_msg);
+        ASSERT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
+
+        const StdMsg_String &m = *maybe_msg.value;
+        EXPECT_EQ(m.value(), "moof");
+      }
+    }
 
     {
-      // TODO check bag meta ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      auto res = dar->ReadAsStr("i_am_raw");
+      ASSERT_TRUE(res.IsOk()) << res.error;
+
+      auto maybe_msg = PBFactory::LoadFromContainer<::google::protobuf::Any>(*res.value);
+      ASSERT_TRUE(maybe_msg.IsOk()) << maybe_msg.error;
+      const ::google::protobuf::Any &any_msg = *maybe_msg.value;
+      ASSERT_EQ(any_msg.type_url(), "");
+      ASSERT_EQ(any_msg.value(), "i am raw data");
     }
+
   }
 
 }

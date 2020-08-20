@@ -3,12 +3,24 @@
 
 """
 pb-dev: A CLI for Protobag development
-TODO examples
+
+## Quickstart
+
+First, you need to build the dockerized environment if you don't already have
+the image locally:
+  $ ./pb-dev --build-env
+
+Then drop into a development shell:
+  $ ./pb-dev --shell
+
 
 ## Development
 
 When creating a new version:
- 1. Edit protobag_version.txt
+ 1. Edit `protobag_version.txt`
+      and `__version__` in `python/protobag/__init__.py`
+ 2. Build a new environment using: `./pb-dev --build-env`
+
 """
 
 import os
@@ -34,7 +46,7 @@ https://github.com/NVIDIA/nvidia-docker#ubuntu-16041804-debian-jessiestretchbust
 """
 
 INSTALL_DOCKER_MAC = """
-To install Docker on a Mac, we advocate you install docker-machine (which uses 
+To install Docker on a Mac, we advocate you install docker-machine (which uses
 VirtualBox-based virtual machines) versus Docker Desktop for Mac (which uses
 the xhyve hypervisor) because:
   * The VirtualBox-based environment is more similar to Docker on Linux
@@ -54,7 +66,7 @@ To install docker-machine:
       ```
       $ eval `docker-machine env` # Tells the docker client how to reach your
                                   # VirtualBox; run once per shell session.
-      
+
       $ docker run hello-world
       ...
       Hello from Docker!
@@ -143,7 +155,7 @@ def raise_if_no_docker():
           $ docker-machine start default
         Error: %s
         """ % (e,))
-    
+
 
 
 ###############################################################################
@@ -165,14 +177,14 @@ def create_arg_parser():
   parser.add_argument(
     '--build-env', default=False, action='store_true',
     help='Build the Dockerized dev env')
-  
+
   parser.add_argument(
     '--shell', default=False, action='store_true',
     help='Drop into a dockerized dev environment')
   parser.add_argument(
     '--shell-rm', default=False, action='store_true',
     help='Delete the dockerized dev environment')
-  
+
   parser.add_argument(
     '--test', default=False, action='store_true',
     help='Build and run all tests')
@@ -184,10 +196,6 @@ def create_arg_parser():
     '--run-protoc', default=False, action='store_true',
     help='Re-generate protoc-generated files, updating the source tree '
          'in-place')
-  parser.add_argument(
-    '--post-release', default=False, action='store_true',
-    help='Run the post-release workflow; run this on master after merging '
-         'your feature branch')
 
   return parser
 
@@ -196,7 +204,7 @@ def build_env(args):
   raise_if_no_docker()
 
   version = get_version(args.root)
-  
+
   CMD = """
     docker build -t {image}:{version} -f {dockerfile} {docker_root}
   """.format(
@@ -204,18 +212,7 @@ def build_env(args):
     dockerfile=os.path.join(args.root, 'docker/Dockerfile'),
     docker_root=args.root,
     version=version)
-  
-  run_cmd(CMD)
 
-
-def post_release(args):
-  version = get_version(args.root)
-  
-  # Tag for cocoapods release
-  print('todo: podspec version needs to match version')
-  CMD = """
-    git tag -f {version} && git push -f origin {version}
-  """.format(version=version)
   run_cmd(CMD)
 
 
@@ -223,7 +220,7 @@ def start_container(
       src_root,
       container_name=CONTAINER_NAME,
       mnt_local_root=True):
-  
+
   local_mount = ''
   if mnt_local_root:
     local_mount = '-v %s:/opt/protobag:z' % src_root
@@ -256,8 +253,8 @@ def run_tests(src_root):
   log.info("Running C++ tests ...")
   CMD = """
     cd {src_root} &&
-    mkdir -p c++/build &&
-    cd c++/build &&
+    mkdir -p c++/test_build &&
+    cd c++/test_build &&
     cmake -DCMAKE_BUILD_TYPE=DEBUG .. &&
     make -j {n_proc} &&
     ./protobag_test
@@ -266,6 +263,30 @@ def run_tests(src_root):
     n_proc=multiprocessing.cpu_count())
   run_cmd(CMD)
   log.info("... done with C++ tests.")
+
+
+  log.info("Running python tests ...")
+  CMD = """
+    cd {src_root}/python &&
+    python3 setup.py test
+  """.format(
+    src_root=src_root)
+  run_cmd(CMD)
+  log.info("... done with python tests.")
+
+
+  log.info("Running Jupyter Notebook smoke tests ...")
+  notebook_path = os.path.join(
+    src_root, 'examples/notebook-demo/protobag-demo-full.ipynb')
+  CMD = """
+    jupyter-nbconvert \
+      --ExecutePreprocessor.timeout=3600 \
+        --to notebook --execute --output /tmp/out \
+          %s
+  """ % notebook_path
+    # For helpful discussion, see http://www.blog.pythonlibrary.org/2018/10/16/testing-jupyter-notebooks/
+  run_cmd(CMD)
+  log.info("... done with Jupyter Notebook tests.")
 
 
 def run_in_container(cmd, src_root, container_name='pbdev-temp'):
@@ -284,8 +305,6 @@ def main(args=None):
 
   if args.build_env:
     build_env(args)
-  elif args.post_release:
-    post_release(args)
   elif args.shell:
     start_container(args.root)
     enter_container()
@@ -301,7 +320,8 @@ def main(args=None):
       cd /opt/protobag/examples/c++-writer &&
       protoc MyMessages.proto --cpp_out=. &&
       protoc MyMessages.proto --python_out=../../examples/python-reader &&
-      protoc MyMessages.proto --python_out=../../examples/python-writer
+      protoc MyMessages.proto --python_out=../../examples/python-writer &&
+      protoc MyMessages.proto --python_out=../../examples/notebook-demo
     """
     run_in_container(
       CMD,

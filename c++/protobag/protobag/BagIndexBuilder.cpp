@@ -5,8 +5,6 @@
 #include <tuple>
 #include <unordered_set>
 
-                                                                  #include <iostream>
-
 #include <google/protobuf/descriptor.h>
 #include <google/protobuf/util/time_util.h>
 
@@ -156,12 +154,6 @@ BagIndex_TopicStats &BagIndexBuilder::GetMutableStats(const std::string &topic) 
   return topic_to_stats[topic];
 }
 
-// uint64_t BagIndexBuilder::GetNextFilenum(const std::string &topic) {
-//   const auto &stats = GetMutableStats(topic);
-//   return stats.n_messages() + 1;
-// }
-
-
 void BagIndexBuilder::Observe(
     const Entry &entry, const std::string &final_entryname) {
   
@@ -169,27 +161,29 @@ void BagIndexBuilder::Observe(
     final_entryname.empty() ? entry.entryname : final_entryname;
 
   if (_do_timeseries_indexing) {
-    const auto &maybe_tt = entry.GetTopicTime();
-    if (maybe_tt.has_value()) {
-      TopicTime tt = *maybe_tt;
-      tt.set_entryname(entryname);
+    if (entry.IsStampedMessage()) {
+      const auto &maybe_tt = entry.GetTopicTime();
+      if (maybe_tt.has_value()) {
+        TopicTime tt = *maybe_tt;
+        tt.set_entryname(entryname);
 
-      {
-        auto &stats = GetMutableStats(tt.topic());
-        stats.set_n_messages(stats.n_messages() + 1);
-      }
-
-      {
-        if (!_tto) {
-          _tto.reset(new TopicTimeOrderer());
+        {
+          auto &stats = GetMutableStats(tt.topic());
+          stats.set_n_messages(stats.n_messages() + 1);
         }
-        _tto->Observe(tt);
-      }
 
-      {
-        const auto &t = tt.timestamp();
-        *_index.mutable_start() = std::min(_index.start(), t);
-        *_index.mutable_end() = std::max(_index.end(), t);
+        {
+          if (!_tto) {
+            _tto.reset(new TopicTimeOrderer());
+          }
+          _tto->Observe(tt);
+        }
+
+        {
+          const auto &t = tt.timestamp();
+          *_index.mutable_start() = std::min(_index.start(), t);
+          *_index.mutable_end() = std::max(_index.end(), t);
+        }
       }
     }
   }

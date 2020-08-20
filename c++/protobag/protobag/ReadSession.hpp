@@ -21,7 +21,8 @@ public:
     Selection selection;
     bool unpack_stamped_messages;
 
-    // NB: for now we *only* support time-ordered reads for stamped entries. non-stamped are not ordered
+    // NB: for now we *only* support time-ordered reads for stamped entries. 
+    // Non-stamped are not ordered.
 
     static Spec ReadAllFromPath(const std::string &path) {
       Selection sel;
@@ -41,14 +42,15 @@ public:
 
   MaybeEntry GetNext();
 
-  // TODO: begin() end() interface? see do-while loop in demo
-  // TODO TypeResolver halper ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
   // Utilities
   
   // Read just the index from `path`
   static Result<BagIndex> GetIndex(const std::string &path);
+
+  // Get a list of all the topics from `path` (if the archive at `path`
+  // has any time-series data).  NB: Ignores the protobag index.
+  static Result<std::vector<std::string>> GetAllTopics(const std::string &path);
 
 protected:
   Spec _spec;
@@ -61,11 +63,6 @@ protected:
     bool raw_mode = false;
   };
   ReadPlan _plan;
-
-  // maybe move these and make public ? ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~`
-  // static Result<BagIndex> GetReindexed(archive::Archive::Ptr archive);
-  
-  
 
   static MaybeEntry ReadEntryFrom(
     archive::Archive::Ptr archive,

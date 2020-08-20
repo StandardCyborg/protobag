@@ -127,6 +127,7 @@ struct Entry {
 
   // == Raw Mode ================================
 
+  // Create a raw entry from a Protobuf message instance (force-skips indexing)
   template <typename MT>
   static Result<Entry> CreateRaw(
         const std::string &entryname,
@@ -149,6 +150,7 @@ struct Entry {
     };
   }
 
+  // Create a raw entry from raw bytes
   static Entry CreateRawFromBytes(
         const std::string &entryname,
         std::string &&raw_msg_contents) {
@@ -249,7 +251,7 @@ struct Entry {
     return 
       IsA<StampedMessage>() || (
         // An unpacked StampedDatum is OK too
-        GetTopicTime().has_value());
+        HasTopic());
   }
 
   bool IsRaw() const {
@@ -257,6 +259,7 @@ struct Entry {
   }
 
   std::optional<TopicTime> GetTopicTime() const;
+  bool HasTopic() const;
 
   template <typename MT>
   Result<MT> GetAs(bool validate_type_url = true) const {
@@ -305,6 +308,8 @@ struct MaybeEntry : public Result<Entry> {
 
   // See Archive::ReadStatus for definition; this can be an acceptible error
   bool IsNotFound() const;
+
+  static MaybeEntry NotFound(const std::string &entryname);
 
   static MaybeEntry Err(const std::string &s) {
     MaybeEntry m; m.error = s; return m;
@@ -359,6 +364,11 @@ inline std::optional<TopicTime> Entry::GetTopicTime() const {
   } else {
     return std::nullopt;
   }
+}
+
+inline bool Entry::HasTopic() const {
+  auto maybe_tt = GetTopicTime();
+  return maybe_tt.has_value() && !maybe_tt->topic().empty();
 }
 
 } /* namespace protobag */

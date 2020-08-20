@@ -5,6 +5,8 @@ package my_messages;
 message DinoHunter {
   string first_name = 1;
   int32 id = 2;
+
+  // Misc attributes of this hunter
   map<string, string> attribs = 3;
 
   enum DinoType {
@@ -19,6 +21,7 @@ message DinoHunter {
     DinoType type = 2;
   }
 
+  // Dinos that this hunter has captured
   repeated Dino dinos = 4;
 }
 

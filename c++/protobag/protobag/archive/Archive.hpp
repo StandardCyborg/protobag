@@ -26,11 +26,11 @@ public:
   struct Spec {
     // clang-format off
     std::string mode;
-      // Choices: "read", "write" (which also means append)
+      // Choices: "read", "write" ("append" not yet tested / supported)
     std::string path;
-      // TODO a path ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+      // A local path for the archive
       // Special values:
-      //   "<tempfile>" - Generate a 
+      //   "<tempfile>" - Generate (and write to) a temporary file
     std::string format;
       // Choices:
       //   "memory" - Simply use an in-memory hashmap to store all archive
@@ -65,9 +65,6 @@ public:
   struct ReadStatus : public Result<std::string> {
     static ReadStatus EntryNotFound() { return Err("EntryNotFound"); }
     bool IsEntryNotFound() const { return error == "EntryNotFound"; }
-    
-    // static ReadStatus EndOfArchive() { return Err("EndOfArchive"); }
-    // bool IsEndOfArchive() const { return error == "EndOfArchive"; }
 
     static ReadStatus Err(const std::string &s) {
       ReadStatus st; st.error = s; return st;
@@ -87,6 +84,7 @@ public:
   }
 
   // TODO: bulk reads of several entries, probably be faster
+
 
   // Writing ------------------------------------------------------------------
   virtual OkOrErr Write(

@@ -132,15 +132,6 @@ TEST(DemoTest, TestDemo) {
         "Read entry:" << std::endl <<
         current.ToString());
 
-      // TODO show how to decode, also with dynamic decode! ~~~~~~~~~~~~~~~~~~~~~~~~~~~
-      // if (current.topic == "/topic1") {
-      //   LOG("Read a string msg: " << UnpackedToPBTxt<StdMsg_String>(current.stamped_msg));
-      // } else if (current.topic == "/topic2") {
-      //   LOG("Read an int msg: " << UnpackedToPBTxt<StdMsg_Int>(current.stamped_msg));
-      // } else {
-      //   LOG("Got ??? " << PBToString(current.stamped_msg));
-      // }
-
       LOG("");
 
     } while(still_reading);
@@ -151,9 +142,10 @@ TEST(DemoTest, TestDemo) {
     if (!maybe_index.IsOk()) {
       throw std::runtime_error(maybe_index.error);
     }
-    LOG(
-      "Protobag Index:" << std::endl <<
-      PBToString(*maybe_index.value));
+    // This is super noisy
+    // LOG(
+    //   "Protobag Index:" << std::endl <<
+    //   PBToString(*maybe_index.value));
   }
 }
 
@@ -168,144 +160,118 @@ TEST(DemoTest, TestDemo) {
 // #include <google/protobuf/util/type_resolver_util.h>
 #include <google/protobuf/util/json_util.h>
 
-// // https://github.com/protocolbuffers/protobuf/blob/7bff8393cab939bfbb9b5c69b3fe76b4d83c41ee/src/google/protobuf/util/json_util.cc#L217
-// namespace detail {
-//   using namespace google::protobuf;
-// const char* kTypeUrlPrefix = "type.googleapis.com";
-// util::TypeResolver* generated_type_resolver_ = NULL;
-// ::google::protobuf::internal::once_flag generated_type_resolver_init_;
 
-// std::string GetTypeUrl(const Message& message) {
-//   return std::string(kTypeUrlPrefix) + "/" +
-//          message.GetDescriptor()->full_name();
-// }
+// TEST(DemoTest, TestMonkey) {
 
-// void DeleteGeneratedTypeResolver() { delete generated_type_resolver_; }
+//   TopicTime tt;
 
-// void InitGeneratedTypeResolver() {
-//   generated_type_resolver_ = util::NewTypeResolverForDescriptorPool(
-//       kTypeUrlPrefix, DescriptorPool::generated_pool());
-//   ::google::protobuf::internal::OnShutdown(&DeleteGeneratedTypeResolver);
-// }
+//   tt.set_topic("my-topic");
+//   tt.mutable_timestamp()->set_seconds(123);
 
-// util::TypeResolver* GetGeneratedTypeResolver() {
-//   ::google::protobuf::internal::call_once(generated_type_resolver_init_,
-//                                              InitGeneratedTypeResolver);
-//   return generated_type_resolver_;
-// }
-// }  // namespace detail
+//   LOG(
+//     "tt:" << std::endl <<
+//     PBToString(tt));
 
-TEST(DemoTest, TestMonkey) {
+//   ::google::protobuf::DescriptorProto p;
+//   tt.GetDescriptor()->CopyTo(&p);
+//   // LOG(
+//   //   "tt descriptor:" <<
+//   //   PBToString(p));
 
-  TopicTime tt;
+//   ::google::protobuf::FileDescriptorSet fds;
+//   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+//   tt.GetDescriptor()->file()->CopyTo(fd);
+//   LOG("containing_type " << tt.GetDescriptor()->containing_type());
 
-  tt.set_topic("my-topic");
-  tt.mutable_timestamp()->set_seconds(123);
+//   LOG("dependency_count " << tt.GetDescriptor()->file()->dependency_count());
+//   for (int d = 0; d < tt.GetDescriptor()->file()->dependency_count(); ++d) {
+//     ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+//     const ::google::protobuf::FileDescriptor *dep = tt.GetDescriptor()->file()->dependency(d);
+//     dep->CopyTo(fd);
+//     LOG("copied " << dep->name());
+//   }
 
-  LOG(
-    "tt:" << std::endl <<
-    PBToString(tt));
+//   // {
+//   //   google::protobuf::Any any;
+//   //   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+//   //   any.GetDescriptor()->file()->CopyTo(fd);
+//   // }
+//   // {
+//   //   google::protobuf::Timestamp any;
+//   //   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+//   //   any.GetDescriptor()->file()->CopyTo(fd);
+//   // }
+//   // {
+//   //   google::protobuf::DescriptorProto any;
+//   //   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
+//   //   any.GetDescriptor()->file()->CopyTo(fd);
+//   // }
 
-  ::google::protobuf::DescriptorProto p;
-  tt.GetDescriptor()->CopyTo(&p);
-  // LOG(
-  //   "tt descriptor:" <<
-  //   PBToString(p));
-
-  ::google::protobuf::FileDescriptorSet fds;
-  ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
-  tt.GetDescriptor()->file()->CopyTo(fd);
-  LOG("containing_type " << tt.GetDescriptor()->containing_type());
-
-  LOG("dependency_count " << tt.GetDescriptor()->file()->dependency_count());
-  for (int d = 0; d < tt.GetDescriptor()->file()->dependency_count(); ++d) {
-    ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
-    const ::google::protobuf::FileDescriptor *dep = tt.GetDescriptor()->file()->dependency(d);
-    dep->CopyTo(fd);
-    LOG("copied " << dep->name());
-  }
-
-  // {
-  //   google::protobuf::Any any;
-  //   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
-  //   any.GetDescriptor()->file()->CopyTo(fd);
-  // }
-  // {
-  //   google::protobuf::Timestamp any;
-  //   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
-  //   any.GetDescriptor()->file()->CopyTo(fd);
-  // }
-  // {
-  //   google::protobuf::DescriptorProto any;
-  //   ::google::protobuf::FileDescriptorProto *fd = fds.add_file();
-  //   any.GetDescriptor()->file()->CopyTo(fd);
-  // }
-
-  // LOG(
-  //   "tt fds:" <<
-  //   PBToString(fds));
+//   // LOG(
+//   //   "tt fds:" <<
+//   //   PBToString(fds));
 
 
-  {
-    using namespace ::google::protobuf;
-    const std::string msg_str = PBToString(tt);
+//   {
+//     using namespace ::google::protobuf;
+//     const std::string msg_str = PBToString(tt);
 
-    SimpleDescriptorDatabase db;
-    DescriptorPool pool(&db);
-    for (int i = 0; i < fds.file_size(); ++i) {
-      db.Add(fds.file(i));
-    }
+//     SimpleDescriptorDatabase db;
+//     DescriptorPool pool(&db);
+//     for (int i = 0; i < fds.file_size(); ++i) {
+//       db.Add(fds.file(i));
+//     }
 
-    {
-      std::vector<std::string> fnames;
-      bool success = db.FindAllFileNames(&fnames);
-      if (success) {
-        for (const auto &fname : fnames) {
-          LOG("db file: " << fname);
-        }
-      }
-    }
+//     {
+//       std::vector<std::string> fnames;
+//       bool success = db.FindAllFileNames(&fnames);
+//       if (success) {
+//         for (const auto &fname : fnames) {
+//           LOG("db file: " << fname);
+//         }
+//       }
+//     }
 
 
-    LOG("full name " << tt.GetDescriptor()->full_name());
-    DynamicMessageFactory factory;
-    const Descriptor *mt = nullptr;
-    mt = pool.FindMessageTypeByName(tt.GetDescriptor()->full_name());
-    LOG("mt " << mt);
+//     LOG("full name " << tt.GetDescriptor()->full_name());
+//     DynamicMessageFactory factory;
+//     const Descriptor *mt = nullptr;
+//     mt = pool.FindMessageTypeByName(tt.GetDescriptor()->full_name());
+//     LOG("mt " << mt);
   
-    if (mt) {
-      std::unique_ptr<Message> mp(factory.GetPrototype(mt)->New());
-      LOG("value of message ptr " << mp.get());
+//     if (mt) {
+//       std::unique_ptr<Message> mp(factory.GetPrototype(mt)->New());
+//       LOG("value of message ptr " << mp.get());
 
-      if (mp) {
-        // NOTE! msg is owned by the factory!! might wanna do a Swap
-        auto &msg = *mp;
-        ::google::protobuf::TextFormat::ParseFromString(msg_str, &msg);
-        LOG("debug " << msg.DebugString());
-
-
-        {
-          std::string out;
-          auto status = ::google::protobuf::util::MessageToJsonString(msg, &out);
-          if (!status.ok()) {
-            LOG("status out " << status.ToString());
-          }
-          LOG("my jsons: " << out);
-        }
-      }
-    }
+//       if (mp) {
+//         // NOTE! msg is owned by the factory!! might wanna do a Swap
+//         auto &msg = *mp;
+//         ::google::protobuf::TextFormat::ParseFromString(msg_str, &msg);
+//         LOG("debug " << msg.DebugString());
 
 
-    // using namespace google::protobuf;
-    // const DescriptorPool* pool = tt.GetDescriptor()->file()->pool();
-    // util::TypeResolver* resolver =
-    //     pool == DescriptorPool::generated_pool()
-    //         ? detail::GetGeneratedTypeResolver()
-    //         : util::NewTypeResolverForDescriptorPool(detail::kTypeUrlPrefix, pool);
+//         {
+//           std::string out;
+//           auto status = ::google::protobuf::util::MessageToJsonString(msg, &out);
+//           if (!status.ok()) {
+//             LOG("status out " << status.ToString());
+//           }
+//           LOG("my jsons: " << out);
+//         }
+//       }
+//     }
+
+
+//     // using namespace google::protobuf;
+//     // const DescriptorPool* pool = tt.GetDescriptor()->file()->pool();
+//     // util::TypeResolver* resolver =
+//     //     pool == DescriptorPool::generated_pool()
+//     //         ? detail::GetGeneratedTypeResolver()
+//     //         : util::NewTypeResolverForDescriptorPool(detail::kTypeUrlPrefix, pool);
     
-  }
+//   }
 
-}
+// }
 
 
 

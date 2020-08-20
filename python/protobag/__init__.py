@@ -1,1 +1,3 @@
-from protobag.protobag import Protobag
+from protobag.protobag import *
+
+__version__ = '0.0.3'

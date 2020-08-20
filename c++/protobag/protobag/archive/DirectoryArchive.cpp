@@ -79,16 +79,20 @@ OkOrErr DirectoryArchive::Write(
   fs::path entry_path = fs::path(_spec.path) / entry_path_rel;
   fs::create_directories(entry_path.parent_path());
 
+  // Write!
   {
     std::ofstream out(entry_path, std::ios::binary);
     out << data;
   }
 
+  // Did that work?
   if (fs::is_regular_file(entry_path)) {
     return kOK;
   } else {
     return OkOrErr::Err( 
-      fmt::format("Failed to write {} in {}", entryname, ToString()));
+      fmt::format(
+        "Failed to write entryname: {} entry_path: {} {}",
+        entryname, entry_path.u8string(), ToString()));
   }
 }
 
