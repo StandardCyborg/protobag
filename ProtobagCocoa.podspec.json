@@ -1,16 +1,16 @@
 {
   "name": "ProtobagCocoa",
-  "version": "0.0.3",
+  "version": "0.0.3.2",
   "summary": "Protobag: an archive of string-serialized Protobufs",
   "homepage": "https://github.com/StandardCyborg/protobag",
   "license": "Apache 2",
   "authors": {
-    "Protobag Maintainers": "paul@standardcyborg.com"
+    "Protobag Maintainers": "eric@standardcyborg.com"
   },
   "cocoapods_version": ">= 1.0",
   "source": {
     "git": "git@github.com:StandardCyborg/protobag.git",
-    "tag": "v0.0.3"
+    "tag": "v0.0.3.2"
   },
   "public_header_files": [
     "c++/protobag/**/*.{hpp,h}"
